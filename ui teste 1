@@ -1,0 +1,377 @@
+local Players = game:GetService("Players")
+local UserInputService = game:GetService("UserInputService")
+local player = Players.LocalPlayer
+local playerGui = player:WaitForChild("PlayerGui")
+
+-- Criar ou obter ScreenGui
+local screenGui = playerGui:FindFirstChild("CustomUI") or Instance.new("ScreenGui")
+screenGui.Name = "CustomUI"
+screenGui.ResetOnSpawn = false
+screenGui.IgnoreGuiInset = true
+screenGui.Parent = playerGui
+
+-- Variável de estado global
+local isMinimized = false
+
+-- Notificação
+local function showNotification(message)
+	local notification = loadstring(game:HttpGet("https://raw.githubusercontent.com/9menta/tests/refs/heads/main/notification.lua"))()
+	notification({
+		Title = 'UI Minimized - Press "RightShift"',
+		Text = message,
+		Image = 'rbxassetid://72671288986713',
+		Duration = 10
+	})
+end
+
+-- Frame principal
+local mainFrame = Instance.new("Frame")
+mainFrame.Name = "MainUIFrame"
+mainFrame.Size = UDim2.new(0, 700, 0, 400)
+mainFrame.Position = UDim2.new(0.5, -350, 0.2, 0)
+mainFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+mainFrame.Parent = screenGui
+
+local uiCorner = Instance.new("UICorner")
+uiCorner.CornerRadius = UDim.new(0, 12)
+uiCorner.Parent = mainFrame
+
+local uiStroke = Instance.new("UIStroke")
+uiStroke.Color = Color3.fromRGB(170, 0, 255)
+uiStroke.Thickness = 2
+uiStroke.Parent = mainFrame
+
+-- TopBar
+local topBar = Instance.new("Frame")
+topBar.Name = "TopBar"
+topBar.Size = UDim2.new(1, 0, 0, 40)
+topBar.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+topBar.BorderSizePixel = 0
+topBar.Parent = mainFrame
+
+local topBarCorner = Instance.new("UICorner")
+topBarCorner.CornerRadius = UDim.new(0, 12)
+topBarCorner.Parent = topBar
+
+-- Título
+local titleLabel = Instance.new("TextLabel")
+titleLabel.Size = UDim2.new(1, -60, 1, 0)
+titleLabel.Position = UDim2.new(0, 10, 0, 0)
+titleLabel.BackgroundTransparency = 1
+titleLabel.Text = "Elixir Client"
+titleLabel.TextColor3 = Color3.fromRGB(200, 200, 255)
+titleLabel.Font = Enum.Font.GothamBold
+titleLabel.TextSize = 20
+titleLabel.TextXAlignment = Enum.TextXAlignment.Left
+titleLabel.Parent = topBar
+
+-- Botão de minimizar na TopBar
+local minimizeButton = Instance.new("ImageButton")
+minimizeButton.Name = "MinimizeButton"
+minimizeButton.Size = UDim2.new(0, 30, 0, 30)
+minimizeButton.Position = UDim2.new(1, -40, 0, 5)
+minimizeButton.BackgroundTransparency = 1
+minimizeButton.Image = "rbxassetid://10738425363"
+minimizeButton.Parent = topBar
+
+local buttonCorner = Instance.new("UICorner")
+buttonCorner.CornerRadius = UDim.new(1, 0)
+buttonCorner.Parent = minimizeButton
+
+-- Divisor neon
+local divider = Instance.new("Frame")
+divider.Name = "Divider"
+divider.Size = UDim2.new(1, -20, 0, 2)
+divider.Position = UDim2.new(0, 10, 0, 40)
+divider.BackgroundColor3 = Color3.fromRGB(170, 0, 255)
+divider.BorderSizePixel = 0
+divider.Parent = mainFrame
+
+local dividerCorner = Instance.new("UICorner")
+dividerCorner.CornerRadius = UDim.new(1, 0)
+dividerCorner.Parent = divider
+
+-- Área de conteúdo
+local contentFrame = Instance.new("Frame")
+contentFrame.Name = "Content"
+contentFrame.Size = UDim2.new(1, 0, 1, -42)
+contentFrame.Position = UDim2.new(0, 0, 0, 42)
+contentFrame.BackgroundTransparency = 1
+contentFrame.Parent = mainFrame
+
+-- Painel lateral esquerdo
+local leftPanel = Instance.new("Frame")
+leftPanel.Size = UDim2.new(0, 180, 1, 0)
+leftPanel.Position = UDim2.new(0, 0, 0, 0)
+leftPanel.BackgroundColor3 = Color3.fromRGB(28, 28, 28)
+leftPanel.Parent = contentFrame
+
+local leftPanelCorner = Instance.new("UICorner")
+leftPanelCorner.CornerRadius = UDim.new(0, 10)
+leftPanelCorner.Parent = leftPanel
+
+local leftPanelStroke = Instance.new("UIStroke")
+leftPanelStroke.Color = Color3.fromRGB(170, 0, 255)
+leftPanelStroke.Thickness = 1
+leftPanelStroke.Parent = leftPanel
+
+-- Painel da  direita onde botoes toggles dropdowns deve ficar 
+local rightPanel = Instance.new("Frame")
+rightPanel.Size = UDim2.new(1, -180, 1, 0)
+rightPanel.Position = UDim2.new(0, 180, 0, 0)
+rightPanel.BackgroundTransparency = 1
+rightPanel.Parent = contentFrame
+
+-- Função unificada para minimizar/restaurar
+local function toggleUI()
+	isMinimized = not isMinimized
+	mainFrame.Visible = not isMinimized
+	if isMinimized then
+		showNotification("Pressione RightShift ou use o botão flutuante para abrir.")
+	end
+end
+
+-- Tecla RightShift
+UserInputService.InputBegan:Connect(function(input, gameProcessed)
+	if not gameProcessed and input.KeyCode == Enum.KeyCode.RightShift then
+		toggleUI()
+	end
+end)
+
+-- Clique no botão da TopBar
+minimizeButton.MouseButton1Click:Connect(toggleUI)
+
+-- Drag da MainFrame (TopBar)
+local draggingMain = false
+local dragInputMain, mousePosMain, framePosMain
+
+local function updateMain(input)
+	local delta = input.Position - mousePosMain
+	mainFrame.Position = UDim2.new(framePosMain.X.Scale, framePosMain.X.Offset + delta.X, framePosMain.Y.Scale, framePosMain.Y.Offset + delta.Y)
+end
+
+topBar.InputBegan:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+		draggingMain = true
+		mousePosMain = input.Position
+		framePosMain = mainFrame.Position
+
+		input.Changed:Connect(function()
+			if input.UserInputState == Enum.UserInputState.End then
+				draggingMain = false
+			end
+		end)
+	end
+end)
+
+topBar.InputChanged:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+		dragInputMain = input
+	end
+end)
+
+UserInputService.InputChanged:Connect(function(input)
+	if input == dragInputMain and draggingMain then
+		updateMain(input)
+	end
+end)
+
+
+-- Botão flutuante (mobile-friendly) vminimizavel
+local floatButton = Instance.new("ImageButton")
+floatButton.Name = "FloatingMinimizeButton"
+floatButton.Size = UDim2.new(0, 40, 0, 40)
+floatButton.Position = UDim2.new(0, 20, 0.5, -20)
+floatButton.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+floatButton.Image = "rbxassetid://72671288986713"
+floatButton.AutoButtonColor = true
+floatButton.Parent = screenGui
+
+local corner = Instance.new("UICorner")
+corner.CornerRadius = UDim.new(0, 100)
+corner.Parent = floatButton
+
+local stroke = Instance.new("UIStroke")
+stroke.Color = Color3.fromRGB(170, 0, 255)
+stroke.Thickness = 2
+stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+stroke.Parent = floatButton
+
+-- Drag do botão flutuante (FloatButton)
+local draggingFloat = false
+local dragInputFloat, dragStartFloat, startPosFloat
+
+local function updateFloat(input)
+	local delta = input.Position - dragStartFloat
+	floatButton.Position = UDim2.new(startPosFloat.X.Scale, startPosFloat.X.Offset + delta.X, startPosFloat.Y.Scale, startPosFloat.Y.Offset + delta.Y)
+end
+
+floatButton.InputBegan:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+		draggingFloat = true
+		dragStartFloat = input.Position
+		startPosFloat = floatButton.Position
+
+		input.Changed:Connect(function()
+			if input.UserInputState == Enum.UserInputState.End then
+				draggingFloat = false
+			end
+		end)
+	end
+end)
+
+floatButton.InputChanged:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+		dragInputFloat = input
+	end
+end)
+
+UserInputService.InputChanged:Connect(function(input)
+	if input == dragInputFloat and draggingFloat then
+		updateFloat(input)
+	end
+end)
+
+
+-- Botão flutuante funcional
+floatButton.MouseButton1Click:Connect(toggleUI)
+
+
+-- UIFramework.lua
+local UIFramework = {}
+
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+local TweenService = game:GetService("TweenService")
+local UserInputService = game:GetService("UserInputService")
+
+-- Criação da Window
+function UIFramework:CreateWindow(title)
+    local Window = {}
+    Window.Tabs = {}
+
+    local ScreenGui = Instance.new("ScreenGui", game:GetService("CoreGui"))
+    ScreenGui.Name = "NeonUIFramework"
+    ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Global
+
+    local MainFrame = Instance.new("Frame")
+    MainFrame.Size = UDim2.new(0, 600, 0, 400)
+    MainFrame.Position = UDim2.new(0.5, -300, 0.5, -200)
+    MainFrame.AnchorPoint = Vector2.new(0.5, 0.5)
+    MainFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+    MainFrame.BorderSizePixel = 0
+    MainFrame.Parent = ScreenGui
+
+    local UICorner = Instance.new("UICorner", MainFrame)
+    UICorner.CornerRadius = UDim.new(0, 12)
+
+    local UIStroke = Instance.new("UIStroke", MainFrame)
+    UIStroke.Color = Color3.fromRGB(0, 255, 255)
+    UIStroke.Thickness = 2
+
+    local TabButtonsFrame = Instance.new("Frame", MainFrame)
+    TabButtonsFrame.Size = UDim2.new(0, 120, 1, 0)
+    TabButtonsFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+    TabButtonsFrame.BorderSizePixel = 0
+
+    local UIListLayout = Instance.new("UIListLayout", TabButtonsFrame)
+    UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
+
+    local ContentFrame = Instance.new("Frame", MainFrame)
+    ContentFrame.Position = UDim2.new(0, 120, 0, 0)
+    ContentFrame.Size = UDim2.new(1, -120, 1, 0)
+    ContentFrame.BackgroundTransparency = 1
+
+    function Window:MakeTab(tabInfo)
+        local Tab = {}
+        Tab.Elements = {}
+
+        local TabButton = Instance.new("TextButton", TabButtonsFrame)
+        TabButton.Size = UDim2.new(1, 0, 0, 40)
+        TabButton.Text = tabInfo.Name or "Tab"
+        TabButton.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+        TabButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+        TabButton.Font = Enum.Font.GothamSemibold
+        TabButton.TextSize = 14
+        TabButton.AutoButtonColor = false
+
+        local ButtonCorner = Instance.new("UICorner", TabButton)
+        ButtonCorner.CornerRadius = UDim.new(0, 8)
+
+        local TabFrame = Instance.new("Frame", ContentFrame)
+        TabFrame.Size = UDim2.new(1, 0, 1, 0)
+        TabFrame.Visible = false
+        TabFrame.BackgroundTransparency = 1
+
+        local Layout = Instance.new("UIListLayout", TabFrame)
+        Layout.SortOrder = Enum.SortOrder.LayoutOrder
+        Layout.Padding = UDim.new(0, 6)
+
+        function Tab:SetVisible(state)
+            for _, tab in pairs(Window.Tabs) do
+                tab.Frame.Visible = false
+            end
+            TabFrame.Visible = state
+        end
+
+        TabButton.MouseButton1Click:Connect(function()
+            Tab:SetVisible(true)
+        end)
+
+        function Tab:AddToggle(data)
+            local Toggle = {}
+            local ToggleFrame = Instance.new("TextButton", TabFrame)
+            ToggleFrame.Size = UDim2.new(1, -10, 0, 30)
+            ToggleFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+            ToggleFrame.Text = data.Text or "Toggle"
+            ToggleFrame.TextColor3 = Color3.fromRGB(255, 255, 255)
+            ToggleFrame.Font = Enum.Font.Gotham
+            ToggleFrame.TextSize = 14
+            ToggleFrame.AutoButtonColor = false
+
+            local ToggleCorner = Instance.new("UICorner", ToggleFrame)
+            ToggleCorner.CornerRadius = UDim.new(0, 6)
+
+            local State = false
+            ToggleFrame.MouseButton1Click:Connect(function()
+                State = not State
+                if data.Callback then
+                    data.Callback(State)
+                end
+                ToggleFrame.BackgroundColor3 = State and Color3.fromRGB(0, 255, 127) or Color3.fromRGB(40, 40, 40)
+            end)
+
+            return Toggle
+        end
+
+        function Tab:AddButton(data)
+            local Button = {}
+            local Btn = Instance.new("TextButton", TabFrame)
+            Btn.Size = UDim2.new(1, -10, 0, 30)
+            Btn.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+            Btn.Text = data.Text or "Button"
+            Btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+            Btn.Font = Enum.Font.GothamSemibold
+            Btn.TextSize = 14
+
+            local BtnCorner = Instance.new("UICorner", Btn)
+            BtnCorner.CornerRadius = UDim.new(0, 6)
+
+            Btn.MouseButton1Click:Connect(function()
+                if data.Callback then
+                    data.Callback()
+                end
+            end)
+
+            return Button
+        end
+
+        Tab.Frame = TabFrame
+        table.insert(Window.Tabs, Tab)
+        return Tab
+    end
+
+    return Window
+end
+
+return UIFramework

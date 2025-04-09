@@ -490,11 +490,11 @@ end
 
 
 
-	--[[ Exemplo: Criar 3 toggles por tab
+	-- Exemplo: Criar 3 toggles por tab
 	for i = 1, 3 do
 		createToggle(name .. " Toggle " .. i, toggleList)
 	end
-end]]
+end
 
 -- Função para criar tabs (já existente)
 local function createTab(name)
@@ -530,9 +530,8 @@ local function createTab(name)
     end)
 end
 
---[[Criar 30 Tabs
+-- Criar 30 Tabs
 for i = 1, 30 do
     createTab("Tab" .. i)
-end]]
-
+end
 

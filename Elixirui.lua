@@ -263,9 +263,98 @@ function ElixirLib:MakeWindow(data)
 		btnStroke.Color = Color3.fromRGB(170, 0, 255)
 		btnStroke.Thickness = 1
 		btnStroke.Parent = button
+		local TweenService = game:GetService("TweenService")
 
-		button.MouseButton1Click:Connect(function()
-			rightPanel:ClearAllChildren()
+		-- Armazena os toggles por aba e nome
+		local ToggleStates = {} -- exemplo: ToggleStates["CombatTab"]["This is a toggle!"] = true
+		
+		function CreateToggle(tabFrame, data)
+			local name = data.Name or "Toggle"
+			local default = data.Default or false
+			local callback = data.Callback or function() end
+			
+			-- Garantir estado da aba
+			ToggleStates[tabFrame] = ToggleStates[tabFrame] or {}
+			local state = ToggleStates[tabFrame][name]
+			if state == nil then
+				ToggleStates[tabFrame][name] = default
+				state = default
+			end
+			
+			-- Verifica se o toggle já existe
+			local existing = tabFrame:FindFirstChild(name)
+			if existing then return end
+			
+			-- Cria botão
+			local toggleButton = Instance.new("TextButton")
+			toggleButton.Name = name
+			toggleButton.Size = UDim2.new(0, 100, 0, 24)
+			toggleButton.Position = UDim2.new(0, 10, 0, 10 + (#tabFrame:GetChildren() * 30)) -- posicionamento automático
+			toggleButton.BackgroundTransparency = 1
+			toggleButton.Text = ""
+			toggleButton.Parent = tabFrame
+		
+			local toggleFrame = Instance.new("Frame")
+			toggleFrame.Size = UDim2.new(1, 0, 1, 0)
+			toggleFrame.BackgroundTransparency = 0
+			toggleFrame.BorderSizePixel = 0
+			toggleFrame.Parent = toggleButton
+		
+			Instance.new("UICorner", toggleFrame).CornerRadius = UDim.new(1, 0)
+			local frameStroke = Instance.new("UIStroke", toggleFrame)
+			frameStroke.Thickness = 2
+		
+			local frameGradient = Instance.new("UIGradient", toggleFrame)
+		
+			local ball = Instance.new("Frame")
+			ball.Name = "Ball"
+			ball.Size = UDim2.new(0, 20, 1, -4)
+			ball.Position = state and UDim2.new(1, -22, 0, 2) or UDim2.new(0, 2, 0, 2)
+			ball.BackgroundTransparency = 1
+			ball.BorderSizePixel = 0
+			ball.Parent = toggleFrame
+		
+			Instance.new("UICorner", ball).CornerRadius = UDim.new(1, 0)
+			local ballStroke = Instance.new("UIStroke", ball)
+			ballStroke.Thickness = 2
+		
+			local ballGradient = Instance.new("UIGradient", ball)
+		
+			local function ApplyState(toggled)
+				local pos = toggled and UDim2.new(1, -22, 0, 2) or UDim2.new(0, 2, 0, 2)
+				local strokeColor = toggled and Color3.fromRGB(255, 0, 255) or Color3.fromRGB(100, 100, 100)
+		
+				TweenService:Create(ball, TweenInfo.new(0.25), { Position = pos }):Play()
+				TweenService:Create(ballStroke, TweenInfo.new(0.25), { Color = strokeColor }):Play()
+				TweenService:Create(frameStroke, TweenInfo.new(0.25), { Color = strokeColor }):Play()
+		
+				frameGradient.Color = toggled and ColorSequence.new{
+					ColorSequenceKeypoint.new(0, Color3.fromRGB(90, 0, 120)),
+					ColorSequenceKeypoint.new(1, Color3.fromRGB(180, 80, 255))
+				} or ColorSequence.new{
+					ColorSequenceKeypoint.new(0, Color3.fromRGB(50, 50, 50)),
+					ColorSequenceKeypoint.new(1, Color3.fromRGB(130, 130, 130))
+				}
+		
+				ballGradient.Color = toggled and ColorSequence.new{
+					ColorSequenceKeypoint.new(0, Color3.fromRGB(100, 0, 130)),
+					ColorSequenceKeypoint.new(1, Color3.fromRGB(200, 100, 255))
+				} or ColorSequence.new{
+					ColorSequenceKeypoint.new(0, Color3.fromRGB(30, 30, 30)),
+					ColorSequenceKeypoint.new(1, Color3.fromRGB(80, 80, 80))
+				}
+			end
+		
+			ApplyState(state)
+		
+			toggleButton.MouseButton1Click:Connect(function()
+				state = not state
+				ToggleStates[tabFrame][name] = state
+				ApplyState(state)
+				callback(state)
+			end)
+		end
+		
 
 			local tabContent = Instance.new("Frame")
 			tabContent.Size = UDim2.new(1, 0, 1, 0)
@@ -291,56 +380,27 @@ function ElixirLib:MakeWindow(data)
 			tab.Container = tabContent
 		end)
 
-		function Tab:AddToggle(toggleData)
-			local settingName = toggleData.Name or "Toggle"
-			local default = toggleData.Default or false
-			local callback = toggleData.Callback or function() end
-		
-			local savedState = self._lib:GetSetting(self._tabName, settingName)
-			local toggled = (savedState ~= nil) and savedState or default
-		
-			local toggleButton = Instance.new("TextButton")
-			toggleButton.Name = "ToggleButton"
-			toggleButton.Size = UDim2.new(0, 50, 0, 24)
-			toggleButton.Position = UDim2.new(0, 10, 0, #self._elements * 30)
-			toggleButton.BackgroundTransparency = 1
-			toggleButton.Text = ""
-			toggleButton.Parent = self._contentFrame
-			table.insert(self._elements, toggleButton)
-		
-			-- Visuals: Frame, ball, stroke, gradients (igual seu script estilizado)
-			local toggleFrame = Instance.new("Frame")
-			toggleFrame.Size = UDim2.new(1, 0, 1, 0)
-			toggleFrame.BackgroundTransparency = 0
-			toggleFrame.Parent = toggleButton
-			toggleFrame.Name = "VisualFrame"
-		
-			-- UICorner, Stroke, Gradient, Ball, etc... (igual seu código, não vou repetir tudo)
-		
-			-- Mantém a aparência baseada no estado salvo
-			local function UpdateVisual()
-				local newPos = toggled and UDim2.new(1, -22, 0, 2) or UDim2.new(0, 2, 0, 2)
-				local strokeColor = toggled and strokeOn or colorOffStroke
-				local frameColor = toggled and gradientOn or gradientOff
-				local ballColor = toggled and ballGradientOn or ballGradientOff
-		
-				TweenService:Create(ball, tweenInfo, { Position = newPos }):Play()
-				TweenService:Create(ballStroke, tweenInfo, { Color = strokeColor }):Play()
-				TweenService:Create(frameStroke, tweenInfo, { Color = strokeColor }):Play()
-				frameGradient.Color = frameColor
-				ballGradient.Color = ballColor
-			end
-		
-			UpdateVisual()
-		
-			toggleButton.MouseButton1Click:Connect(function()
-				toggled = not toggled
-				self._lib:SetSetting(self._tabName, settingName, toggled)
-				UpdateVisual()
-				callback(toggled)
+		function tab:AddToggle(name, default, callback)
+			local toggle = Instance.new("TextButton")
+			toggle.Size = UDim2.new(0, 200, 0, 30)
+			toggle.Position = UDim2.new(0, 20, 0, 70)
+			toggle.Text = name .. ": " .. (default and "ON" or "OFF")
+			toggle.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+			toggle.TextColor3 = Color3.fromRGB(255, 255, 255)
+			toggle.Font = Enum.Font.Gotham
+			toggle.TextSize = 16
+			toggle.Parent = tab.Container
+
+			local state = default
+
+			toggle.MouseButton1Click:Connect(function()
+				state = not state
+				toggle.Text = name .. ": " .. (state and "ON" or "OFF")
+				if callback then
+					callback(state)
+				end
 			end)
 		end
-		
 
 		table.insert(Tabs, tab)
 		return tab

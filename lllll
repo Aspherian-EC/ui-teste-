@@ -1,0 +1,538 @@
+local Players = game:GetService("Players")
+local UserInputService = game:GetService("UserInputService")
+local player = Players.LocalPlayer
+local playerGui = player:WaitForChild("PlayerGui")
+
+-- Criar ou obter ScreenGui
+local screenGui = playerGui:FindFirstChild("CustomUI") or Instance.new("ScreenGui")
+screenGui.Name = "CustomUI"
+screenGui.ResetOnSpawn = false
+screenGui.IgnoreGuiInset = true
+screenGui.Parent = playerGui
+
+-- Variável de estado global
+local isMinimized = false
+
+-- Notificação
+local function showNotification(message)
+	local notification = loadstring(game:HttpGet("https://raw.githubusercontent.com/9menta/tests/refs/heads/main/notification.lua"))()
+	notification({
+		Title = 'UI Minimized - Press "RightShift"',
+		Text = message,
+		Image = 'rbxassetid://72671288986713',
+		Duration = 10
+	})
+end
+
+-- Frame principal
+local mainFrame = Instance.new("Frame")
+mainFrame.Name = "MainUIFrame"
+mainFrame.Size = UDim2.new(0, 700, 0, 400)
+mainFrame.Position = UDim2.new(0.5, -350, 0.2, 0)
+mainFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+mainFrame.Parent = screenGui
+
+local uiCorner = Instance.new("UICorner")
+uiCorner.CornerRadius = UDim.new(0, 12)
+uiCorner.Parent = mainFrame
+
+local uiStroke = Instance.new("UIStroke")
+uiStroke.Color = Color3.fromRGB(170, 0, 255)
+uiStroke.Thickness = 2
+uiStroke.Parent = mainFrame
+
+-- TopBar
+local topBar = Instance.new("Frame")
+topBar.Name = "TopBar"
+topBar.Size = UDim2.new(1, 0, 0, 40)
+topBar.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+topBar.BorderSizePixel = 0
+topBar.Parent = mainFrame
+
+local topBarCorner = Instance.new("UICorner")
+topBarCorner.CornerRadius = UDim.new(0, 12)
+topBarCorner.Parent = topBar
+
+-- Título
+local titleLabel = Instance.new("TextLabel")
+titleLabel.Size = UDim2.new(1, -60, 1, 0)
+titleLabel.Position = UDim2.new(0, 10, 0, 0)
+titleLabel.BackgroundTransparency = 1
+titleLabel.Text = "Elixir Client"
+titleLabel.TextColor3 = Color3.fromRGB(200, 200, 255)
+titleLabel.Font = Enum.Font.GothamBold
+titleLabel.TextSize = 20
+titleLabel.TextXAlignment = Enum.TextXAlignment.Left
+titleLabel.Parent = topBar
+
+-- Botão de minimizar na TopBar
+local minimizeButton = Instance.new("ImageButton")
+minimizeButton.Name = "MinimizeButton"
+minimizeButton.Size = UDim2.new(0, 30, 0, 30)
+minimizeButton.Position = UDim2.new(1, -40, 0, 5)
+minimizeButton.BackgroundTransparency = 1
+minimizeButton.Image = "rbxassetid://10738425363"
+minimizeButton.Parent = topBar
+
+local buttonCorner = Instance.new("UICorner")
+buttonCorner.CornerRadius = UDim.new(1, 0)
+buttonCorner.Parent = minimizeButton
+
+-- Divisor neon
+local divider = Instance.new("Frame")
+divider.Name = "Divider"
+divider.Size = UDim2.new(1, -20, 0, 2)
+divider.Position = UDim2.new(0, 10, 0, 40)
+divider.BackgroundColor3 = Color3.fromRGB(170, 0, 255)
+divider.BorderSizePixel = 0
+divider.Parent = mainFrame
+
+local dividerCorner = Instance.new("UICorner")
+dividerCorner.CornerRadius = UDim.new(1, 0)
+dividerCorner.Parent = divider
+
+-- Área de conteúdo
+local contentFrame = Instance.new("Frame")
+contentFrame.Name = "Content"
+contentFrame.Size = UDim2.new(1, 0, 1, -42)
+contentFrame.Position = UDim2.new(0, 0, 0, 42)
+contentFrame.BackgroundTransparency = 1
+contentFrame.Parent = mainFrame
+
+-- Painel lateral esquerdo
+local leftPanel = Instance.new("Frame")
+leftPanel.Size = UDim2.new(0, 180, 1, 0)
+leftPanel.Position = UDim2.new(0, 0, 0, 0)
+leftPanel.BackgroundColor3 = Color3.fromRGB(28, 28, 28)
+leftPanel.Parent = contentFrame
+
+local leftPanelCorner = Instance.new("UICorner")
+leftPanelCorner.CornerRadius = UDim.new(0, 10)
+leftPanelCorner.Parent = leftPanel
+
+local leftPanelStroke = Instance.new("UIStroke")
+leftPanelStroke.Color = Color3.fromRGB(170, 0, 255)
+leftPanelStroke.Thickness = 1
+leftPanelStroke.Parent = leftPanel
+
+-- Painel da  direita onde botoes toggles dropdowns deve ficar 
+local rightPanel = Instance.new("Frame")
+rightPanel.Size = UDim2.new(1, -180, 1, 0)
+rightPanel.Position = UDim2.new(0, 180, 0, 0)
+rightPanel.BackgroundTransparency = 1
+rightPanel.Parent = contentFrame
+
+-- Função unificada para minimizar/restaurar
+local function toggleUI()
+	isMinimized = not isMinimized
+	mainFrame.Visible = not isMinimized
+	if isMinimized then
+		showNotification("Pressione RightShift ou use o botão flutuante para abrir.")
+	end
+end
+
+-- Tecla RightShift
+UserInputService.InputBegan:Connect(function(input, gameProcessed)
+	if not gameProcessed and input.KeyCode == Enum.KeyCode.RightShift then
+		toggleUI()
+	end
+end)
+
+-- Clique no botão da TopBar
+minimizeButton.MouseButton1Click:Connect(toggleUI)
+
+-- Drag da MainFrame (TopBar)
+local draggingMain = false
+local dragInputMain, mousePosMain, framePosMain
+
+local function updateMain(input)
+	local delta = input.Position - mousePosMain
+	mainFrame.Position = UDim2.new(framePosMain.X.Scale, framePosMain.X.Offset + delta.X, framePosMain.Y.Scale, framePosMain.Y.Offset + delta.Y)
+end
+
+topBar.InputBegan:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+		draggingMain = true
+		mousePosMain = input.Position
+		framePosMain = mainFrame.Position
+
+		input.Changed:Connect(function()
+			if input.UserInputState == Enum.UserInputState.End then
+				draggingMain = false
+			end
+		end)
+	end
+end)
+
+topBar.InputChanged:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+		dragInputMain = input
+	end
+end)
+
+UserInputService.InputChanged:Connect(function(input)
+	if input == dragInputMain and draggingMain then
+		updateMain(input)
+	end
+end)
+
+
+-- Botão flutuante (mobile-friendly) vminimizavel
+local floatButton = Instance.new("ImageButton")
+floatButton.Name = "FloatingMinimizeButton"
+floatButton.Size = UDim2.new(0, 40, 0, 40)
+floatButton.Position = UDim2.new(0, 20, 0.5, -20)
+floatButton.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+floatButton.Image = "rbxassetid://72671288986713"
+floatButton.AutoButtonColor = true
+floatButton.Parent = screenGui
+
+local corner = Instance.new("UICorner")
+corner.CornerRadius = UDim.new(0, 100)
+corner.Parent = floatButton
+
+local stroke = Instance.new("UIStroke")
+stroke.Color = Color3.fromRGB(170, 0, 255)
+stroke.Thickness = 2
+stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+stroke.Parent = floatButton
+
+-- Drag do botão flutuante (FloatButton)
+local draggingFloat = false
+local dragInputFloat, dragStartFloat, startPosFloat
+
+local function updateFloat(input)
+	local delta = input.Position - dragStartFloat
+	floatButton.Position = UDim2.new(startPosFloat.X.Scale, startPosFloat.X.Offset + delta.X, startPosFloat.Y.Scale, startPosFloat.Y.Offset + delta.Y)
+end
+
+floatButton.InputBegan:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+		draggingFloat = true
+		dragStartFloat = input.Position
+		startPosFloat = floatButton.Position
+
+		input.Changed:Connect(function()
+			if input.UserInputState == Enum.UserInputState.End then
+				draggingFloat = false
+			end
+		end)
+	end
+end)
+
+floatButton.InputChanged:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+		dragInputFloat = input
+	end
+end)
+
+UserInputService.InputChanged:Connect(function(input)
+	if input == dragInputFloat and draggingFloat then
+		updateFloat(input)
+	end
+end)
+
+
+-- Botão flutuante funcional
+floatButton.MouseButton1Click:Connect(toggleUI)
+
+-- Tabs (lista com scroll estilo dropdown)
+local tabList = Instance.new("ScrollingFrame")
+tabList.Name = "TabList"
+tabList.Size = UDim2.new(1, 0, 1, -10)
+tabList.Position = UDim2.new(0, 0, 0, 5)
+tabList.BackgroundTransparency = 1
+tabList.BorderSizePixel = 0
+tabList.ScrollBarThickness = 6
+tabList.CanvasSize = UDim2.new(0, 0, 0, 0)
+tabList.AutomaticCanvasSize = Enum.AutomaticSize.Y
+tabList.ScrollingDirection = Enum.ScrollingDirection.Y
+tabList.ClipsDescendants = true
+tabList.Parent = leftPanel
+
+-- UIListLayout para organizar as tabs
+local listLayout = Instance.new("UIListLayout")
+listLayout.Padding = UDim.new(0, 6)
+listLayout.SortOrder = Enum.SortOrder.LayoutOrder
+listLayout.Parent = tabList
+
+-- Padding interno pra dar espaço no topo/inferior
+local padding = Instance.new("UIPadding")
+padding.PaddingTop = UDim.new(0, 5)
+padding.PaddingBottom = UDim.new(0, 5)
+padding.PaddingLeft = UDim.new(0, 5)
+padding.PaddingRight = UDim.new(0, 5)
+padding.Parent = tabList
+
+-- Função pra criar cada tab
+local function createTab(name)
+	local tabButton = Instance.new("TextButton")
+	tabButton.Name = name
+	tabButton.Size = UDim2.new(1, 0, 0, 30)
+	tabButton.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+	tabButton.Text = name
+	tabButton.TextColor3 = Color3.fromRGB(200, 200, 255)
+	tabButton.Font = Enum.Font.Gotham
+	tabButton.TextSize = 14
+	tabButton.AutoButtonColor = true
+	tabButton.Parent = tabList
+
+	local corner = Instance.new("UICorner")
+	corner.CornerRadius = UDim.new(0, 8)
+	corner.Parent = tabButton
+
+	local stroke = Instance.new("UIStroke")
+	stroke.Color = Color3.fromRGB(170, 0, 255)
+	stroke.Thickness = 1
+	stroke.Parent = tabButton
+end
+
+
+local function createWindow(name)
+	local window = Instance.new("Frame")
+	window.Name = name
+	window.Size = UDim2.new(1, -10, 1, -45)
+	window.Position = UDim2.new(0, 5, 0, 5)
+	window.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+	window.BorderSizePixel = 0
+	window.Parent = rightPanel
+
+	local windowCorner = Instance.new("UICorner")
+	windowCorner.CornerRadius = UDim.new(0, 8)
+	windowCorner.Parent = window
+
+	local windowStroke = Instance.new("UIStroke")
+	windowStroke.Color = Color3.fromRGB(170, 0, 255)
+	windowStroke.Thickness = 2
+	windowStroke.Parent = window
+
+	local windowTitle = Instance.new("TextLabel")
+	windowTitle.Size = UDim2.new(1, 0, 0, 30)
+	windowTitle.BackgroundTransparency = 1
+	windowTitle.Text = "Window: " .. name
+	windowTitle.TextColor3 = Color3.fromRGB(200, 200, 255)
+	windowTitle.Font = Enum.Font.GothamBold
+	windowTitle.TextSize = 18
+	windowTitle.TextXAlignment = Enum.TextXAlignment.Left
+	windowTitle.Parent = window
+
+	-- Área de scroll para toggles
+	local toggleList = Instance.new("ScrollingFrame")
+	toggleList.Name = "ToggleList"
+	toggleList.Size = UDim2.new(1, -10, 1, -40)
+	toggleList.Position = UDim2.new(0, 5, 0, 35)
+	toggleList.BackgroundTransparency = 1
+	toggleList.BorderSizePixel = 0
+	toggleList.CanvasSize = UDim2.new(0, 0, 0, 0)
+	toggleList.AutomaticCanvasSize = Enum.AutomaticSize.Y
+	toggleList.ScrollBarThickness = 6
+	toggleList.ScrollingDirection = Enum.ScrollingDirection.Y
+	toggleList.Parent = window
+
+	local layout = Instance.new("UIListLayout")
+	layout.Padding = UDim.new(0, 6)
+	layout.SortOrder = Enum.SortOrder.LayoutOrder
+	layout.Parent = toggleList
+
+	
+	local TweenService = game:GetService("TweenService")
+
+local function createToggle(name, parent)
+	local container = Instance.new("Frame")
+	container.Name = name .. "_ToggleContainer"
+	container.Size = UDim2.new(1, -10, 0, 40)
+	container.BackgroundTransparency = 1
+	container.BorderSizePixel = 0
+	container.Parent = parent
+
+	-- Fundo visual da tarja (cobre texto + botão)
+	local backgroundBar = Instance.new("Frame")
+	backgroundBar.Name = "ToggleBarBackground"
+	backgroundBar.Size = UDim2.new(1, 0, 1, 0)
+	backgroundBar.Position = UDim2.new(0, 0, 0, 0)
+	backgroundBar.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+	backgroundBar.BackgroundTransparency = 0
+	backgroundBar.BorderSizePixel = 0
+	backgroundBar.Parent = container
+
+	local barCorner = Instance.new("UICorner")
+	barCorner.CornerRadius = UDim.new(0, 6)
+	barCorner.Parent = backgroundBar
+
+	local barGradient = Instance.new("UIGradient")
+	barGradient.Color = ColorSequence.new{
+		ColorSequenceKeypoint.new(0, Color3.fromRGB(40, 40, 40)),
+		ColorSequenceKeypoint.new(1, Color3.fromRGB(70, 70, 70))
+	}
+	barGradient.Rotation = 0
+	barGradient.Parent = backgroundBar
+
+	-- Texto do toggle
+	local label = Instance.new("TextLabel")
+	label.Name = "ToggleLabel"
+	label.Size = UDim2.new(0.5, -5, 1, 0)
+	label.Position = UDim2.new(0, 10, 0, 0)
+	label.BackgroundTransparency = 1
+	label.Text = name
+	label.TextColor3 = Color3.fromRGB(220, 220, 255)
+	label.Font = Enum.Font.Gotham
+	label.TextSize = 14
+	label.TextXAlignment = Enum.TextXAlignment.Left
+	label.Parent = backgroundBar
+
+	-- Toggle visual
+	local toggleFrame = Instance.new("Frame")
+	toggleFrame.Name = "VisualFrame"
+	toggleFrame.Size = UDim2.new(0, 50, 0, 24)
+	toggleFrame.Position = UDim2.new(1, -60, 0.5, 0)
+	toggleFrame.AnchorPoint = Vector2.new(0, 0.5)
+	toggleFrame.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+	toggleFrame.BackgroundTransparency = 0
+	toggleFrame.BorderSizePixel = 0
+	toggleFrame.Parent = backgroundBar
+
+	Instance.new("UICorner", toggleFrame).CornerRadius = UDim.new(1, 0)
+
+	local frameStroke = Instance.new("UIStroke")
+	frameStroke.Thickness = 2
+	frameStroke.Color = Color3.fromRGB(100, 100, 100)
+	frameStroke.Parent = toggleFrame
+
+	local frameGradient = Instance.new("UIGradient")
+	frameGradient.Color = ColorSequence.new{
+		ColorSequenceKeypoint.new(0, Color3.fromRGB(50, 50, 50)),
+		ColorSequenceKeypoint.new(1, Color3.fromRGB(130, 130, 130))
+	}
+	frameGradient.Rotation = 0
+	frameGradient.Parent = toggleFrame
+
+	-- Bolinha do toggle
+	local ball = Instance.new("Frame")
+	ball.Name = "Ball"
+	ball.Size = UDim2.new(0, 20, 1, -4)
+	ball.Position = UDim2.new(0, 2, 0, 2)
+	ball.BackgroundTransparency = 1
+	ball.BorderSizePixel = 0
+	ball.Parent = toggleFrame
+
+	Instance.new("UICorner", ball).CornerRadius = UDim.new(1, 0)
+
+	local ballStroke = Instance.new("UIStroke")
+	ballStroke.Thickness = 2
+	ballStroke.Color = Color3.fromRGB(100, 100, 100)
+	ballStroke.Parent = ball
+
+	local ballGradient = Instance.new("UIGradient")
+	ballGradient.Color = ColorSequence.new{
+		ColorSequenceKeypoint.new(0, Color3.fromRGB(30, 30, 30)),
+		ColorSequenceKeypoint.new(1, Color3.fromRGB(80, 80, 80))
+	}
+	ballGradient.Rotation = 0
+	ballGradient.Parent = ball
+
+	-- Botão invisível
+	local toggleButton = Instance.new("TextButton")
+	toggleButton.Name = "ToggleButton"
+	toggleButton.Size = toggleFrame.Size
+	toggleButton.Position = toggleFrame.Position
+	toggleButton.AnchorPoint = toggleFrame.AnchorPoint
+	toggleButton.BackgroundTransparency = 1
+	toggleButton.BorderSizePixel = 0
+	toggleButton.Text = ""
+	toggleButton.ZIndex = 2
+	toggleButton.Parent = backgroundBar
+
+	-- Estado e animação
+	local toggled = false
+	local ballPadding = 2
+
+	local colorOffStroke = Color3.fromRGB(100, 100, 100)
+	local strokeOn = Color3.fromRGB(255, 0, 255)
+
+	local gradientOff = ColorSequence.new{
+		ColorSequenceKeypoint.new(0, Color3.fromRGB(50, 50, 50)),
+		ColorSequenceKeypoint.new(1, Color3.fromRGB(130, 130, 130))
+	}
+
+	local gradientOn = ColorSequence.new{
+		ColorSequenceKeypoint.new(0, Color3.fromRGB(90, 0, 120)),
+		ColorSequenceKeypoint.new(1, Color3.fromRGB(180, 80, 255))
+	}
+
+	local ballGradientOff = ColorSequence.new{
+		ColorSequenceKeypoint.new(0, Color3.fromRGB(30, 30, 30)),
+		ColorSequenceKeypoint.new(1, Color3.fromRGB(80, 80, 80))
+	}
+
+	local ballGradientOn = ColorSequence.new{
+		ColorSequenceKeypoint.new(0, Color3.fromRGB(100, 0, 130)),
+		ColorSequenceKeypoint.new(1, Color3.fromRGB(200, 100, 255))
+	}
+
+	local tweenInfo = TweenInfo.new(0.25, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
+
+	toggleButton.MouseButton1Click:Connect(function()
+		toggled = not toggled
+
+		local newPos = toggled and UDim2.new(1, -ball.Size.X.Offset - ballPadding, 0, ballPadding)
+			or UDim2.new(0, ballPadding, 0, ballPadding)
+
+		local strokeColor = toggled and strokeOn or colorOffStroke
+
+		TweenService:Create(ball, tweenInfo, { Position = newPos }):Play()
+		TweenService:Create(ballStroke, tweenInfo, { Color = strokeColor }):Play()
+		TweenService:Create(frameStroke, tweenInfo, { Color = strokeColor }):Play()
+
+		frameGradient.Color = toggled and gradientOn or gradientOff
+		ballGradient.Color = toggled and ballGradientOn or ballGradientOff
+	end)
+end
+
+
+
+	--[[ Exemplo: Criar 3 toggles por tab
+	for i = 1, 3 do
+		createToggle(name .. " Toggle " .. i, toggleList)
+	end
+end]]
+
+-- Função para criar tabs (já existente)
+local function createTab(name)
+    local tabButton = Instance.new("TextButton")
+    tabButton.Name = name
+    tabButton.Size = UDim2.new(1, 0, 0, 30)
+    tabButton.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+    tabButton.Text = name
+    tabButton.TextColor3 = Color3.fromRGB(200, 200, 255)
+    tabButton.Font = Enum.Font.Gotham
+    tabButton.TextSize = 14
+    tabButton.AutoButtonColor = true
+    tabButton.Parent = tabList
+
+    local corner = Instance.new("UICorner")
+    corner.CornerRadius = UDim.new(0, 8)
+    corner.Parent = tabButton
+
+    local stroke = Instance.new("UIStroke")
+    stroke.Color = Color3.fromRGB(170, 0, 255)
+    stroke.Thickness = 1
+    stroke.Parent = tabButton
+
+    -- Ao clicar na tab, cria uma janela correspondente no painel direito
+    tabButton.MouseButton1Click:Connect(function()
+        -- Antes de criar, limpa qualquer janela existente no painel direito
+        for _, child in pairs(rightPanel:GetChildren()) do
+            if child:IsA("Frame") then
+                child:Destroy()  -- Remove janelas antigas
+            end
+        end
+        createWindow(name)  -- Cria a nova janela
+    end)
+end
+
+--[[Criar 30 Tabs
+for i = 1, 30 do
+    createTab("Tab" .. i)
+end]]
+
+

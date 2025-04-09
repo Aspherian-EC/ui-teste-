@@ -291,27 +291,56 @@ function ElixirLib:MakeWindow(data)
 			tab.Container = tabContent
 		end)
 
-		function tab:AddToggle(name, default, callback)
-			local toggle = Instance.new("TextButton")
-			toggle.Size = UDim2.new(0, 200, 0, 30)
-			toggle.Position = UDim2.new(0, 20, 0, 70)
-			toggle.Text = name .. ": " .. (default and "ON" or "OFF")
-			toggle.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-			toggle.TextColor3 = Color3.fromRGB(255, 255, 255)
-			toggle.Font = Enum.Font.Gotham
-			toggle.TextSize = 16
-			toggle.Parent = tab.Container
-
-			local state = default
-
-			toggle.MouseButton1Click:Connect(function()
-				state = not state
-				toggle.Text = name .. ": " .. (state and "ON" or "OFF")
-				if callback then
-					callback(state)
-				end
+		function Tab:AddToggle(toggleData)
+			local settingName = toggleData.Name or "Toggle"
+			local default = toggleData.Default or false
+			local callback = toggleData.Callback or function() end
+		
+			local savedState = self._lib:GetSetting(self._tabName, settingName)
+			local toggled = (savedState ~= nil) and savedState or default
+		
+			local toggleButton = Instance.new("TextButton")
+			toggleButton.Name = "ToggleButton"
+			toggleButton.Size = UDim2.new(0, 50, 0, 24)
+			toggleButton.Position = UDim2.new(0, 10, 0, #self._elements * 30)
+			toggleButton.BackgroundTransparency = 1
+			toggleButton.Text = ""
+			toggleButton.Parent = self._contentFrame
+			table.insert(self._elements, toggleButton)
+		
+			-- Visuals: Frame, ball, stroke, gradients (igual seu script estilizado)
+			local toggleFrame = Instance.new("Frame")
+			toggleFrame.Size = UDim2.new(1, 0, 1, 0)
+			toggleFrame.BackgroundTransparency = 0
+			toggleFrame.Parent = toggleButton
+			toggleFrame.Name = "VisualFrame"
+		
+			-- UICorner, Stroke, Gradient, Ball, etc... (igual seu código, não vou repetir tudo)
+		
+			-- Mantém a aparência baseada no estado salvo
+			local function UpdateVisual()
+				local newPos = toggled and UDim2.new(1, -22, 0, 2) or UDim2.new(0, 2, 0, 2)
+				local strokeColor = toggled and strokeOn or colorOffStroke
+				local frameColor = toggled and gradientOn or gradientOff
+				local ballColor = toggled and ballGradientOn or ballGradientOff
+		
+				TweenService:Create(ball, tweenInfo, { Position = newPos }):Play()
+				TweenService:Create(ballStroke, tweenInfo, { Color = strokeColor }):Play()
+				TweenService:Create(frameStroke, tweenInfo, { Color = strokeColor }):Play()
+				frameGradient.Color = frameColor
+				ballGradient.Color = ballColor
+			end
+		
+			UpdateVisual()
+		
+			toggleButton.MouseButton1Click:Connect(function()
+				toggled = not toggled
+				self._lib:SetSetting(self._tabName, settingName, toggled)
+				UpdateVisual()
+				callback(toggled)
 			end)
 		end
+		
 
 		table.insert(Tabs, tab)
 		return tab

@@ -1,41 +1,30 @@
-local HttpService = game:GetService("HttpService")
 local Players = game:GetService("Players")
-local Player = Players.LocalPlayer
-local PlayerGui = Player:WaitForChild("PlayerGui")
+local UserInputService = game:GetService("UserInputService")
+local player = Players.LocalPlayer
+local playerGui = player:WaitForChild("PlayerGui")
 
-local ElixirLib = {}
-ElixirLib.Configs = {}
-ElixirLib.Folder = "ElixirClient" -- padrão
+-- Criar ou obter ScreenGui
+local screenGui = playerGui:FindFirstChild("CustomUI") or Instance.new("ScreenGui")
+screenGui.Name = "CustomUI"
+screenGui.ResetOnSpawn = false
+screenGui.IgnoreGuiInset = true
+screenGui.Parent = playerGui
 
--- Função para carregar configuração
-local function loadConfig(folder)
-	local success, result = pcall(function()
-		return isfile(folder..".json") and HttpService:JSONDecode(readfile(folder..".json")) or {}
-	end)
-	return success and result or {}
+-- Variável de estado global
+local isMinimized = false
+
+-- Notificação
+local function showNotification(message)
+	local notification = loadstring(game:HttpGet("https://raw.githubusercontent.com/9menta/tests/refs/heads/main/notification.lua"))()
+	notification({
+		Title = 'UI Minimized - Press "RightShift"',
+		Text = message,
+		Image = 'rbxassetid://72671288986713',
+		Duration = 10
+	})
 end
 
--- Função para salvar configuração
-local function saveConfig(folder, data)
-	if writefile then
-		writefile(folder..".json", HttpService:JSONEncode(data))
-	end
-end
-
--- Criar Window
-function ElixirLib:MakeWindow(options)
-	local window = {}
-	local name = options.Name or "Elixir UI"
-	local hidePremium = options.HidePremium or false
-	local saveConfig = options.SaveConfig or false
-	local configFolder = options.ConfigFolder or "ElixirClient"
-
-	ElixirLib.Folder = configFolder
-	if saveConfig then
-		ElixirLib.Configs = loadConfig(configFolder)
-	end
-
-	-- Frame principal
+-- Frame principal
 local mainFrame = Instance.new("Frame")
 mainFrame.Name = "MainUIFrame"
 mainFrame.Size = UDim2.new(0, 700, 0, 400)
@@ -327,8 +316,3 @@ function Window:MakeTab(tabData)
 	table.insert(Tabs, tab)
 	return tab
 end
-
-	return window
-end
-
-return ElixirLib

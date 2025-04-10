@@ -24,7 +24,6 @@ function ElixirLib:MakeWindow(data)
 		})
 	end
 
-	-- Main UI container
 	local mainFrame = Instance.new("Frame")
 	mainFrame.Name = "MainUIFrame"
 	mainFrame.Size = UDim2.new(0, 700, 0, 400)
@@ -32,7 +31,6 @@ function ElixirLib:MakeWindow(data)
 	mainFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
 	mainFrame.Parent = screenGui
 
-	-- UI style
 	local uiCorner = Instance.new("UICorner")
 	uiCorner.CornerRadius = UDim.new(0, 12)
 	uiCorner.Parent = mainFrame
@@ -42,7 +40,6 @@ function ElixirLib:MakeWindow(data)
 	uiStroke.Thickness = 2
 	uiStroke.Parent = mainFrame
 
-	-- Top bar
 	local topBar = Instance.new("Frame")
 	topBar.Name = "TopBar"
 	topBar.Size = UDim2.new(1, 0, 0, 40)
@@ -77,7 +74,6 @@ function ElixirLib:MakeWindow(data)
 	buttonCorner.CornerRadius = UDim.new(1, 0)
 	buttonCorner.Parent = minimizeButton
 
-	-- Divider
 	local divider = Instance.new("Frame")
 	divider.Name = "Divider"
 	divider.Size = UDim2.new(1, -20, 0, 2)
@@ -90,7 +86,6 @@ function ElixirLib:MakeWindow(data)
 	dividerCorner.CornerRadius = UDim.new(1, 0)
 	dividerCorner.Parent = divider
 
-	-- Content area
 	local contentFrame = Instance.new("Frame")
 	contentFrame.Name = "Content"
 	contentFrame.Size = UDim2.new(1, 0, 1, -42)
@@ -98,7 +93,6 @@ function ElixirLib:MakeWindow(data)
 	contentFrame.BackgroundTransparency = 1
 	contentFrame.Parent = mainFrame
 
-	-- Left panel (tabs)
 	local leftPanel = Instance.new("Frame")
 	leftPanel.Size = UDim2.new(0, 180, 1, 0)
 	leftPanel.Position = UDim2.new(0, 0, 0, 0)
@@ -114,14 +108,12 @@ function ElixirLib:MakeWindow(data)
 	leftPanelStroke.Thickness = 1
 	leftPanelStroke.Parent = leftPanel
 
-	-- Right panel (tab content)
 	local rightPanel = Instance.new("Frame")
 	rightPanel.Size = UDim2.new(1, -180, 1, 0)
 	rightPanel.Position = UDim2.new(0, 180, 0, 0)
 	rightPanel.BackgroundTransparency = 1
 	rightPanel.Parent = contentFrame
 
-	-- Toggle UI via RightShift or button
 	local function toggleUI()
 		isMinimized = not isMinimized
 		mainFrame.Visible = not isMinimized
@@ -138,7 +130,6 @@ function ElixirLib:MakeWindow(data)
 
 	minimizeButton.MouseButton1Click:Connect(toggleUI)
 
-	-- Draggable TopBar
 	local draggingMain = false
 	local dragInputMain, mousePosMain, framePosMain
 
@@ -173,7 +164,6 @@ function ElixirLib:MakeWindow(data)
 		end
 	end)
 
-	-- Floating minimize button
 	local floatButton = Instance.new("ImageButton")
 	floatButton.Name = "FloatingMinimizeButton"
 	floatButton.Size = UDim2.new(0, 40, 0, 40)
@@ -193,7 +183,6 @@ function ElixirLib:MakeWindow(data)
 	stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
 	stroke.Parent = floatButton
 
-	-- Draggable float button
 	local draggingFloat = false
 	local dragInputFloat, dragStartFloat, startPosFloat
 
@@ -230,7 +219,6 @@ function ElixirLib:MakeWindow(data)
 
 	floatButton.MouseButton1Click:Connect(toggleUI)
 
-	-- Window logic
 	local window = {}
 	local Tabs = {}
 
@@ -277,33 +265,41 @@ function ElixirLib:MakeWindow(data)
 		btnStroke.Parent = button
 
 		button.MouseButton1Click:Connect(function()
-			rightPanel:ClearAllChildren()
+			for _, t in ipairs(Tabs) do
+				if t.Container then
+					t.Container.Visible = false
+				end
+			end
 
-			local tabContent = Instance.new("Frame")
-			tabContent.Size = UDim2.new(1, 0, 1, 0)
-			tabContent.BackgroundTransparency = 0
-			tabContent.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
-			tabContent.Parent = rightPanel
+			if not tab.Container then
+				local tabContent = Instance.new("Frame")
+				tabContent.Size = UDim2.new(1, 0, 1, 0)
+				tabContent.BackgroundTransparency = 0
+				tabContent.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+				tabContent.Visible = true
+				tabContent.Parent = rightPanel
 
-			local corner = Instance.new("UICorner")
-			corner.CornerRadius = UDim.new(0, 12)
-			corner.Parent = tabContent
+				local corner = Instance.new("UICorner")
+				corner.CornerRadius = UDim.new(0, 12)
+				corner.Parent = tabContent
 
-			local title = Instance.new("TextLabel")
-			title.Size = UDim2.new(1, -20, 0, 50)
-			title.Position = UDim2.new(0, 10, 0, 10)
-			title.BackgroundTransparency = 1
-			title.Text = tabName
-			title.TextColor3 = Color3.fromRGB(200, 200, 255)
-			title.Font = Enum.Font.GothamBold
-			title.TextSize = 24
-			title.TextXAlignment = Enum.TextXAlignment.Left
-			title.Parent = tabContent
+				local title = Instance.new("TextLabel")
+				title.Size = UDim2.new(1, -20, 0, 50)
+				title.Position = UDim2.new(0, 10, 0, 10)
+				title.BackgroundTransparency = 1
+				title.Text = tabName
+				title.TextColor3 = Color3.fromRGB(200, 200, 255)
+				title.Font = Enum.Font.GothamBold
+				title.TextSize = 24
+				title.TextXAlignment = Enum.TextXAlignment.Left
+				title.Parent = tabContent
 
-			tab.Container = tabContent
+				tab.Container = tabContent
+			else
+				tab.Container.Visible = true
+			end
 		end)
 
-		-- Toggle
 		function tab:AddToggle(name, default, callback)
 			local toggle = Instance.new("TextButton")
 			toggle.Size = UDim2.new(0, 200, 0, 30)

@@ -24,6 +24,7 @@ function ElixirLib:MakeWindow(data)
 		})
 	end
 
+	-- Main UI container
 	local mainFrame = Instance.new("Frame")
 	mainFrame.Name = "MainUIFrame"
 	mainFrame.Size = UDim2.new(0, 700, 0, 400)
@@ -31,6 +32,7 @@ function ElixirLib:MakeWindow(data)
 	mainFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
 	mainFrame.Parent = screenGui
 
+	-- UI style
 	local uiCorner = Instance.new("UICorner")
 	uiCorner.CornerRadius = UDim.new(0, 12)
 	uiCorner.Parent = mainFrame
@@ -40,6 +42,7 @@ function ElixirLib:MakeWindow(data)
 	uiStroke.Thickness = 2
 	uiStroke.Parent = mainFrame
 
+	-- Top bar
 	local topBar = Instance.new("Frame")
 	topBar.Name = "TopBar"
 	topBar.Size = UDim2.new(1, 0, 0, 40)
@@ -74,6 +77,7 @@ function ElixirLib:MakeWindow(data)
 	buttonCorner.CornerRadius = UDim.new(1, 0)
 	buttonCorner.Parent = minimizeButton
 
+	-- Divider
 	local divider = Instance.new("Frame")
 	divider.Name = "Divider"
 	divider.Size = UDim2.new(1, -20, 0, 2)
@@ -86,6 +90,7 @@ function ElixirLib:MakeWindow(data)
 	dividerCorner.CornerRadius = UDim.new(1, 0)
 	dividerCorner.Parent = divider
 
+	-- Content area
 	local contentFrame = Instance.new("Frame")
 	contentFrame.Name = "Content"
 	contentFrame.Size = UDim2.new(1, 0, 1, -42)
@@ -93,6 +98,7 @@ function ElixirLib:MakeWindow(data)
 	contentFrame.BackgroundTransparency = 1
 	contentFrame.Parent = mainFrame
 
+	-- Left panel (tabs)
 	local leftPanel = Instance.new("Frame")
 	leftPanel.Size = UDim2.new(0, 180, 1, 0)
 	leftPanel.Position = UDim2.new(0, 0, 0, 0)
@@ -108,12 +114,14 @@ function ElixirLib:MakeWindow(data)
 	leftPanelStroke.Thickness = 1
 	leftPanelStroke.Parent = leftPanel
 
+	-- Right panel (tab content)
 	local rightPanel = Instance.new("Frame")
 	rightPanel.Size = UDim2.new(1, -180, 1, 0)
 	rightPanel.Position = UDim2.new(0, 180, 0, 0)
 	rightPanel.BackgroundTransparency = 1
 	rightPanel.Parent = contentFrame
 
+	-- Toggle UI via RightShift or button
 	local function toggleUI()
 		isMinimized = not isMinimized
 		mainFrame.Visible = not isMinimized
@@ -130,6 +138,7 @@ function ElixirLib:MakeWindow(data)
 
 	minimizeButton.MouseButton1Click:Connect(toggleUI)
 
+	-- Draggable TopBar
 	local draggingMain = false
 	local dragInputMain, mousePosMain, framePosMain
 
@@ -164,6 +173,7 @@ function ElixirLib:MakeWindow(data)
 		end
 	end)
 
+	-- Floating minimize button
 	local floatButton = Instance.new("ImageButton")
 	floatButton.Name = "FloatingMinimizeButton"
 	floatButton.Size = UDim2.new(0, 40, 0, 40)
@@ -183,6 +193,7 @@ function ElixirLib:MakeWindow(data)
 	stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
 	stroke.Parent = floatButton
 
+	-- Draggable float button
 	local draggingFloat = false
 	local dragInputFloat, dragStartFloat, startPosFloat
 
@@ -219,6 +230,7 @@ function ElixirLib:MakeWindow(data)
 
 	floatButton.MouseButton1Click:Connect(toggleUI)
 
+	-- Window logic
 	local window = {}
 	local Tabs = {}
 
@@ -263,98 +275,9 @@ function ElixirLib:MakeWindow(data)
 		btnStroke.Color = Color3.fromRGB(170, 0, 255)
 		btnStroke.Thickness = 1
 		btnStroke.Parent = button
-		local TweenService = game:GetService("TweenService")
 
-		-- Armazena os toggles por aba e nome
-		local ToggleStates = {} -- exemplo: ToggleStates["CombatTab"]["This is a toggle!"] = true
-		
-		function CreateToggle(tabFrame, data)
-			local name = data.Name or "Toggle"
-			local default = data.Default or false
-			local callback = data.Callback or function() end
-			
-			-- Garantir estado da aba
-			ToggleStates[tabFrame] = ToggleStates[tabFrame] or {}
-			local state = ToggleStates[tabFrame][name]
-			if state == nil then
-				ToggleStates[tabFrame][name] = default
-				state = default
-			end
-			
-			-- Verifica se o toggle já existe
-			local existing = tabFrame:FindFirstChild(name)
-			if existing then return end
-			
-			-- Cria botão
-			local toggleButton = Instance.new("TextButton")
-			toggleButton.Name = name
-			toggleButton.Size = UDim2.new(0, 100, 0, 24)
-			toggleButton.Position = UDim2.new(0, 10, 0, 10 + (#tabFrame:GetChildren() * 30)) -- posicionamento automático
-			toggleButton.BackgroundTransparency = 1
-			toggleButton.Text = ""
-			toggleButton.Parent = tabFrame
-		
-			local toggleFrame = Instance.new("Frame")
-			toggleFrame.Size = UDim2.new(1, 0, 1, 0)
-			toggleFrame.BackgroundTransparency = 0
-			toggleFrame.BorderSizePixel = 0
-			toggleFrame.Parent = toggleButton
-		
-			Instance.new("UICorner", toggleFrame).CornerRadius = UDim.new(1, 0)
-			local frameStroke = Instance.new("UIStroke", toggleFrame)
-			frameStroke.Thickness = 2
-		
-			local frameGradient = Instance.new("UIGradient", toggleFrame)
-		
-			local ball = Instance.new("Frame")
-			ball.Name = "Ball"
-			ball.Size = UDim2.new(0, 20, 1, -4)
-			ball.Position = state and UDim2.new(1, -22, 0, 2) or UDim2.new(0, 2, 0, 2)
-			ball.BackgroundTransparency = 1
-			ball.BorderSizePixel = 0
-			ball.Parent = toggleFrame
-		
-			Instance.new("UICorner", ball).CornerRadius = UDim.new(1, 0)
-			local ballStroke = Instance.new("UIStroke", ball)
-			ballStroke.Thickness = 2
-		
-			local ballGradient = Instance.new("UIGradient", ball)
-		
-			local function ApplyState(toggled)
-				local pos = toggled and UDim2.new(1, -22, 0, 2) or UDim2.new(0, 2, 0, 2)
-				local strokeColor = toggled and Color3.fromRGB(255, 0, 255) or Color3.fromRGB(100, 100, 100)
-		
-				TweenService:Create(ball, TweenInfo.new(0.25), { Position = pos }):Play()
-				TweenService:Create(ballStroke, TweenInfo.new(0.25), { Color = strokeColor }):Play()
-				TweenService:Create(frameStroke, TweenInfo.new(0.25), { Color = strokeColor }):Play()
-		
-				frameGradient.Color = toggled and ColorSequence.new{
-					ColorSequenceKeypoint.new(0, Color3.fromRGB(90, 0, 120)),
-					ColorSequenceKeypoint.new(1, Color3.fromRGB(180, 80, 255))
-				} or ColorSequence.new{
-					ColorSequenceKeypoint.new(0, Color3.fromRGB(50, 50, 50)),
-					ColorSequenceKeypoint.new(1, Color3.fromRGB(130, 130, 130))
-				}
-		
-				ballGradient.Color = toggled and ColorSequence.new{
-					ColorSequenceKeypoint.new(0, Color3.fromRGB(100, 0, 130)),
-					ColorSequenceKeypoint.new(1, Color3.fromRGB(200, 100, 255))
-				} or ColorSequence.new{
-					ColorSequenceKeypoint.new(0, Color3.fromRGB(30, 30, 30)),
-					ColorSequenceKeypoint.new(1, Color3.fromRGB(80, 80, 80))
-				}
-			end
-		
-			ApplyState(state)
-		
-			toggleButton.MouseButton1Click:Connect(function()
-				state = not state
-				ToggleStates[tabFrame][name] = state
-				ApplyState(state)
-				callback(state)
-			end)
-		end
-		
+		button.MouseButton1Click:Connect(function()
+			rightPanel:ClearAllChildren()
 
 			local tabContent = Instance.new("Frame")
 			tabContent.Size = UDim2.new(1, 0, 1, 0)
@@ -380,6 +303,7 @@ function ElixirLib:MakeWindow(data)
 			tab.Container = tabContent
 		end)
 
+		-- Toggle
 		function tab:AddToggle(name, default, callback)
 			local toggle = Instance.new("TextButton")
 			toggle.Size = UDim2.new(0, 200, 0, 30)

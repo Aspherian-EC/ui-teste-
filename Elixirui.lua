@@ -225,10 +225,10 @@ function ElixirLib:MakeWindow(data)
 	function window:MakeTab(tabData)
 		local tabName = tabData.Name or "Aba"
 		local tabIcon = tabData.Icon or ""
-
+	
 		local tab = {}
 		tab.Sections = {}
-
+	
 		local button = Instance.new("TextButton")
 		button.Size = UDim2.new(1, -20, 0, 40)
 		button.Position = UDim2.new(0, 10, 0, 10 + (#leftPanel:GetChildren() - 2) * 45)
@@ -236,14 +236,14 @@ function ElixirLib:MakeWindow(data)
 		button.Text = ""
 		button.AutoButtonColor = true
 		button.Parent = leftPanel
-
+	
 		local icon = Instance.new("ImageLabel")
 		icon.Size = UDim2.new(0, 24, 0, 24)
 		icon.Position = UDim2.new(0, 10, 0.5, -12)
 		icon.BackgroundTransparency = 1
 		icon.Image = tabIcon
 		icon.Parent = button
-
+	
 		local label = Instance.new("TextLabel")
 		label.Size = UDim2.new(1, -44, 1, 0)
 		label.Position = UDim2.new(0, 40, 0, 0)
@@ -254,68 +254,56 @@ function ElixirLib:MakeWindow(data)
 		label.TextSize = 18
 		label.TextXAlignment = Enum.TextXAlignment.Left
 		label.Parent = button
-
+	
 		local btnCorner = Instance.new("UICorner")
 		btnCorner.CornerRadius = UDim.new(0, 8)
 		btnCorner.Parent = button
-
+	
 		local btnStroke = Instance.new("UIStroke")
 		btnStroke.Color = Color3.fromRGB(170, 0, 255)
 		btnStroke.Thickness = 1
 		btnStroke.Parent = button
-
+	
+		-- Lógica de mostrar/ocultar a aba sem recriar
 		button.MouseButton1Click:Connect(function()
-			rightPanel:ClearAllChildren()
-
-			local tabContent = Instance.new("Frame")
-			tabContent.Size = UDim2.new(1, 0, 1, 0)
-			tabContent.BackgroundTransparency = 0
-			tabContent.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
-			tabContent.Parent = rightPanel
-
-			local corner = Instance.new("UICorner")
-			corner.CornerRadius = UDim.new(0, 12)
-			corner.Parent = tabContent
-
-			local title = Instance.new("TextLabel")
-			title.Size = UDim2.new(1, -20, 0, 50)
-			title.Position = UDim2.new(0, 10, 0, 10)
-			title.BackgroundTransparency = 1
-			title.Text = tabName
-			title.TextColor3 = Color3.fromRGB(200, 200, 255)
-			title.Font = Enum.Font.GothamBold
-			title.TextSize = 24
-			title.TextXAlignment = Enum.TextXAlignment.Left
-			title.Parent = tabContent
-
-			tab.Container = tabContent
-		end)
-
-		function tab:AddToggle(name, default, callback)
-			local toggle = Instance.new("TextButton")
-			toggle.Size = UDim2.new(0, 200, 0, 30)
-			toggle.Position = UDim2.new(0, 20, 0, 70)
-			toggle.Text = name .. ": " .. (default and "ON" or "OFF")
-			toggle.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-			toggle.TextColor3 = Color3.fromRGB(255, 255, 255)
-			toggle.Font = Enum.Font.Gotham
-			toggle.TextSize = 16
-			toggle.Parent = tab.Container
-
-			local state = default
-
-			toggle.MouseButton1Click:Connect(function()
-				state = not state
-				toggle.Text = name .. ": " .. (state and "ON" or "OFF")
-				if callback then
-					callback(state)
+			-- Esconde todas as outras abas
+			for _, otherTab in pairs(Tabs) do
+				if otherTab.Container then
+					otherTab.Container.Visible = false
 				end
-			end)
-		end
-
+			end
+	
+			-- Cria a aba se ainda não existir
+			if not tab.Container then
+				local tabContent = Instance.new("Frame")
+				tabContent.Size = UDim2.new(1, 0, 1, 0)
+				tabContent.BackgroundTransparency = 0
+				tabContent.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+				tabContent.Parent = rightPanel
+	
+				local corner = Instance.new("UICorner")
+				corner.CornerRadius = UDim.new(0, 12)
+				corner.Parent = tabContent
+	
+				local title = Instance.new("TextLabel")
+				title.Size = UDim2.new(1, -20, 0, 50)
+				title.Position = UDim2.new(0, 10, 0, 10)
+				title.BackgroundTransparency = 1
+				title.Text = tabName
+				title.TextColor3 = Color3.fromRGB(200, 200, 255)
+				title.Font = Enum.Font.GothamBold
+				title.TextSize = 24
+				title.TextXAlignment = Enum.TextXAlignment.Left
+				title.Parent = tabContent
+	
+				tab.Container = tabContent
+			end
+	
+			-- Mostra a aba atual
+			tab.Container.Visible = true
+		end)
+	
 		table.insert(Tabs, tab)
 		return tab
 	end
-
-	return window
-end
+	

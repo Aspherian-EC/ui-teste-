@@ -319,6 +319,10 @@ function ElixirLib:MakeWindow(data)
 		table.insert(Tabs, tab)
 		return tab
 	end
+	
+	return window
+end
+
 -- Função que cria o toggle dentro da aba quando chamada
 function Tab:AddToggle(toggleData)
     local toggleName = toggleData.Name or "Toggle"
@@ -435,10 +439,6 @@ function Tab:AddToggle(toggleData)
         -- Chama o callback
         callback(toggled)
     end)
-end
-
-	
-	return window
 end
 
 return ElixirLib

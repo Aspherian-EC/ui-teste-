@@ -234,46 +234,14 @@ function ElixirLib:MakeWindow(data)
 	function window:MakeTab(tabData)
 		local tabName = tabData.Name or "Aba"
 		local tabIcon = tabData.Icon or ""
-	
 		local tab = {}
 		tab.Sections = {}
 	
 		local button = Instance.new("TextButton")
-		button.Size = UDim2.new(1, -20, 0, 40)
-		button.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
-		button.Text = ""
-		button.AutoButtonColor = true
-		button.LayoutOrder = #Tabs + 1
+		-- ... estilo do botão da aba ...
 		button.Parent = leftPanel
 	
-		local icon = Instance.new("ImageLabel")
-		icon.Size = UDim2.new(0, 24, 0, 24)
-		icon.Position = UDim2.new(0, 10, 0.5, -12)
-		icon.BackgroundTransparency = 1
-		icon.Image = tabIcon
-		icon.Parent = button
-	
-		local label = Instance.new("TextLabel")
-		label.Size = UDim2.new(1, -44, 1, 0)
-		label.Position = UDim2.new(0, 40, 0, 0)
-		label.BackgroundTransparency = 1
-		label.Text = tabName
-		label.TextColor3 = Color3.fromRGB(255, 255, 255)
-		label.Font = Enum.Font.GothamBold
-		label.TextSize = 18
-		label.TextXAlignment = Enum.TextXAlignment.Left
-		label.Parent = button
-	
-		local btnCorner = Instance.new("UICorner")
-		btnCorner.CornerRadius = UDim.new(0, 8)
-		btnCorner.Parent = button
-	
-		local btnStroke = Instance.new("UIStroke")
-		btnStroke.Color = Color3.fromRGB(170, 0, 255)
-		btnStroke.Thickness = 1
-		btnStroke.Parent = button
-	
-		-- CRIA O CONTAINER IMEDIATAMENTE
+		-- Criar container da aba **imediatamente**
 		local tabContent = Instance.new("ScrollingFrame")
 		tabContent.Size = UDim2.new(1, 0, 1, 0)
 		tabContent.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
@@ -281,7 +249,7 @@ function ElixirLib:MakeWindow(data)
 		tabContent.CanvasSize = UDim2.new(0, 0, 0, 0)
 		tabContent.ScrollBarThickness = 4
 		tabContent.ScrollingDirection = Enum.ScrollingDirection.Y
-		tabContent.Visible = false -- só visível ao clicar
+		tabContent.Visible = false
 		tabContent.Parent = rightPanel
 		tab.Container = tabContent
 	

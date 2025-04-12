@@ -234,10 +234,10 @@ function ElixirLib:MakeWindow(data)
 	function window:MakeTab(tabData)
 		local tabName = tabData.Name or "Aba"
 		local tabIcon = tabData.Icon or ""
-
+	
 		local tab = {}
 		tab.Sections = {}
-
+	
 		local button = Instance.new("TextButton")
 		button.Size = UDim2.new(1, -20, 0, 40)
 		button.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
@@ -245,14 +245,14 @@ function ElixirLib:MakeWindow(data)
 		button.AutoButtonColor = true
 		button.LayoutOrder = #Tabs + 1
 		button.Parent = leftPanel
-
+	
 		local icon = Instance.new("ImageLabel")
 		icon.Size = UDim2.new(0, 24, 0, 24)
 		icon.Position = UDim2.new(0, 10, 0.5, -12)
 		icon.BackgroundTransparency = 1
 		icon.Image = tabIcon
 		icon.Parent = button
-
+	
 		local label = Instance.new("TextLabel")
 		label.Size = UDim2.new(1, -44, 1, 0)
 		label.Position = UDim2.new(0, 40, 0, 0)
@@ -263,63 +263,62 @@ function ElixirLib:MakeWindow(data)
 		label.TextSize = 18
 		label.TextXAlignment = Enum.TextXAlignment.Left
 		label.Parent = button
-
+	
 		local btnCorner = Instance.new("UICorner")
 		btnCorner.CornerRadius = UDim.new(0, 8)
 		btnCorner.Parent = button
-
+	
 		local btnStroke = Instance.new("UIStroke")
 		btnStroke.Color = Color3.fromRGB(170, 0, 255)
 		btnStroke.Thickness = 1
 		btnStroke.Parent = button
-
+	
+		-- CRIA O CONTAINER IMEDIATAMENTE
+		local tabContent = Instance.new("ScrollingFrame")
+		tabContent.Size = UDim2.new(1, 0, 1, 0)
+		tabContent.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+		tabContent.AutomaticCanvasSize = Enum.AutomaticSize.Y
+		tabContent.CanvasSize = UDim2.new(0, 0, 0, 0)
+		tabContent.ScrollBarThickness = 4
+		tabContent.ScrollingDirection = Enum.ScrollingDirection.Y
+		tabContent.Visible = false -- só visível ao clicar
+		tabContent.Parent = rightPanel
+		tab.Container = tabContent
+	
+		local layout = Instance.new("UIListLayout")
+		layout.Padding = UDim.new(0, 6)
+		layout.SortOrder = Enum.SortOrder.LayoutOrder
+		layout.Parent = tabContent
+	
+		local corner = Instance.new("UICorner")
+		corner.CornerRadius = UDim.new(0, 12)
+		corner.Parent = tabContent
+	
+		local title = Instance.new("TextLabel")
+		title.Size = UDim2.new(1, -20, 0, 50)
+		title.Position = UDim2.new(0, 10, 0, 10)
+		title.BackgroundTransparency = 1
+		title.Text = tabName
+		title.TextColor3 = Color3.fromRGB(200, 200, 255)
+		title.Font = Enum.Font.GothamBold
+		title.TextSize = 24
+		title.TextXAlignment = Enum.TextXAlignment.Left
+		title.LayoutOrder = 0
+		title.Parent = tabContent
+	
 		button.MouseButton1Click:Connect(function()
 			for _, t in pairs(Tabs) do
 				if t.Container then
 					t.Container.Visible = false
 				end
 			end
-
-			if not tab.Container then
-				local tabContent = Instance.new("ScrollingFrame")
-				tabContent.Size = UDim2.new(1, 0, 1, 0)
-				tabContent.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
-				tabContent.AutomaticCanvasSize = Enum.AutomaticSize.Y
-				tabContent.CanvasSize = UDim2.new(0, 0, 0, 0)
-				tabContent.ScrollBarThickness = 4
-				tabContent.ScrollingDirection = Enum.ScrollingDirection.Y
-				tabContent.Parent = rightPanel
-				tab.Container = tabContent
-
-				local layout = Instance.new("UIListLayout")
-				layout.Padding = UDim.new(0, 6)
-				layout.SortOrder = Enum.SortOrder.LayoutOrder
-				layout.Parent = tabContent
-
-				local corner = Instance.new("UICorner")
-				corner.CornerRadius = UDim.new(0, 12)
-				corner.Parent = tabContent
-
-				local title = Instance.new("TextLabel")
-				title.Size = UDim2.new(1, -20, 0, 50)
-				title.Position = UDim2.new(0, 10, 0, 10)
-				title.BackgroundTransparency = 1
-				title.Text = tabName
-				title.TextColor3 = Color3.fromRGB(200, 200, 255)
-				title.Font = Enum.Font.GothamBold
-				title.TextSize = 24
-				title.TextXAlignment = Enum.TextXAlignment.Left
-				title.LayoutOrder = 0
-				title.Parent = tabContent
-			end
-
 			tab.Container.Visible = true
 		end)
-
+	
 		table.insert(Tabs, tab)
 		return tab
 	end
-
+	
 	function tab:AddToggle(data)
 		local template = game.ReplicatedStorage:WaitForChild("ToggleTemplate")
 		local toggleClone = template:Clone()

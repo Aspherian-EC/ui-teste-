@@ -334,7 +334,7 @@ function ElixirLib:MakeWindow(data)
 		toggleButton.BackgroundTransparency = 1
 		toggleButton.BorderSizePixel = 0
 		toggleButton.Text = ""
-		toggleButton.Parent = tab.Container  -- Adiciona ao conteúdo da aba ativa
+		toggleButton.Parent = tabContent  -- Adiciona ao conteúdo da aba ativa
   
 	
 		-- Cria o fundo do botão (visual com degradê)

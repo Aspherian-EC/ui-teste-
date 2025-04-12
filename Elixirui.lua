@@ -93,11 +93,20 @@ function ElixirLib:MakeWindow(data)
 	contentFrame.BackgroundTransparency = 1
 	contentFrame.Parent = mainFrame
 
-	local leftPanel = Instance.new("Frame")
+	local leftPanel = Instance.new("ScrollingFrame")
 	leftPanel.Size = UDim2.new(0, 180, 1, 0)
 	leftPanel.Position = UDim2.new(0, 0, 0, 0)
 	leftPanel.BackgroundColor3 = Color3.fromRGB(28, 28, 28)
+	leftPanel.ScrollBarThickness = 4
+	leftPanel.CanvasSize = UDim2.new(0, 0, 0, 0)
+	leftPanel.AutomaticCanvasSize = Enum.AutomaticSize.Y
+	leftPanel.ScrollingDirection = Enum.ScrollingDirection.Y
 	leftPanel.Parent = contentFrame
+
+	local uiList = Instance.new("UIListLayout")
+	uiList.Padding = UDim.new(0, 5)
+	uiList.SortOrder = Enum.SortOrder.LayoutOrder
+	uiList.Parent = leftPanel
 
 	local leftPanelCorner = Instance.new("UICorner")
 	leftPanelCorner.CornerRadius = UDim.new(0, 10)
@@ -231,10 +240,10 @@ function ElixirLib:MakeWindow(data)
 
 		local button = Instance.new("TextButton")
 		button.Size = UDim2.new(1, -20, 0, 40)
-		button.Position = UDim2.new(0, 10, 0, 10 + (#leftPanel:GetChildren() - 2) * 45)
 		button.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
 		button.Text = ""
 		button.AutoButtonColor = true
+		button.LayoutOrder = #Tabs + 1
 		button.Parent = leftPanel
 
 		local icon = Instance.new("ImageLabel")
@@ -272,12 +281,20 @@ function ElixirLib:MakeWindow(data)
 			end
 
 			if not tab.Container then
-				local tabContent = Instance.new("Frame")
+				local tabContent = Instance.new("ScrollingFrame")
 				tabContent.Size = UDim2.new(1, 0, 1, 0)
-				tabContent.BackgroundTransparency = 0
 				tabContent.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+				tabContent.AutomaticCanvasSize = Enum.AutomaticSize.Y
+				tabContent.CanvasSize = UDim2.new(0, 0, 0, 0)
+				tabContent.ScrollBarThickness = 4
+				tabContent.ScrollingDirection = Enum.ScrollingDirection.Y
 				tabContent.Parent = rightPanel
 				tab.Container = tabContent
+
+				local layout = Instance.new("UIListLayout")
+				layout.Padding = UDim.new(0, 6)
+				layout.SortOrder = Enum.SortOrder.LayoutOrder
+				layout.Parent = tabContent
 
 				local corner = Instance.new("UICorner")
 				corner.CornerRadius = UDim.new(0, 12)
@@ -292,6 +309,7 @@ function ElixirLib:MakeWindow(data)
 				title.Font = Enum.Font.GothamBold
 				title.TextSize = 24
 				title.TextXAlignment = Enum.TextXAlignment.Left
+				title.LayoutOrder = 0
 				title.Parent = tabContent
 			end
 

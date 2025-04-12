@@ -265,62 +265,31 @@ function ElixirLib:MakeWindow(data)
 		btnStroke.Parent = button
 
 		button.MouseButton1Click:Connect(function()
-			for _, t in ipairs(Tabs) do
-				if t.Container then
-					t.Container.Visible = false
-				end
-			end
+			rightPanel:ClearAllChildren()
 
-			if not tab.Container then
-				local tabContent = Instance.new("Frame")
-				tabContent.Size = UDim2.new(1, 0, 1, 0)
-				tabContent.BackgroundTransparency = 0
-				tabContent.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
-				tabContent.Visible = true
-				tabContent.Parent = rightPanel
+			local tabContent = Instance.new("Frame")
+			tabContent.Size = UDim2.new(1, 0, 1, 0)
+			tabContent.BackgroundTransparency = 0
+			tabContent.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+			tabContent.Parent = rightPanel
 
-				local corner = Instance.new("UICorner")
-				corner.CornerRadius = UDim.new(0, 12)
-				corner.Parent = tabContent
+			local corner = Instance.new("UICorner")
+			corner.CornerRadius = UDim.new(0, 12)
+			corner.Parent = tabContent
 
-				local title = Instance.new("TextLabel")
-				title.Size = UDim2.new(1, -20, 0, 50)
-				title.Position = UDim2.new(0, 10, 0, 10)
-				title.BackgroundTransparency = 1
-				title.Text = tabName
-				title.TextColor3 = Color3.fromRGB(200, 200, 255)
-				title.Font = Enum.Font.GothamBold
-				title.TextSize = 24
-				title.TextXAlignment = Enum.TextXAlignment.Left
-				title.Parent = tabContent
+			local title = Instance.new("TextLabel")
+			title.Size = UDim2.new(1, -20, 0, 50)
+			title.Position = UDim2.new(0, 10, 0, 10)
+			title.BackgroundTransparency = 1
+			title.Text = tabName
+			title.TextColor3 = Color3.fromRGB(200, 200, 255)
+			title.Font = Enum.Font.GothamBold
+			title.TextSize = 24
+			title.TextXAlignment = Enum.TextXAlignment.Left
+			title.Parent = tabContent
 
-				tab.Container = tabContent
-			else
-				tab.Container.Visible = true
-			end
+			tab.Container = tabContent
 		end)
-
-		function tab:AddToggle(name, default, callback)
-			local toggle = Instance.new("TextButton")
-			toggle.Size = UDim2.new(0, 200, 0, 30)
-			toggle.Position = UDim2.new(0, 20, 0, 70)
-			toggle.Text = name .. ": " .. (default and "ON" or "OFF")
-			toggle.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-			toggle.TextColor3 = Color3.fromRGB(255, 255, 255)
-			toggle.Font = Enum.Font.Gotham
-			toggle.TextSize = 16
-			toggle.Parent = tab.Container
-
-			local state = default
-
-			toggle.MouseButton1Click:Connect(function()
-				state = not state
-				toggle.Text = name .. ": " .. (state and "ON" or "OFF")
-				if callback then
-					callback(state)
-				end
-			end)
-		end
 
 		table.insert(Tabs, tab)
 		return tab

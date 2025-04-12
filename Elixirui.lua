@@ -123,7 +123,114 @@ function ElixirLib:MakeWindow(data)
 	rightPanel.BackgroundTransparency = 1
 	rightPanel.Parent = contentFrame
 
-	-- Função para adicionar Toggle à aba
+	local function toggleUI()
+		isMinimized = not isMinimized
+		mainFrame.Visible = not isMinimized
+		if isMinimized then
+			showNotification("Pressione RightShift ou use o botão flutuante para abrir.")
+		end
+	end
+
+	UserInputService.InputBegan:Connect(function(input, gameProcessed)
+		if not gameProcessed and input.KeyCode == Enum.KeyCode.RightShift then
+			toggleUI()
+		end
+	end)
+
+	minimizeButton.MouseButton1Click:Connect(toggleUI)
+
+	local draggingMain = false
+	local dragInputMain, mousePosMain, framePosMain
+
+	local function updateMain(input)
+		local delta = input.Position - mousePosMain
+		mainFrame.Position = UDim2.new(framePosMain.X.Scale, framePosMain.X.Offset + delta.X, framePosMain.Y.Scale, framePosMain.Y.Offset + delta.Y)
+	end
+
+	topBar.InputBegan:Connect(function(input)
+		if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+			draggingMain = true
+			mousePosMain = input.Position
+			framePosMain = mainFrame.Position
+
+			input.Changed:Connect(function()
+				if input.UserInputState == Enum.UserInputState.End then
+					draggingMain = false
+				end
+			end)
+		end
+	end)
+
+	topBar.InputChanged:Connect(function(input)
+		if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+			dragInputMain = input
+		end
+	end)
+
+	UserInputService.InputChanged:Connect(function(input)
+		if input == dragInputMain and draggingMain then
+			updateMain(input)
+		end
+	end)
+
+	local floatButton = Instance.new("ImageButton")
+	floatButton.Name = "FloatingMinimizeButton"
+	floatButton.Size = UDim2.new(0, 40, 0, 40)
+	floatButton.Position = UDim2.new(0, 20, 0.5, -20)
+	floatButton.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+	floatButton.Image = "rbxassetid://72671288986713"
+	floatButton.AutoButtonColor = true
+	floatButton.Parent = screenGui
+
+	local corner = Instance.new("UICorner")
+	corner.CornerRadius = UDim.new(0, 100)
+	corner.Parent = floatButton
+
+	local stroke = Instance.new("UIStroke")
+	stroke.Color = Color3.fromRGB(170, 0, 255)
+	stroke.Thickness = 2
+	stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+	stroke.Parent = floatButton
+
+	local draggingFloat = false
+	local dragInputFloat, dragStartFloat, startPosFloat
+
+	local function updateFloat(input)
+		local delta = input.Position - dragStartFloat
+		floatButton.Position = UDim2.new(startPosFloat.X.Scale, startPosFloat.X.Offset + delta.X, startPosFloat.Y.Scale, startPosFloat.Y.Offset + delta.Y)
+	end
+
+	floatButton.InputBegan:Connect(function(input)
+		if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+			draggingFloat = true
+			dragStartFloat = input.Position
+			startPosFloat = floatButton.Position
+
+			input.Changed:Connect(function()
+				if input.UserInputState == Enum.UserInputState.End then
+					draggingFloat = false
+				end
+			end)
+		end
+	end)
+
+	floatButton.InputChanged:Connect(function(input)
+		if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+			dragInputFloat = input
+		end
+	end)
+
+	UserInputService.InputChanged:Connect(function(input)
+		if input == dragInputFloat and draggingFloat then
+			updateFloat(input)
+		end
+	end)
+
+	floatButton.MouseButton1Click:Connect(toggleUI)
+
+	local window = {}
+	local Tabs = {}
+
 	function window:MakeTab(tabData)
 		local tabName = tabData.Name or "Aba"
 		local tabIcon = tabData.Icon or ""
@@ -213,33 +320,63 @@ function ElixirLib:MakeWindow(data)
 		return tab
 	end
 
-	-- Função para adicionar o Toggle a um Tab
-	function window:AddToggle(toggleData)
-		local toggleButton = Instance.new("TextButton")
-		toggleButton.Size = UDim2.new(0, 200, 0, 30)
-		toggleButton.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
-		toggleButton.Text = toggleData.Name
-		toggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-		toggleButton.Font = Enum.Font.Gotham
-		toggleButton.TextSize = 18
-		toggleButton.Parent = tab.Container
-		
-		local toggleState = toggleData.Default or false
-		toggleButton.MouseButton1Click:Connect(function()
-			toggleState = not toggleState
-			toggleData.Callback(toggleState)
+	function tab:AddToggle(data)
+		local template = game.ReplicatedStorage:WaitForChild("ToggleTemplate")
+		local toggleClone = template:Clone()
+		toggleClone.Parent = tab.Container
+	
+		local toggled = data.Default or false
+		local callback = data.Callback or function() end
+		local button = toggleClone -- já é um TextButton
+		local frame = toggleClone:WaitForChild("VisualFrame")
+		local ball = frame:WaitForChild("Ball")
+	
+		local frameStroke = frame:FindFirstChildOfClass("UIStroke")
+		local frameGradient = frame:FindFirstChildOfClass("UIGradient")
+		local ballStroke = ball:FindFirstChildOfClass("UIStroke")
+		local ballGradient = ball:FindFirstChildOfClass("UIGradient")
+	
+		local tweenInfo = TweenInfo.new(0.25, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
+		local ballPadding = 2
+	
+		-- Define valores iniciais
+		local function updateVisual()
+			local pos = toggled and UDim2.new(1, -ball.Size.X.Offset - ballPadding, 0, ballPadding)
+				or UDim2.new(0, ballPadding, 0, ballPadding)
+	
+			local strokeColor = toggled and Color3.fromRGB(255, 0, 255) or Color3.fromRGB(100, 100, 100)
+	
+			TweenService:Create(ball, tweenInfo, { Position = pos }):Play()
+			TweenService:Create(ballStroke, tweenInfo, { Color = strokeColor }):Play()
+			TweenService:Create(frameStroke, tweenInfo, { Color = strokeColor }):Play()
+	
+			frameGradient.Color = toggled and ColorSequence.new{
+				ColorSequenceKeypoint.new(0, Color3.fromRGB(90, 0, 120)),
+				ColorSequenceKeypoint.new(1, Color3.fromRGB(180, 80, 255))
+			} or ColorSequence.new{
+				ColorSequenceKeypoint.new(0, Color3.fromRGB(50, 50, 50)),
+				ColorSequenceKeypoint.new(1, Color3.fromRGB(130, 130, 130))
+			}
+	
+			ballGradient.Color = toggled and ColorSequence.new{
+				ColorSequenceKeypoint.new(0, Color3.fromRGB(100, 0, 130)),
+				ColorSequenceKeypoint.new(1, Color3.fromRGB(200, 100, 255))
+			} or ColorSequence.new{
+				ColorSequenceKeypoint.new(0, Color3.fromRGB(30, 30, 30)),
+				ColorSequenceKeypoint.new(1, Color3.fromRGB(80, 80, 80))
+			}
+		end
+	
+		updateVisual()
+	
+		-- Evento de clique
+		button.MouseButton1Click:Connect(function()
+			toggled = not toggled
+			updateVisual()
+			callback(toggled)
 		end)
-
-		local btnCorner = Instance.new("UICorner")
-		btnCorner.CornerRadius = UDim.new(0, 8)
-		btnCorner.Parent = toggleButton
-
-		local btnStroke = Instance.new("UIStroke")
-		btnStroke.Color = Color3.fromRGB(170, 0, 255)
-		btnStroke.Thickness = 1
-		btnStroke.Parent = toggleButton
 	end
-
+	
 	return window
 end
 

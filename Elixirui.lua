@@ -123,227 +123,112 @@ function ElixirLib:MakeWindow(data)
 	rightPanel.BackgroundTransparency = 1
 	rightPanel.Parent = contentFrame
 
-	local function toggleUI()
-		isMinimized = not isMinimized
-		mainFrame.Visible = not isMinimized
-		if isMinimized then
-			showNotification("Pressione RightShift ou use o botão flutuante para abrir.")
-		end
-	end
-
-	UserInputService.InputBegan:Connect(function(input, gameProcessed)
-		if not gameProcessed and input.KeyCode == Enum.KeyCode.RightShift then
-			toggleUI()
-		end
-	end)
-
-	minimizeButton.MouseButton1Click:Connect(toggleUI)
-
-	local draggingMain = false
-	local dragInputMain, mousePosMain, framePosMain
-
-	local function updateMain(input)
-		local delta = input.Position - mousePosMain
-		mainFrame.Position = UDim2.new(framePosMain.X.Scale, framePosMain.X.Offset + delta.X, framePosMain.Y.Scale, framePosMain.Y.Offset + delta.Y)
-	end
-
-	topBar.InputBegan:Connect(function(input)
-		if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-			draggingMain = true
-			mousePosMain = input.Position
-			framePosMain = mainFrame.Position
-
-			input.Changed:Connect(function()
-				if input.UserInputState == Enum.UserInputState.End then
-					draggingMain = false
-				end
-			end)
-		end
-	end)
-
-	topBar.InputChanged:Connect(function(input)
-		if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
-			dragInputMain = input
-		end
-	end)
-
-	UserInputService.InputChanged:Connect(function(input)
-		if input == dragInputMain and draggingMain then
-			updateMain(input)
-		end
-	end)
-
-	local floatButton = Instance.new("ImageButton")
-	floatButton.Name = "FloatingMinimizeButton"
-	floatButton.Size = UDim2.new(0, 40, 0, 40)
-	floatButton.Position = UDim2.new(0, 20, 0.5, -20)
-	floatButton.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
-	floatButton.Image = "rbxassetid://72671288986713"
-	floatButton.AutoButtonColor = true
-	floatButton.Parent = screenGui
-
-	local corner = Instance.new("UICorner")
-	corner.CornerRadius = UDim.new(0, 100)
-	corner.Parent = floatButton
-
-	local stroke = Instance.new("UIStroke")
-	stroke.Color = Color3.fromRGB(170, 0, 255)
-	stroke.Thickness = 2
-	stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-	stroke.Parent = floatButton
-
-	local draggingFloat = false
-	local dragInputFloat, dragStartFloat, startPosFloat
-
-	local function updateFloat(input)
-		local delta = input.Position - dragStartFloat
-		floatButton.Position = UDim2.new(startPosFloat.X.Scale, startPosFloat.X.Offset + delta.X, startPosFloat.Y.Scale, startPosFloat.Y.Offset + delta.Y)
-	end
-
-	floatButton.InputBegan:Connect(function(input)
-		if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-			draggingFloat = true
-			dragStartFloat = input.Position
-			startPosFloat = floatButton.Position
-
-			input.Changed:Connect(function()
-				if input.UserInputState == Enum.UserInputState.End then
-					draggingFloat = false
-				end
-			end)
-		end
-	end)
-
-	floatButton.InputChanged:Connect(function(input)
-		if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
-			dragInputFloat = input
-		end
-	end)
-
-	UserInputService.InputChanged:Connect(function(input)
-		if input == dragInputFloat and draggingFloat then
-			updateFloat(input)
-		end
-	end)
-
-	floatButton.MouseButton1Click:Connect(toggleUI)
-
 	local window = {}
 	local Tabs = {}
 
 	function window:MakeTab(tabData)
 		local tabName = tabData.Name or "Aba"
 		local tabIcon = tabData.Icon or ""
+
 		local tab = {}
 		tab.Sections = {}
-	
+
 		local button = Instance.new("TextButton")
-		-- ... estilo do botão da aba ...
+		button.Size = UDim2.new(1, -20, 0, 40)
+		button.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+		button.Text = ""
+		button.AutoButtonColor = true
+		button.LayoutOrder = #Tabs + 1
 		button.Parent = leftPanel
-	
-		-- Criar container da aba **imediatamente**
-		local tabContent = Instance.new("ScrollingFrame")
-		tabContent.Size = UDim2.new(1, 0, 1, 0)
-		tabContent.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
-		tabContent.AutomaticCanvasSize = Enum.AutomaticSize.Y
-		tabContent.CanvasSize = UDim2.new(0, 0, 0, 0)
-		tabContent.ScrollBarThickness = 4
-		tabContent.ScrollingDirection = Enum.ScrollingDirection.Y
-		tabContent.Visible = false
-		tabContent.Parent = rightPanel
-		tab.Container = tabContent
-	
-		local layout = Instance.new("UIListLayout")
-		layout.Padding = UDim.new(0, 6)
-		layout.SortOrder = Enum.SortOrder.LayoutOrder
-		layout.Parent = tabContent
-	
-		local corner = Instance.new("UICorner")
-		corner.CornerRadius = UDim.new(0, 12)
-		corner.Parent = tabContent
-	
-		local title = Instance.new("TextLabel")
-		title.Size = UDim2.new(1, -20, 0, 50)
-		title.Position = UDim2.new(0, 10, 0, 10)
-		title.BackgroundTransparency = 1
-		title.Text = tabName
-		title.TextColor3 = Color3.fromRGB(200, 200, 255)
-		title.Font = Enum.Font.GothamBold
-		title.TextSize = 24
-		title.TextXAlignment = Enum.TextXAlignment.Left
-		title.LayoutOrder = 0
-		title.Parent = tabContent
-	
+
+		local icon = Instance.new("ImageLabel")
+		icon.Size = UDim2.new(0, 24, 0, 24)
+		icon.Position = UDim2.new(0, 10, 0.5, -12)
+		icon.BackgroundTransparency = 1
+		icon.Image = tabIcon
+		icon.Parent = button
+
+		local label = Instance.new("TextLabel")
+		label.Size = UDim2.new(1, -44, 1, 0)
+		label.Position = UDim2.new(0, 40, 0, 0)
+		label.BackgroundTransparency = 1
+		label.Text = tabName
+		label.TextColor3 = Color3.fromRGB(255, 255, 255)
+		label.Font = Enum.Font.GothamBold
+		label.TextSize = 18
+		label.TextXAlignment = Enum.TextXAlignment.Left
+		label.Parent = button
+
+		local btnCorner = Instance.new("UICorner")
+		btnCorner.CornerRadius = UDim.new(0, 8)
+		btnCorner.Parent = button
+
+		local btnStroke = Instance.new("UIStroke")
+		btnStroke.Color = Color3.fromRGB(170, 0, 255)
+		btnStroke.Thickness = 1
+		btnStroke.Parent = button
+
 		button.MouseButton1Click:Connect(function()
 			for _, t in pairs(Tabs) do
 				if t.Container then
 					t.Container.Visible = false
 				end
 			end
+
+			if not tab.Container then
+				local tabContent = Instance.new("ScrollingFrame")
+				tabContent.Size = UDim2.new(1, 0, 1, 0)
+				tabContent.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+				tabContent.AutomaticCanvasSize = Enum.AutomaticSize.Y
+				tabContent.CanvasSize = UDim2.new(0, 0, 0, 0)
+				tabContent.ScrollBarThickness = 4
+				tabContent.ScrollingDirection = Enum.ScrollingDirection.Y
+				tabContent.Parent = rightPanel
+				tab.Container = tabContent
+
+				local layout = Instance.new("UIListLayout")
+				layout.Padding = UDim.new(0, 6)
+				layout.SortOrder = Enum.SortOrder.LayoutOrder
+				layout.Parent = tabContent
+
+				local corner = Instance.new("UICorner")
+				corner.CornerRadius = UDim.new(0, 12)
+				corner.Parent = tabContent
+
+				local title = Instance.new("TextLabel")
+				title.Size = UDim2.new(1, -20, 0, 50)
+				title.Position = UDim2.new(0, 10, 0, 10)
+				title.BackgroundTransparency = 1
+				title.Text = tabName
+				title.TextColor3 = Color3.fromRGB(200, 200, 255)
+				title.Font = Enum.Font.GothamBold
+				title.TextSize = 24
+				title.TextXAlignment = Enum.TextXAlignment.Left
+				title.LayoutOrder = 0
+				title.Parent = tabContent
+			end
+
 			tab.Container.Visible = true
 		end)
-	
+
 		table.insert(Tabs, tab)
 		return tab
 	end
-	
-	function tab:AddToggle(data)
-		local template = game.ReplicatedStorage:WaitForChild("ToggleTemplate")
-		local toggleClone = template:Clone()
-		toggleClone.Parent = tab.Container
-	
-		local toggled = data.Default or false
-		local callback = data.Callback or function() end
-		local button = toggleClone -- já é um TextButton
-		local frame = toggleClone:WaitForChild("VisualFrame")
-		local ball = frame:WaitForChild("Ball")
-	
-		local frameStroke = frame:FindFirstChildOfClass("UIStroke")
-		local frameGradient = frame:FindFirstChildOfClass("UIGradient")
-		local ballStroke = ball:FindFirstChildOfClass("UIStroke")
-		local ballGradient = ball:FindFirstChildOfClass("UIGradient")
-	
-		local tweenInfo = TweenInfo.new(0.25, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
-		local ballPadding = 2
-	
-		-- Define valores iniciais
-		local function updateVisual()
-			local pos = toggled and UDim2.new(1, -ball.Size.X.Offset - ballPadding, 0, ballPadding)
-				or UDim2.new(0, ballPadding, 0, ballPadding)
-	
-			local strokeColor = toggled and Color3.fromRGB(255, 0, 255) or Color3.fromRGB(100, 100, 100)
-	
-			TweenService:Create(ball, tweenInfo, { Position = pos }):Play()
-			TweenService:Create(ballStroke, tweenInfo, { Color = strokeColor }):Play()
-			TweenService:Create(frameStroke, tweenInfo, { Color = strokeColor }):Play()
-	
-			frameGradient.Color = toggled and ColorSequence.new{
-				ColorSequenceKeypoint.new(0, Color3.fromRGB(90, 0, 120)),
-				ColorSequenceKeypoint.new(1, Color3.fromRGB(180, 80, 255))
-			} or ColorSequence.new{
-				ColorSequenceKeypoint.new(0, Color3.fromRGB(50, 50, 50)),
-				ColorSequenceKeypoint.new(1, Color3.fromRGB(130, 130, 130))
-			}
-	
-			ballGradient.Color = toggled and ColorSequence.new{
-				ColorSequenceKeypoint.new(0, Color3.fromRGB(100, 0, 130)),
-				ColorSequenceKeypoint.new(1, Color3.fromRGB(200, 100, 255))
-			} or ColorSequence.new{
-				ColorSequenceKeypoint.new(0, Color3.fromRGB(30, 30, 30)),
-				ColorSequenceKeypoint.new(1, Color3.fromRGB(80, 80, 80))
-			}
-		end
-	
-		updateVisual()
-	
-		-- Evento de clique
-		button.MouseButton1Click:Connect(function()
-			toggled = not toggled
-			updateVisual()
-			callback(toggled)
-		end)
-	end
-	
+
+	-- Criando a aba "Combat" com o toggle
+	local CombatTab = window:MakeTab({
+		Name = "Combat",
+		Icon = "rbxassetid://YOUR_ICON_ID"
+	})
+
+	CombatTab:AddToggle({
+		Name = "Enable Combat Mode",
+		Default = false,
+		Callback = function(Value)
+			print("Combat Mode is: " .. tostring(Value))
+		end    
+	})
+
 	return window
 end
 

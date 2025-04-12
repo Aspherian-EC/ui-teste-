@@ -215,24 +215,7 @@ function ElixirLib:MakeWindow(data)
 		return tab
 	end
 
-	-- Criando a aba "Combat" com o toggle dentro da aba
-	local CombatTab = window:MakeTab({
-		Name = "Combat",
-		Icon = "rbxassetid://YOUR_ICON_ID"
-	})
 
-	-- Adicionando Toggle à aba "Combat"
-	local combatSection = CombatTab:MakeSection({
-		Name = "Combat Mode"
-	})
-
-	combatSection:AddToggle({
-		Name = "Enable Combat Mode",
-		Default = false,
-		Callback = function(Value)
-			print("Combat Mode is: " .. tostring(Value))
-		end
-	})
 
 	return window
 end

@@ -316,129 +316,55 @@ function ElixirLib:MakeWindow(data)
 			tab.Container.Visible = true
 		end)
 
-		table.insert(Tabs, tab)
+		function tab:AddToggle(toggleData)
+			local toggleName = toggleData.Name or "Toggle"
+			local default = toggleData.Default or false
+			local callback = toggleData.Callback or function() end
+
+			local toggleButton = Instance.new("TextButton")
+			toggleButton.Size = UDim2.new(1, 0, 0, 40)
+			toggleButton.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+			toggleButton.Text = toggleName
+			toggleButton.AutoButtonColor = true
+			toggleButton.Parent = tab.Container
+
+			local toggleLabel = Instance.new("TextLabel")
+			toggleLabel.Size = UDim2.new(1, -30, 1, 0)
+			toggleLabel.Position = UDim2.new(0, 10, 0, 0)
+			toggleLabel.BackgroundTransparency = 1
+			toggleLabel.Text = toggleName
+			toggleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+			toggleLabel.Font = Enum.Font.Gotham
+			toggleLabel.TextSize = 16
+			toggleLabel.TextXAlignment = Enum.TextXAlignment.Left
+			toggleLabel.Parent = toggleButton
+
+			local toggleSwitch = Instance.new("TextButton")
+			toggleSwitch.Size = UDim2.new(0, 40, 0, 20)
+			toggleSwitch.Position = UDim2.new(1, -50, 0.5, -10)
+			toggleSwitch.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+			toggleSwitch.Text = ""
+			toggleSwitch.Parent = toggleButton
+
+			local switchCorner = Instance.new("UICorner")
+			switchCorner.CornerRadius = UDim.new(0, 10)
+			switchCorner.Parent = toggleSwitch
+
+			toggleButton.MouseButton1Click:Connect(function()
+				default = not default
+				toggleSwitch.BackgroundColor3 = default and Color3.fromRGB(0, 255, 0) or Color3.fromRGB(255, 0, 0)
+				callback(default)
+			end)
+
+			-- Set the default state of the switch
+			toggleSwitch.BackgroundColor3 = default and Color3.fromRGB(0, 255, 0) or Color3.fromRGB(255, 0, 0)
+		end
+
+		Tabs[tabName] = tab
 		return tab
 	end
-	
+
 	return window
-end
-
--- Função que cria o toggle dentro da aba quando chamada
-function Tab:AddToggle(toggleData)
-    local toggleName = toggleData.Name or "Toggle"
-    local defaultValue = toggleData.Default or false
-    local callback = toggleData.Callback or function(Value) print(Value) end
-
-    -- Criação do botão invisível (usado só para clique)
-    local toggleButton = Instance.new("TextButton")
-    toggleButton.Name = "ToggleButton"
-    toggleButton.Size = UDim2.new(0, 50, 0, 24)
-    toggleButton.Position = UDim2.new(0.5, -25, 0, 0)
-    toggleButton.AnchorPoint = Vector2.new(0.5, 0)
-    toggleButton.BackgroundTransparency = 1
-    toggleButton.BorderSizePixel = 0
-    toggleButton.Text = ""
-    toggleButton.Parent = self.Container  -- Cria o botão dentro da aba
-
-    -- Cria o fundo do botão (visual com degradê)
-    local toggleFrame = Instance.new("Frame")
-    toggleFrame.Name = "VisualFrame"
-    toggleFrame.Size = UDim2.new(1, 0, 1, 0)
-    toggleFrame.Position = UDim2.new(0, 0, 0, 0)
-    toggleFrame.BackgroundTransparency = 0
-    toggleFrame.BorderSizePixel = 0
-    toggleFrame.Parent = toggleButton
-
-    Instance.new("UICorner", toggleFrame).CornerRadius = UDim.new(1, 0)
-
-    local frameStroke = Instance.new("UIStroke")
-    frameStroke.Thickness = 2
-    frameStroke.Color = Color3.fromRGB(100, 100, 100)
-    frameStroke.Parent = toggleFrame
-
-    local frameGradient = Instance.new("UIGradient")
-    frameGradient.Color = ColorSequence.new{
-        ColorSequenceKeypoint.new(0, Color3.fromRGB(50, 50, 50)),
-        ColorSequenceKeypoint.new(1, Color3.fromRGB(130, 130, 130))
-    }
-    frameGradient.Rotation = 0
-    frameGradient.Parent = toggleFrame
-
-    -- Cria a bolinha
-    local ball = Instance.new("Frame")
-    ball.Name = "Ball"
-    ball.Size = UDim2.new(0, 20, 1, -4)
-    ball.Position = UDim2.new(0, 2, 0, 2)
-    ball.BackgroundTransparency = 1
-    ball.BorderSizePixel = 0
-    ball.Parent = toggleFrame
-
-    Instance.new("UICorner", ball).CornerRadius = UDim.new(1, 0)
-
-    local ballStroke = Instance.new("UIStroke")
-    ballStroke.Thickness = 2
-    ballStroke.Color = Color3.fromRGB(100, 100, 100)
-    ballStroke.Parent = ball
-
-    local ballGradient = Instance.new("UIGradient")
-    ballGradient.Color = ColorSequence.new{
-        ColorSequenceKeypoint.new(0, Color3.fromRGB(30, 30, 30)),
-        ColorSequenceKeypoint.new(1, Color3.fromRGB(80, 80, 80))
-    }
-    ballGradient.Rotation = 0
-    ballGradient.Parent = ball
-
-    -- Variáveis
-    local toggled = defaultValue
-    local ballPadding = 2
-
-    -- Cores
-    local colorOffStroke = Color3.fromRGB(100, 100, 100)
-    local strokeOn = Color3.fromRGB(255, 0, 255) -- Roxo neon
-
-    local gradientOff = ColorSequence.new{
-        ColorSequenceKeypoint.new(0, Color3.fromRGB(50, 50, 50)),
-        ColorSequenceKeypoint.new(1, Color3.fromRGB(130, 130, 130))
-    }
-
-    local gradientOn = ColorSequence.new{
-        ColorSequenceKeypoint.new(0, Color3.fromRGB(90, 0, 120)),
-        ColorSequenceKeypoint.new(1, Color3.fromRGB(180, 80, 255))
-    }
-
-    local ballGradientOff = ColorSequence.new{
-        ColorSequenceKeypoint.new(0, Color3.fromRGB(30, 30, 30)),
-        ColorSequenceKeypoint.new(1, Color3.fromRGB(80, 80, 80))
-    }
-
-    local ballGradientOn = ColorSequence.new{
-        ColorSequenceKeypoint.new(0, Color3.fromRGB(100, 0, 130)),
-        ColorSequenceKeypoint.new(1, Color3.fromRGB(200, 100, 255))
-    }
-
-    local tweenInfo = TweenInfo.new(0.25, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
-
-    -- Função de toggle
-    toggleButton.MouseButton1Click:Connect(function()
-        toggled = not toggled
-
-        local newPos = toggled and UDim2.new(1, -ball.Size.X.Offset - ballPadding, 0, ballPadding)
-            or UDim2.new(0, ballPadding, 0, ballPadding)
-
-        local strokeColor = toggled and strokeOn or colorOffStroke
-
-        -- Animações
-        TweenService:Create(ball, tweenInfo, { Position = newPos }):Play()
-        TweenService:Create(ballStroke, tweenInfo, { Color = strokeColor }):Play()
-        TweenService:Create(frameStroke, tweenInfo, { Color = strokeColor }):Play()
-
-        -- Troca os degradês
-        frameGradient.Color = toggled and gradientOn or gradientOff
-        ballGradient.Color = toggled and ballGradientOn or ballGradientOff
-
-        -- Chama o callback
-        callback(toggled)
-    end)
 end
 
 return ElixirLib

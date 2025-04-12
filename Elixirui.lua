@@ -215,7 +215,53 @@ function ElixirLib:MakeWindow(data)
 		return tab
 	end
 
+	-- Criando a aba "Combat" com o toggle dentro da aba
+	local CombatTab = window:MakeTab({
+		Name = "Combat",
+		Icon = "rbxassetid://YOUR_ICON_ID"
+	})
 
+	-- Adicionando Toggle à aba "Combat"
+	function CombatTab:MakeSection(sectionData)
+		local section = {}
+
+		local sectionFrame = Instance.new("Frame")
+		sectionFrame.Size = UDim2.new(1, 0, 0, 80)
+		sectionFrame.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+		sectionFrame.Parent = self.Container
+
+		local sectionTitle = Instance.new("TextLabel")
+		sectionTitle.Size = UDim2.new(1, 0, 0, 30)
+		sectionTitle.BackgroundTransparency = 1
+		sectionTitle.Text = sectionData.Name or "Section"
+		sectionTitle.TextColor3 = Color3.fromRGB(200, 200, 255)
+		sectionTitle.Font = Enum.Font.GothamBold
+		sectionTitle.TextSize = 18
+		sectionTitle.Parent = sectionFrame
+
+		-- Criando o toggle
+		local toggleButton = Instance.new("TextButton")
+		toggleButton.Size = UDim2.new(1, 0, 0, 40)
+		toggleButton.Position = UDim2.new(0, 0, 0, 30)
+		toggleButton.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+		toggleButton.Text = sectionData.Name or "Toggle"
+		toggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+		toggleButton.Font = Enum.Font.GothamBold
+		toggleButton.TextSize = 16
+		toggleButton.Parent = sectionFrame
+
+		toggleButton.MouseButton1Click:Connect(function()
+			print("Toggle clicked!")
+		end)
+
+		section.Toggle = toggleButton
+		return section
+	end
+
+	-- Criando a seção "Combat Mode" dentro da aba Combat
+	local combatSection = CombatTab:MakeSection({
+		Name = "Combat Mode"
+	})
 
 	return window
 end

@@ -228,9 +228,7 @@ function ElixirLib:MakeWindow(data)
 
 	floatButton.MouseButton1Click:Connect(toggleUI)
 
-
-
-	return window
+	return ElixirLib
 end
 
 return ElixirLib

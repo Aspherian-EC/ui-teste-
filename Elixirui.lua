@@ -123,16 +123,120 @@ function ElixirLib:MakeWindow(data)
 	rightPanel.BackgroundTransparency = 1
 	rightPanel.Parent = contentFrame
 
+	local function toggleUI()
+		isMinimized = not isMinimized
+		mainFrame.Visible = not isMinimized
+		if isMinimized then
+			showNotification("Pressione RightShift ou use o botão flutuante para abrir.")
+		end
+	end
+
+	UserInputService.InputBegan:Connect(function(input, gameProcessed)
+		if not gameProcessed and input.KeyCode == Enum.KeyCode.RightShift then
+			toggleUI()
+		end
+	end)
+
+	minimizeButton.MouseButton1Click:Connect(toggleUI)
+
+	local draggingMain = false
+	local dragInputMain, mousePosMain, framePosMain
+
+	local function updateMain(input)
+		local delta = input.Position - mousePosMain
+		mainFrame.Position = UDim2.new(framePosMain.X.Scale, framePosMain.X.Offset + delta.X, framePosMain.Y.Scale, framePosMain.Y.Offset + delta.Y)
+	end
+
+	topBar.InputBegan:Connect(function(input)
+		if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+			draggingMain = true
+			mousePosMain = input.Position
+			framePosMain = mainFrame.Position
+
+			input.Changed:Connect(function()
+				if input.UserInputState == Enum.UserInputState.End then
+					draggingMain = false
+				end
+			end)
+		end
+	end)
+
+	topBar.InputChanged:Connect(function(input)
+		if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+			dragInputMain = input
+		end
+	end)
+
+	UserInputService.InputChanged:Connect(function(input)
+		if input == dragInputMain and draggingMain then
+			updateMain(input)
+		end
+	end)
+
+	local floatButton = Instance.new("ImageButton")
+	floatButton.Name = "FloatingMinimizeButton"
+	floatButton.Size = UDim2.new(0, 40, 0, 40)
+	floatButton.Position = UDim2.new(0, 20, 0.5, -20)
+	floatButton.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+	floatButton.Image = "rbxassetid://72671288986713"
+	floatButton.AutoButtonColor = true
+	floatButton.Parent = screenGui
+
+	local corner = Instance.new("UICorner")
+	corner.CornerRadius = UDim.new(0, 100)
+	corner.Parent = floatButton
+
+	local stroke = Instance.new("UIStroke")
+	stroke.Color = Color3.fromRGB(170, 0, 255)
+	stroke.Thickness = 2
+	stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+	stroke.Parent = floatButton
+
+	local draggingFloat = false
+	local dragInputFloat, dragStartFloat, startPosFloat
+
+	local function updateFloat(input)
+		local delta = input.Position - dragStartFloat
+		floatButton.Position = UDim2.new(startPosFloat.X.Scale, startPosFloat.X.Offset + delta.X, startPosFloat.Y.Scale, startPosFloat.Y.Offset + delta.Y)
+	end
+
+	floatButton.InputBegan:Connect(function(input)
+		if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+			draggingFloat = true
+			dragStartFloat = input.Position
+			startPosFloat = floatButton.Position
+
+			input.Changed:Connect(function()
+				if input.UserInputState == Enum.UserInputState.End then
+					draggingFloat = false
+				end
+			end)
+		end
+	end)
+
+	floatButton.InputChanged:Connect(function(input)
+		if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+			dragInputFloat = input
+		end
+	end)
+
+	UserInputService.InputChanged:Connect(function(input)
+		if input == dragInputFloat and draggingFloat then
+			updateFloat(input)
+		end
+	end)
+
+	floatButton.MouseButton1Click:Connect(toggleUI)
+
 	local window = {}
 	local Tabs = {}
-
 	function window:MakeTab(tabData)
 		local tabName = tabData.Name or "Aba"
 		local tabIcon = tabData.Icon or ""
-
+	
 		local tab = {}
 		tab.Sections = {}
-
+	
 		local button = Instance.new("TextButton")
 		button.Size = UDim2.new(1, -20, 0, 40)
 		button.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
@@ -140,14 +244,14 @@ function ElixirLib:MakeWindow(data)
 		button.AutoButtonColor = true
 		button.LayoutOrder = #Tabs + 1
 		button.Parent = leftPanel
-
+	
 		local icon = Instance.new("ImageLabel")
 		icon.Size = UDim2.new(0, 24, 0, 24)
 		icon.Position = UDim2.new(0, 10, 0.5, -12)
 		icon.BackgroundTransparency = 1
 		icon.Image = tabIcon
 		icon.Parent = button
-
+	
 		local label = Instance.new("TextLabel")
 		label.Size = UDim2.new(1, -44, 1, 0)
 		label.Position = UDim2.new(0, 40, 0, 0)
@@ -158,23 +262,23 @@ function ElixirLib:MakeWindow(data)
 		label.TextSize = 18
 		label.TextXAlignment = Enum.TextXAlignment.Left
 		label.Parent = button
-
+	
 		local btnCorner = Instance.new("UICorner")
 		btnCorner.CornerRadius = UDim.new(0, 8)
 		btnCorner.Parent = button
-
+	
 		local btnStroke = Instance.new("UIStroke")
 		btnStroke.Color = Color3.fromRGB(170, 0, 255)
 		btnStroke.Thickness = 1
 		btnStroke.Parent = button
-
+	
 		button.MouseButton1Click:Connect(function()
 			for _, t in pairs(Tabs) do
 				if t.Container then
 					t.Container.Visible = false
 				end
 			end
-
+	
 			if not tab.Container then
 				local tabContent = Instance.new("ScrollingFrame")
 				tabContent.Size = UDim2.new(1, 0, 1, 0)
@@ -185,16 +289,16 @@ function ElixirLib:MakeWindow(data)
 				tabContent.ScrollingDirection = Enum.ScrollingDirection.Y
 				tabContent.Parent = rightPanel
 				tab.Container = tabContent
-
+	
 				local layout = Instance.new("UIListLayout")
 				layout.Padding = UDim.new(0, 6)
 				layout.SortOrder = Enum.SortOrder.LayoutOrder
 				layout.Parent = tabContent
-
+	
 				local corner = Instance.new("UICorner")
 				corner.CornerRadius = UDim.new(0, 12)
 				corner.Parent = tabContent
-
+	
 				local title = Instance.new("TextLabel")
 				title.Size = UDim2.new(1, -20, 0, 50)
 				title.Position = UDim2.new(0, 10, 0, 10)
@@ -207,62 +311,61 @@ function ElixirLib:MakeWindow(data)
 				title.LayoutOrder = 0
 				title.Parent = tabContent
 			end
-
+	
 			tab.Container.Visible = true
 		end)
-
+	
 		table.insert(Tabs, tab)
+	
+		-- Adicionando a função AddToggle aqui dentro da tab
+		function tab:AddToggle(toggleData)
+			local toggleName = toggleData.Name or "Toggle"
+			local default = toggleData.Default or false
+			local callback = toggleData.Callback or function() end
+	
+			local toggleFrame = Instance.new("Frame")
+			toggleFrame.Size = UDim2.new(1, -20, 0, 40)
+			toggleFrame.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+			toggleFrame.LayoutOrder = #tab.Sections + 1
+			toggleFrame.Parent = tab.Container
+	
+			local toggleLabel = Instance.new("TextLabel")
+			toggleLabel.Size = UDim2.new(1, -40, 1, 0)
+			toggleLabel.Position = UDim2.new(0, 10, 0, 0)
+			toggleLabel.BackgroundTransparency = 1
+			toggleLabel.Text = toggleName
+			toggleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+			toggleLabel.Font = Enum.Font.GothamBold
+			toggleLabel.TextSize = 18
+			toggleLabel.TextXAlignment = Enum.TextXAlignment.Left
+			toggleLabel.Parent = toggleFrame
+	
+			local btnCorner = Instance.new("UICorner")
+			btnCorner.CornerRadius = UDim.new(0, 8)
+			btnCorner.Parent = toggleFrame
+	
+			local toggleButton = Instance.new("TextButton")
+			toggleButton.Size = UDim2.new(0, 40, 0, 40)
+			toggleButton.Position = UDim2.new(1, -50, 0, 0)
+			toggleButton.BackgroundColor3 = default and Color3.fromRGB(0, 255, 0) or Color3.fromRGB(255, 0, 0)
+			toggleButton.Text = ""
+			toggleButton.AutoButtonColor = true
+			toggleButton.Parent = toggleFrame
+	
+			toggleButton.MouseButton1Click:Connect(function()
+				local newValue = not default
+				default = newValue
+				toggleButton.BackgroundColor3 = newValue and Color3.fromRGB(0, 255, 0) or Color3.fromRGB(255, 0, 0)
+				callback(newValue)
+			end)
+	
+			table.insert(tab.Sections, toggleFrame)
+		end
+	
 		return tab
 	end
-
-	-- Criando a aba "Combat" com o toggle dentro da aba
-	local CombatTab = window:MakeTab({
-		Name = "Combat",
-		Icon = "rbxassetid://YOUR_ICON_ID"
-	})
-
-	-- Adicionando Toggle à aba "Combat"
-	function CombatTab:MakeSection(sectionData)
-		local section = {}
-
-		local sectionFrame = Instance.new("Frame")
-		sectionFrame.Size = UDim2.new(1, 0, 0, 80)
-		sectionFrame.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
-		sectionFrame.Parent = self.Container
-
-		local sectionTitle = Instance.new("TextLabel")
-		sectionTitle.Size = UDim2.new(1, 0, 0, 30)
-		sectionTitle.BackgroundTransparency = 1
-		sectionTitle.Text = sectionData.Name or "Section"
-		sectionTitle.TextColor3 = Color3.fromRGB(200, 200, 255)
-		sectionTitle.Font = Enum.Font.GothamBold
-		sectionTitle.TextSize = 18
-		sectionTitle.Parent = sectionFrame
-
-		-- Criando o toggle
-		local toggleButton = Instance.new("TextButton")
-		toggleButton.Size = UDim2.new(1, 0, 0, 40)
-		toggleButton.Position = UDim2.new(0, 0, 0, 30)
-		toggleButton.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
-		toggleButton.Text = sectionData.Name or "Toggle"
-		toggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-		toggleButton.Font = Enum.Font.GothamBold
-		toggleButton.TextSize = 16
-		toggleButton.Parent = sectionFrame
-
-		toggleButton.MouseButton1Click:Connect(function()
-			print("Toggle clicked!")
-		end)
-
-		section.Toggle = toggleButton
-		return section
-	end
-
-	-- Criando a seção "Combat Mode" dentro da aba Combat
-	local combatSection = CombatTab:MakeSection({
-		Name = "Combat Mode"
-	})
-
+	
+	
 	return window
 end
 

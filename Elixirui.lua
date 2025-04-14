@@ -1,8 +1,4 @@
-
-local ElixirLib = {}
-
-function ElixirLib:MakeWindow(options)
--- Serviços
+-- ServiÃ§os
 local Players = game:GetService("Players")
 local UserInputService = game:GetService("UserInputService")
 local player = Players.LocalPlayer
@@ -15,10 +11,10 @@ screenGui.ResetOnSpawn = false
 screenGui.IgnoreGuiInset = true
 screenGui.Parent = playerGui
 
--- Variável de estado global
+-- VariÃ¡vel de estado global
 local isMinimized = false
 
--- Notificação
+-- NotificaÃ§Ã£o
 local function showNotification(message)
 	local notification = loadstring(game:HttpGet("https://raw.githubusercontent.com/9menta/tests/refs/heads/main/notification.lua"))()
 	notification({
@@ -58,19 +54,19 @@ local topBarCorner = Instance.new("UICorner")
 topBarCorner.CornerRadius = UDim.new(0, 12)
 topBarCorner.Parent = topBar
 
--- Título
+-- TÃ­tulo
 local titleLabel = Instance.new("TextLabel")
 titleLabel.Size = UDim2.new(1, -60, 1, 0)
 titleLabel.Position = UDim2.new(0, 10, 0, 0)
 titleLabel.BackgroundTransparency = 1
-titleLabel.Text = "Elixir Client"
+titleLabel.Text = options.Name or "Elixir Client"
 titleLabel.TextColor3 = Color3.fromRGB(200, 200, 255)
 titleLabel.Font = Enum.Font.GothamBold
 titleLabel.TextSize = 20
 titleLabel.TextXAlignment = Enum.TextXAlignment.Left
 titleLabel.Parent = topBar
 
--- Botão de minimizar
+-- BotÃ£o de minimizar
 local minimizeButton = Instance.new("ImageButton")
 minimizeButton.Name = "MinimizeButton"
 minimizeButton.Size = UDim2.new(0, 30, 0, 30)
@@ -96,7 +92,7 @@ local dividerCorner = Instance.new("UICorner")
 dividerCorner.CornerRadius = UDim.new(1, 0)
 dividerCorner.Parent = divider
 
--- Conteúdo principal
+-- ConteÃºdo principal
 local contentFrame = Instance.new("Frame")
 contentFrame.Name = "Content"
 contentFrame.Size = UDim2.new(1, 0, 1, -42)
@@ -130,7 +126,7 @@ local function toggleUI()
 	isMinimized = not isMinimized
 	mainFrame.Visible = not isMinimized
 	if isMinimized then
-		showNotification("Pressione RightShift ou use o botão flutuante para abrir.")
+		showNotification("Pressione RightShift ou use o botÃ£o flutuante para abrir.")
 	end
 end
 
@@ -173,7 +169,7 @@ topBar.InputChanged:Connect(function(input)
 	end
 end)
 
--- Botão flutuante
+-- BotÃ£o flutuante
 local floatButton = Instance.new("ImageButton")
 floatButton.Name = "FloatingMinimizeButton"
 floatButton.Size = UDim2.new(0, 40, 0, 40)
@@ -192,7 +188,7 @@ stroke.Thickness = 2
 stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
 stroke.Parent = floatButton
 
--- Drag do botão flutuante
+-- Drag do botÃ£o flutuante
 local draggingFloat = false
 local dragInputFloat, dragStartFloat, startPosFloat
 local function updateFloat(input)
@@ -236,7 +232,7 @@ function Window:MakeTab(tabData)
     local tab = {}
     tab.Sections = {}
 
-    -- Botão de tab
+    -- BotÃ£o de tab
     local button = Instance.new("TextButton")
     button.Size = UDim2.new(1, -20, 0, 40)
     button.Position = UDim2.new(0, 10, 0, 10 + (#leftPanel:GetChildren() - 2) * 45)
@@ -284,7 +280,7 @@ function Window:MakeTab(tabData)
     corner.CornerRadius = UDim.new(0, 12)
     corner.Parent = tabContent
 
-    -- Título da aba
+    -- TÃ­tulo da aba
     local title = Instance.new("TextLabel")
     title.Size = UDim2.new(1, -20, 0, 50)
     title.Position = UDim2.new(0, 10, 0, 10)
@@ -296,7 +292,7 @@ function Window:MakeTab(tabData)
     title.TextXAlignment = Enum.TextXAlignment.Left
     title.Parent = tabContent
 
-    -- Área rolável para os elementos (toggles, etc)
+    -- Ãrea rolÃ¡vel para os elementos (toggles, etc)
     local scrollContainer = Instance.new("ScrollingFrame")
     scrollContainer.Size = UDim2.new(1, -20, 1, -70)
     scrollContainer.Position = UDim2.new(0, 10, 0, 60)
@@ -325,41 +321,77 @@ function Window:MakeTab(tabData)
 
     table.insert(tabContents, tabContent)
 
-    function tab:AddSection(sectionData)
-        local name = sectionData.Name or "Section"
-    
-        -- Container da seção (tipo título/divisor)
-        local sectionFrame = Instance.new("Frame")
-        sectionFrame.Size = UDim2.new(1, 0, 0, 30)
-        sectionFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
-        sectionFrame.LayoutOrder = #self.Container:GetChildren() + 1
-        sectionFrame.Parent = self.Container
-    
-        local sectionCorner = Instance.new("UICorner")
-        sectionCorner.CornerRadius = UDim.new(0, 6)
-        sectionCorner.Parent = sectionFrame
-    
-        local sectionStroke = Instance.new("UIStroke")
-        sectionStroke.Color = Color3.fromRGB(170, 0, 255)
-        sectionStroke.Thickness = 1
-        sectionStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-        sectionStroke.Parent = sectionFrame
-    
-        -- Nome da seção
-        local sectionLabel = Instance.new("TextLabel")
-        sectionLabel.Size = UDim2.new(1, -10, 1, 0)
-        sectionLabel.Position = UDim2.new(0, 5, 0, 0)
-        sectionLabel.BackgroundTransparency = 1
-        sectionLabel.Text = name
-        sectionLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-        sectionLabel.Font = Enum.Font.GothamSemibold
-        sectionLabel.TextSize = 16
-        sectionLabel.TextXAlignment = Enum.TextXAlignment.Left
-        sectionLabel.Parent = sectionFrame
-    
-        return sectionFrame
+	--Seções🟢
+   function tab:AddSection(sectionData)
+    local name = sectionData.Name or "Section"
+
+    local sectionFrame = Instance.new("Frame")
+    sectionFrame.Size = UDim2.new(1, 0, 0, 30)
+    sectionFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+    sectionFrame.LayoutOrder = #self.Container:GetChildren() + 1
+    sectionFrame.Parent = self.Container
+
+    local sectionCorner = Instance.new("UICorner")
+    sectionCorner.CornerRadius = UDim.new(0, 6)
+    sectionCorner.Parent = sectionFrame
+
+    local sectionStroke = Instance.new("UIStroke")
+    sectionStroke.Color = Color3.fromRGB(170, 0, 255)
+    sectionStroke.Thickness = 1
+    sectionStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+    sectionStroke.Parent = sectionFrame
+
+    local sectionLabel = Instance.new("TextLabel")
+    sectionLabel.Size = UDim2.new(1, -10, 1, 0)
+    sectionLabel.Position = UDim2.new(0, 5, 0, 0)
+    sectionLabel.BackgroundTransparency = 1
+    sectionLabel.Text = name
+    sectionLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+    sectionLabel.Font = Enum.Font.GothamSemibold
+    sectionLabel.TextSize = 16
+    sectionLabel.TextXAlignment = Enum.TextXAlignment.Left
+    sectionLabel.Parent = sectionFrame
+
+    -- Permitir usar Section:AddLabel
+    local section = {}
+    section.Tab = self -- armazena a tab original
+
+    function section:AddLabel(text)
+        return self.Tab:AddLabel(text)
     end
+
+    return section
+end
+	
+	--label🟢
+	
+	function tab:AddLabel(text)
+    local label = Instance.new("TextLabel")
+    label.Size = UDim2.new(1, 0, 0, 25)
+    label.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+    label.Text = text
+    label.TextColor3 = Color3.fromRGB(255, 255, 255)
+    label.Font = Enum.Font.Gotham
+    label.TextSize = 14
+    label.TextXAlignment = Enum.TextXAlignment.Left
+    label.LayoutOrder = #self.Container:GetChildren() + 1
+    label.Parent = self.Container
+
+    local corner = Instance.new("UICorner")
+    corner.CornerRadius = UDim.new(0, 6)
+    corner.Parent = label
+
+    local stroke = Instance.new("UIStroke")
+    stroke.Color = Color3.fromRGB(170, 0, 255)
+    stroke.Thickness = 1
+    stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+    stroke.Parent = label
+
+    return label
+end
     
+	--Toggle 🟢
+	
     function tab:AddToggle(toggleData)
         local toggleName = toggleData.Name or "Toggle"
         local defaultValue = toggleData.Default or false
@@ -367,7 +399,7 @@ function Window:MakeTab(tabData)
     
         local TweenService = game:GetService("TweenService")
     
-        -- Criar botão-base do toggle
+        -- Criar botÃ£o-base do toggle
         local toggleButton = Instance.new("TextButton")
         toggleButton.Size = UDim2.new(1, 0, 0, 40)
         toggleButton.BackgroundColor3 = Color3.fromRGB(40, 40, 40) -- fundo cinza escuro
@@ -410,7 +442,7 @@ function Window:MakeTab(tabData)
         switch.Text = ""
         switch.Parent = toggleButton
     
-        -- Fundo do switch com degradê
+        -- Fundo do switch com degradÃª
         local switchFrame = Instance.new("Frame")
         switchFrame.Size = UDim2.new(1, 0, 1, 0)
         switchFrame.Position = UDim2.new(0, 0, 0, 0)
@@ -497,14 +529,14 @@ function Window:MakeTab(tabData)
             callback(toggled)
         end
     
-        -- Conecta clique no switch e no botão externo
+        -- Conecta clique no switch e no botÃ£o externo
         toggleButton.MouseButton1Click:Connect(toggleSwitch)
         switch.MouseButton1Click:Connect(toggleSwitch)
     
         return toggleButton
     end
     
-    
+    --Keybind🟢
 
     function tab:AddBind(bindData)
         local name = bindData.Name or "Bind"
@@ -565,7 +597,7 @@ function Window:MakeTab(tabData)
         local binding = false
         local currentKey = defaultKey
     
-        -- Ativar modo de bind ao clicar no botão
+        -- Ativar modo de bind ao clicar no botÃ£o
         bindContainer.MouseButton1Click:Connect(function()
             keyLabel.Text = "..."
             binding = true
@@ -608,6 +640,8 @@ function Window:MakeTab(tabData)
         return bindContainer
     end
     
+	--Dropdown🟢
+	
     function tab:AddDropdown(dropdownData)
         local name = dropdownData.Name or "Dropdown"
         local default = dropdownData.Default or ""
@@ -644,7 +678,7 @@ function Window:MakeTab(tabData)
         label.TextXAlignment = Enum.TextXAlignment.Left
         label.Parent = dropdownContainer
     
-        -- Botão principal do dropdown
+        -- BotÃ£o principal do dropdown
         local dropButton = Instance.new("TextButton")
         dropButton.Size = UDim2.new(0, 100, 0, 24)
         dropButton.Position = UDim2.new(1, -110, 0.5, -12)
@@ -663,7 +697,7 @@ function Window:MakeTab(tabData)
         dropStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
         dropStroke.Parent = dropButton
     
-        -- Lista de opções scrollável
+        -- Lista de opÃ§Ãµes scrollÃ¡vel
         local optionFrame = Instance.new("ScrollingFrame")
         optionFrame.Visible = false
         optionFrame.Size = UDim2.new(0, 100, 0, 100)
@@ -716,6 +750,7 @@ function Window:MakeTab(tabData)
         return dropdownContainer
     end
     
+	--Slider 🟢
     function tab:AddSlider(sliderData)
         local name = sliderData.Name or "Slider"
         local min = sliderData.Min or 0
@@ -802,7 +837,7 @@ function Window:MakeTab(tabData)
         
         Instance.new("UICorner", ball).CornerRadius = UDim.new(1, 0)
         
-        -- Função de atualizar o valor
+        -- FunÃ§Ã£o de atualizar o valor
         local function updateSlider(position)
             local newValue = math.clamp((position.X - sliderBar.AbsolutePosition.X) / sliderBar.AbsoluteSize.X, 0, 1)
             local newValueScaled = min + newValue * (max - min)
@@ -818,35 +853,45 @@ function Window:MakeTab(tabData)
         
         -- Detectar arraste da bolinha
         local dragging = false
-        
-        ball.InputBegan:Connect(function(input)
-            if input.UserInputType == Enum.UserInputType.MouseButton1 then
-                dragging = true
-                local startPos = input.Position.X
-                
-                -- Atualizar posição da bolinha enquanto arrasta
-                game:GetService("UserInputService").InputChanged:Connect(function(inputChanged)
-                    if dragging and inputChanged.UserInputType == Enum.UserInputType.MouseMovement then
-                        updateSlider(inputChanged.Position)
-                    end
-                end)
+local UserInputService = game:GetService("UserInputService")
+
+ball.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        dragging = true
+        local startPos = input.Position.X
+
+        local conn
+        conn = UserInputService.InputChanged:Connect(function(inputChanged)
+            if dragging and (inputChanged.UserInputType == Enum.UserInputType.MouseMovement or inputChanged.UserInputType == Enum.UserInputType.Touch) then
+                updateSlider(inputChanged.Position)
             end
         end)
-        
-        -- Parar arraste quando o botão do mouse for solto
-        game:GetService("UserInputService").InputEnded:Connect(function(input)
-            if input.UserInputType == Enum.UserInputType.MouseButton1 then
-                dragging = false
+
+        -- Desconecta quando terminar o arraste
+        local function stopDragging()
+            dragging = false
+            if conn then
+                conn:Disconnect()
+                conn = nil
+            end
+        end
+
+        UserInputService.InputEnded:Connect(function(inputEnded)
+            if inputEnded.UserInputType == Enum.UserInputType.MouseButton1 or inputEnded.UserInputType == Enum.UserInputType.Touch then
+                stopDragging()
             end
         end)
+    end
+end)
         
         return sliderContainer
     end
     
+	
     
     return tab
 end
 
 
 
-return ElixirLib
+

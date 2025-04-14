@@ -894,9 +894,5 @@ end)
     return tab
 end
 
-
-
-return ElixirLib
-end
-
-return ElixirLib
+    return window
+ end

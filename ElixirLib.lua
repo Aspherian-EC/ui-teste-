@@ -1,3 +1,5 @@
+local ElixirLib = {}
+
 function ElixirLib:MakeWindow(data)
 	local Players = game:GetService("Players")
 	local UserInputService = game:GetService("UserInputService")
@@ -219,10 +221,10 @@ end)
 
 floatButton.MouseButton1Click:Connect(toggleUI)
 
---[[ Sistema de Tabs
+-- Sistema de Tabs
 local Window = {}
 local Tabs = {}
-local tabContents = {}]]
+local tabContents = {}
 
 function Window:MakeTab(tabData)
     local tabName = tabData.Name or "Aba"
@@ -317,7 +319,7 @@ function Window:MakeTab(tabData)
         tabContent.Visible = true
     end)
 
-    table.insert(tabContents, tabContent)
+   
 
     function tab:AddSection(sectionData)
         local name = sectionData.Name or "Section"
@@ -837,7 +839,11 @@ function Window:MakeTab(tabData)
         return sliderContainer
     end
     
-    
+    table.insert(tabContents, tabContent)
     return tab
 end
 
+return window
+end
+
+return ElixirLib

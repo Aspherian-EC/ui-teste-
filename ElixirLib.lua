@@ -839,7 +839,7 @@ function Window:MakeTab(tabData)
         return sliderContainer
     end
     
-    
+    table.insert(Tabs, tab)
     return tab
 end
 

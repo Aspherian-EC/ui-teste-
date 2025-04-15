@@ -24,6 +24,7 @@ function ElixirLib:MakeWindow(data)
 		})
 	end
 
+	-- Main UI container
 	local mainFrame = Instance.new("Frame")
 	mainFrame.Name = "MainUIFrame"
 	mainFrame.Size = UDim2.new(0, 700, 0, 400)
@@ -31,6 +32,7 @@ function ElixirLib:MakeWindow(data)
 	mainFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
 	mainFrame.Parent = screenGui
 
+	-- UI style
 	local uiCorner = Instance.new("UICorner")
 	uiCorner.CornerRadius = UDim.new(0, 12)
 	uiCorner.Parent = mainFrame
@@ -40,6 +42,7 @@ function ElixirLib:MakeWindow(data)
 	uiStroke.Thickness = 2
 	uiStroke.Parent = mainFrame
 
+	-- Top bar
 	local topBar = Instance.new("Frame")
 	topBar.Name = "TopBar"
 	topBar.Size = UDim2.new(1, 0, 0, 40)
@@ -74,6 +77,7 @@ function ElixirLib:MakeWindow(data)
 	buttonCorner.CornerRadius = UDim.new(1, 0)
 	buttonCorner.Parent = minimizeButton
 
+	-- Divider
 	local divider = Instance.new("Frame")
 	divider.Name = "Divider"
 	divider.Size = UDim2.new(1, -20, 0, 2)
@@ -86,6 +90,7 @@ function ElixirLib:MakeWindow(data)
 	dividerCorner.CornerRadius = UDim.new(1, 0)
 	dividerCorner.Parent = divider
 
+	-- Content area
 	local contentFrame = Instance.new("Frame")
 	contentFrame.Name = "Content"
 	contentFrame.Size = UDim2.new(1, 0, 1, -42)
@@ -93,6 +98,7 @@ function ElixirLib:MakeWindow(data)
 	contentFrame.BackgroundTransparency = 1
 	contentFrame.Parent = mainFrame
 
+	-- Left panel (tabs)
 	local leftPanel = Instance.new("Frame")
 	leftPanel.Size = UDim2.new(0, 180, 1, 0)
 	leftPanel.Position = UDim2.new(0, 0, 0, 0)
@@ -108,118 +114,114 @@ function ElixirLib:MakeWindow(data)
 	leftPanelStroke.Thickness = 1
 	leftPanelStroke.Parent = leftPanel
 
+	-- Right panel (tab content)
 	local rightPanel = Instance.new("Frame")
 	rightPanel.Size = UDim2.new(1, -180, 1, 0)
 	rightPanel.Position = UDim2.new(0, 180, 0, 0)
 	rightPanel.BackgroundTransparency = 1
 	rightPanel.Parent = contentFrame
 
-	local function toggleUI()
-		isMinimized = not isMinimized
-		mainFrame.Visible = not isMinimized
-		if isMinimized then
-			showNotification("Pressione RightShift ou use o botão flutuante para abrir.")
-		end
+-- Toggle UI
+local function toggleUI()
+	isMinimized = not isMinimized
+	mainFrame.Visible = not isMinimized
+	if isMinimized then
+		showNotification("Pressione RightShift ou use o botão flutuante para abrir.")
 	end
+end
 
-	UserInputService.InputBegan:Connect(function(input, gameProcessed)
-		if not gameProcessed and input.KeyCode == Enum.KeyCode.RightShift then
-			toggleUI()
-		end
-	end)
-
-	minimizeButton.MouseButton1Click:Connect(toggleUI)
-
-	local draggingMain = false
-	local dragInputMain, mousePosMain, framePosMain
-
-	local function updateMain(input)
-		local delta = input.Position - mousePosMain
-		mainFrame.Position = UDim2.new(framePosMain.X.Scale, framePosMain.X.Offset + delta.X, framePosMain.Y.Scale, framePosMain.Y.Offset + delta.Y)
+UserInputService.InputBegan:Connect(function(input, gameProcessed)
+	if not gameProcessed and input.KeyCode == Enum.KeyCode.RightShift then
+		toggleUI()
 	end
+end)
 
-	topBar.InputBegan:Connect(function(input)
-		if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-			draggingMain = true
-			mousePosMain = input.Position
-			framePosMain = mainFrame.Position
+minimizeButton.MouseButton1Click:Connect(toggleUI)
 
-			input.Changed:Connect(function()
-				if input.UserInputState == Enum.UserInputState.End then
-					draggingMain = false
-				end
-			end)
-		end
-	end)
+-- Drag do frame
+local draggingMain = false
+local dragInputMain, mousePosMain, framePosMain
+local function updateMain(input)
+	local delta = input.Position - mousePosMain
+	mainFrame.Position = UDim2.new(framePosMain.X.Scale, framePosMain.X.Offset + delta.X, framePosMain.Y.Scale, framePosMain.Y.Offset + delta.Y)
+end
 
-	topBar.InputChanged:Connect(function(input)
-		if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
-			dragInputMain = input
-		end
-	end)
-
-	UserInputService.InputChanged:Connect(function(input)
-		if input == dragInputMain and draggingMain then
-			updateMain(input)
-		end
-	end)
-
-	local floatButton = Instance.new("ImageButton")
-	floatButton.Name = "FloatingMinimizeButton"
-	floatButton.Size = UDim2.new(0, 40, 0, 40)
-	floatButton.Position = UDim2.new(0, 20, 0.5, -20)
-	floatButton.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
-	floatButton.Image = "rbxassetid://72671288986713"
-	floatButton.AutoButtonColor = true
-	floatButton.Parent = screenGui
-
-	local corner = Instance.new("UICorner")
-	corner.CornerRadius = UDim.new(0, 100)
-	corner.Parent = floatButton
-
-	local stroke = Instance.new("UIStroke")
-	stroke.Color = Color3.fromRGB(170, 0, 255)
-	stroke.Thickness = 2
-	stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-	stroke.Parent = floatButton
-
-	local draggingFloat = false
-	local dragInputFloat, dragStartFloat, startPosFloat
-
-	local function updateFloat(input)
-		local delta = input.Position - dragStartFloat
-		floatButton.Position = UDim2.new(startPosFloat.X.Scale, startPosFloat.X.Offset + delta.X, startPosFloat.Y.Scale, startPosFloat.Y.Offset + delta.Y)
+topBar.InputBegan:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+		draggingMain = true
+		mousePosMain = input.Position
+		framePosMain = mainFrame.Position
+		input.Changed:Connect(function()
+			if input.UserInputState == Enum.UserInputState.End then draggingMain = false end
+		end)
 	end
+end)
 
-	floatButton.InputBegan:Connect(function(input)
-		if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-			draggingFloat = true
-			dragStartFloat = input.Position
-			startPosFloat = floatButton.Position
+UserInputService.InputChanged:Connect(function(input)
+	if input == dragInputMain and draggingMain then
+		updateMain(input)
+	end
+end)
 
-			input.Changed:Connect(function()
-				if input.UserInputState == Enum.UserInputState.End then
-					draggingFloat = false
-				end
-			end)
-		end
-	end)
+topBar.InputChanged:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+		dragInputMain = input
+	end
+end)
 
-	floatButton.InputChanged:Connect(function(input)
-		if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
-			dragInputFloat = input
-		end
-	end)
+-- Botão flutuante
+local floatButton = Instance.new("ImageButton")
+floatButton.Name = "FloatingMinimizeButton"
+floatButton.Size = UDim2.new(0, 40, 0, 40)
+floatButton.Position = UDim2.new(0, 20, 0.5, -20)
+floatButton.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+floatButton.Image = "rbxassetid://72671288986713"
+floatButton.Parent = screenGui
 
-	UserInputService.InputChanged:Connect(function(input)
-		if input == dragInputFloat and draggingFloat then
-			updateFloat(input)
-		end
-	end)
+local corner = Instance.new("UICorner")
+corner.CornerRadius = UDim.new(0, 100)
+corner.Parent = floatButton
 
-	floatButton.MouseButton1Click:Connect(toggleUI)
+local stroke = Instance.new("UIStroke")
+stroke.Color = Color3.fromRGB(170, 0, 255)
+stroke.Thickness = 2
+stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+stroke.Parent = floatButton
 
-	-- Sistema de Tabs
+-- Drag do botão flutuante
+local draggingFloat = false
+local dragInputFloat, dragStartFloat, startPosFloat
+local function updateFloat(input)
+	local delta = input.Position - dragStartFloat
+	floatButton.Position = UDim2.new(startPosFloat.X.Scale, startPosFloat.X.Offset + delta.X, startPosFloat.Y.Scale, startPosFloat.Y.Offset + delta.Y)
+end
+
+floatButton.InputBegan:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+		draggingFloat = true
+		dragStartFloat = input.Position
+		startPosFloat = floatButton.Position
+		input.Changed:Connect(function()
+			if input.UserInputState == Enum.UserInputState.End then draggingFloat = false end
+		end)
+	end
+end)
+
+floatButton.InputChanged:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+		dragInputFloat = input
+	end
+end)
+
+UserInputService.InputChanged:Connect(function(input)
+	if input == dragInputFloat and draggingFloat then
+		updateFloat(input)
+	end
+end)
+
+floatButton.MouseButton1Click:Connect(toggleUI)
+
+-- Sistema de Tabs
 local Window = {}
 local Tabs = {}
 local tabContents = {}

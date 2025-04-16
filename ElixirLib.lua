@@ -289,7 +289,7 @@ function Window:MakeTab(tabData)
 
     local sectionFrame = Instance.new("Frame")
     sectionFrame.Size = UDim2.new(1, 0, 0, 30)
-    sectionFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+    sectionFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
     sectionFrame.LayoutOrder = #self.Container:GetChildren() + 1
     sectionFrame.Parent = self.Container
 
@@ -297,11 +297,11 @@ function Window:MakeTab(tabData)
     sectionCorner.CornerRadius = UDim.new(0, 6)
     sectionCorner.Parent = sectionFrame
 
-    local sectionStroke = Instance.new("UIStroke")
-    sectionStroke.Color = Color3.fromRGB(170, 0, 255)
+    --[[local sectionStroke = Instance.new("UIStroke")
+    sectionStroke.Color = Color3.fromRGB(0, 0, 0)
     sectionStroke.Thickness = 1
     sectionStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-    sectionStroke.Parent = sectionFrame
+    sectionStroke.Parent = sectionFrame ]]
 
     local sectionLabel = Instance.new("TextLabel")
     sectionLabel.Size = UDim2.new(1, -10, 1, 0)

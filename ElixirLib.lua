@@ -664,6 +664,7 @@ end
         dropdownContainer.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
         dropdownContainer.LayoutOrder = #self.Container:GetChildren() + 1
         dropdownContainer.Parent = self.Container
+        dropdownContainer.ZIndex = 2
     
         Instance.new("UICorner", dropdownContainer).CornerRadius = UDim.new(0, 8)
     
@@ -683,9 +684,10 @@ end
         label.Font = Enum.Font.Gotham
         label.TextSize = 16
         label.TextXAlignment = Enum.TextXAlignment.Left
+        label.ZIndex = 2
         label.Parent = dropdownContainer
     
-        -- BotÃ£o principal do dropdown
+        -- Botão principal do dropdown
         local dropButton = Instance.new("TextButton")
         dropButton.Size = UDim2.new(0, 100, 0, 24)
         dropButton.Position = UDim2.new(1, -110, 0.5, -12)
@@ -694,6 +696,7 @@ end
         dropButton.Font = Enum.Font.Gotham
         dropButton.TextSize = 14
         dropButton.Text = default
+        dropButton.ZIndex = 2
         dropButton.Parent = dropdownContainer
     
         Instance.new("UICorner", dropButton).CornerRadius = UDim.new(0, 6)
@@ -704,7 +707,7 @@ end
         dropStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
         dropStroke.Parent = dropButton
     
-        -- Lista de opÃ§Ãµes scrollÃ¡vel
+        -- Lista de opções scrollável
         local optionFrame = Instance.new("ScrollingFrame")
         optionFrame.Visible = false
         optionFrame.Size = UDim2.new(0, 100, 0, 100)
@@ -715,6 +718,7 @@ end
         optionFrame.ScrollBarImageColor3 = Color3.fromRGB(170, 0, 255)
         optionFrame.ClipsDescendants = true
         optionFrame.CanvasSize = UDim2.new(0, 0, 0, #options * 26)
+        optionFrame.ZIndex = 5
         optionFrame.Parent = dropdownContainer
     
         Instance.new("UICorner", optionFrame).CornerRadius = UDim.new(0, 6)
@@ -740,6 +744,7 @@ end
             optionBtn.Text = option
             optionBtn.Font = Enum.Font.Gotham
             optionBtn.TextSize = 14
+            optionBtn.ZIndex = 6
             optionBtn.Parent = optionFrame
     
             Instance.new("UICorner", optionBtn).CornerRadius = UDim.new(0, 4)
@@ -756,6 +761,7 @@ end
     
         return dropdownContainer
     end
+    
     
 	--Slider 🟢
     function tab:AddSlider(sliderData)

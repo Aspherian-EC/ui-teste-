@@ -344,7 +344,7 @@ end
     corner.Parent = label
 
     local stroke = Instance.new("UIStroke")
-    stroke.Color = Color3.fromRGB(0, 0, 0)
+    stroke.Color = Color3.fromRGB(40, 40, 40)
     stroke.Thickness = 1
     stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
     stroke.Parent = label

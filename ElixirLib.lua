@@ -1,127 +1,89 @@
--- ServiÃ§os
-local Players = game:GetService("Players")
-local UserInputService = game:GetService("UserInputService")
-local player = Players.LocalPlayer
-local playerGui = player:WaitForChild("PlayerGui")
+local ElixirLib = {}
 
--- Criar ou obter ScreenGui
-local screenGui = playerGui:FindFirstChild("CustomUI") or Instance.new("ScreenGui")
-screenGui.Name = "CustomUI"
-screenGui.ResetOnSpawn = false
-screenGui.IgnoreGuiInset = true
-screenGui.Parent = playerGui
+function ElixirLib:MakeWindow(config)
+    local Window = {}
+    
+    -- Referências de serviços
+    local Players = game:GetService("Players")
+    local UserInputService = game:GetService("UserInputService")
+    local player = Players.LocalPlayer
+    local playerGui = player:WaitForChild("PlayerGui")
 
--- VariÃ¡vel de estado global
-local isMinimized = false
+    -- Criar ou obter ScreenGui
+    local screenGui = playerGui:FindFirstChild("CustomUI") or Instance.new("ScreenGui")
+    screenGui.Name = "CustomUI"
+    screenGui.ResetOnSpawn = false
+    screenGui.IgnoreGuiInset = true
+    screenGui.Parent = playerGui
 
--- NotificaÃ§Ã£o
-local function showNotification(message)
-	local notification = loadstring(game:HttpGet("https://raw.githubusercontent.com/9menta/tests/refs/heads/main/notification.lua"))()
-	notification({
-		Title = 'UI Minimized - Press "RightShift"',
-		Text = message,
-		Image = 'rbxassetid://72671288986713',
-		Duration = 10
-	})
-end
+    -- Frame principal
+    local mainFrame = Instance.new("Frame")
+    mainFrame.Name = "MainUIFrame"
+    mainFrame.Size = UDim2.new(0, 700, 0, 400)
+    mainFrame.Position = UDim2.new(0.5, -350, 0.2, 0)
+    mainFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+    mainFrame.Parent = screenGui
 
--- Frame principal
-local mainFrame = Instance.new("Frame")
-mainFrame.Name = "MainUIFrame"
-mainFrame.Size = UDim2.new(0, 700, 0, 400)
-mainFrame.Position = UDim2.new(0.5, -350, 0.2, 0)
-mainFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
-mainFrame.Parent = screenGui
+    Instance.new("UICorner", mainFrame).CornerRadius = UDim.new(0, 12)
+    Instance.new("UIStroke", mainFrame).Color = Color3.fromRGB(170, 0, 255)
 
-local uiCorner = Instance.new("UICorner")
-uiCorner.CornerRadius = UDim.new(0, 12)
-uiCorner.Parent = mainFrame
+    -- TopBar
+    local topBar = Instance.new("Frame")
+    topBar.Size = UDim2.new(1, 0, 0, 40)
+    topBar.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+    topBar.BorderSizePixel = 0
+    topBar.Parent = mainFrame
+    Instance.new("UICorner", topBar).CornerRadius = UDim.new(0, 12)
 
-local uiStroke = Instance.new("UIStroke")
-uiStroke.Color = Color3.fromRGB(170, 0, 255)
-uiStroke.Thickness = 2
-uiStroke.Parent = mainFrame
+    local titleLabel = Instance.new("TextLabel")
+    titleLabel.Size = UDim2.new(1, -60, 1, 0)
+    titleLabel.Position = UDim2.new(0, 10, 0, 0)
+    titleLabel.BackgroundTransparency = 1
+    titleLabel.Text = config.Name or "Elixir Client"
+    titleLabel.TextColor3 = Color3.fromRGB(200, 200, 255)
+    titleLabel.Font = Enum.Font.GothamBold
+    titleLabel.TextSize = 20
+    titleLabel.TextXAlignment = Enum.TextXAlignment.Left
+    titleLabel.Parent = topBar
 
--- TopBar
-local topBar = Instance.new("Frame")
-topBar.Name = "TopBar"
-topBar.Size = UDim2.new(1, 0, 0, 40)
-topBar.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-topBar.BorderSizePixel = 0
-topBar.Parent = mainFrame
+    local minimizeButton = Instance.new("ImageButton")
+    minimizeButton.Size = UDim2.new(0, 30, 0, 30)
+    minimizeButton.Position = UDim2.new(1, -40, 0, 5)
+    minimizeButton.BackgroundTransparency = 1
+    minimizeButton.Image = "rbxassetid://10738425363"
+    minimizeButton.Parent = topBar
+    Instance.new("UICorner", minimizeButton).CornerRadius = UDim.new(1, 0)
 
-local topBarCorner = Instance.new("UICorner")
-topBarCorner.CornerRadius = UDim.new(0, 12)
-topBarCorner.Parent = topBar
+    -- Divider
+    local divider = Instance.new("Frame")
+    divider.Size = UDim2.new(1, -20, 0, 2)
+    divider.Position = UDim2.new(0, 10, 0, 40)
+    divider.BackgroundColor3 = Color3.fromRGB(170, 0, 255)
+    divider.BorderSizePixel = 0
+    divider.Parent = mainFrame
+    Instance.new("UICorner", divider).CornerRadius = UDim.new(1, 0)
 
--- TÃ­tulo
-local titleLabel = Instance.new("TextLabel")
-titleLabel.Size = UDim2.new(1, -60, 1, 0)
-titleLabel.Position = UDim2.new(0, 10, 0, 0)
-titleLabel.BackgroundTransparency = 1
-titleLabel.Text = "Elixir Client"
-titleLabel.TextColor3 = Color3.fromRGB(200, 200, 255)
-titleLabel.Font = Enum.Font.GothamBold
-titleLabel.TextSize = 20
-titleLabel.TextXAlignment = Enum.TextXAlignment.Left
-titleLabel.Parent = topBar
+    -- Conteúdo principal
+    local contentFrame = Instance.new("Frame")
+    contentFrame.Size = UDim2.new(1, 0, 1, -42)
+    contentFrame.Position = UDim2.new(0, 0, 0, 42)
+    contentFrame.BackgroundTransparency = 1
+    contentFrame.Parent = mainFrame
 
--- BotÃ£o de minimizar
-local minimizeButton = Instance.new("ImageButton")
-minimizeButton.Name = "MinimizeButton"
-minimizeButton.Size = UDim2.new(0, 30, 0, 30)
-minimizeButton.Position = UDim2.new(1, -40, 0, 5)
-minimizeButton.BackgroundTransparency = 1
-minimizeButton.Image = "rbxassetid://10738425363"
-minimizeButton.Parent = topBar
+    local leftPanel = Instance.new("Frame")
+    leftPanel.Size = UDim2.new(0, 180, 1, 0)
+    leftPanel.BackgroundColor3 = Color3.fromRGB(28, 28, 28)
+    leftPanel.Parent = contentFrame
+    Instance.new("UICorner", leftPanel).CornerRadius = UDim.new(0, 10)
+    Instance.new("UIStroke", leftPanel).Color = Color3.fromRGB(170, 0, 255)
 
-local buttonCorner = Instance.new("UICorner")
-buttonCorner.CornerRadius = UDim.new(1, 0)
-buttonCorner.Parent = minimizeButton
+    local rightPanel = Instance.new("Frame")
+    rightPanel.Size = UDim2.new(1, -180, 1, 0)
+    rightPanel.Position = UDim2.new(0, 180, 0, 0)
+    rightPanel.BackgroundTransparency = 1
+    rightPanel.Parent = contentFrame
 
--- Divisor neon
-local divider = Instance.new("Frame")
-divider.Name = "Divider"
-divider.Size = UDim2.new(1, -20, 0, 2)
-divider.Position = UDim2.new(0, 10, 0, 40)
-divider.BackgroundColor3 = Color3.fromRGB(170, 0, 255)
-divider.BorderSizePixel = 0
-divider.Parent = mainFrame
-
-local dividerCorner = Instance.new("UICorner")
-dividerCorner.CornerRadius = UDim.new(1, 0)
-dividerCorner.Parent = divider
-
--- ConteÃºdo principal
-local contentFrame = Instance.new("Frame")
-contentFrame.Name = "Content"
-contentFrame.Size = UDim2.new(1, 0, 1, -42)
-contentFrame.Position = UDim2.new(0, 0, 0, 42)
-contentFrame.BackgroundTransparency = 1
-contentFrame.Parent = mainFrame
-
-local leftPanel = Instance.new("Frame")
-leftPanel.Size = UDim2.new(0, 180, 1, 0)
-leftPanel.Position = UDim2.new(0, 0, 0, 0)
-leftPanel.BackgroundColor3 = Color3.fromRGB(28, 28, 28)
-leftPanel.Parent = contentFrame
-
-local leftPanelCorner = Instance.new("UICorner")
-leftPanelCorner.CornerRadius = UDim.new(0, 10)
-leftPanelCorner.Parent = leftPanel
-
-local leftPanelStroke = Instance.new("UIStroke")
-leftPanelStroke.Color = Color3.fromRGB(170, 0, 255)
-leftPanelStroke.Thickness = 1
-leftPanelStroke.Parent = leftPanel
-
-local rightPanel = Instance.new("Frame")
-rightPanel.Size = UDim2.new(1, -180, 1, 0)
-rightPanel.Position = UDim2.new(0, 180, 0, 0)
-rightPanel.BackgroundTransparency = 1
-rightPanel.Parent = contentFrame
-
--- Toggle UI
+    -- Toggle UI
 local function toggleUI()
 	isMinimized = not isMinimized
 	mainFrame.Visible = not isMinimized
@@ -221,7 +183,7 @@ end)
 
 floatButton.MouseButton1Click:Connect(toggleUI)
 
--- Sistema de Tabs
+   -- Sistema de Tabs
 local Window = {}
 local Tabs = {}
 local tabContents = {}
@@ -534,6 +496,51 @@ end
         switch.MouseButton1Click:Connect(toggleSwitch)
     
         return toggleButton
+    end
+    
+    --- aqui eo botao🟢
+
+    function tab:AddButton(buttonData)
+        local name = buttonData.Name or "Button"
+        local callback = buttonData.Callback or function() end
+    
+        -- Container do botão
+        local buttonFrame = Instance.new("Frame")
+        buttonFrame.Size = UDim2.new(1, 0, 0, 30)
+        buttonFrame.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+        buttonFrame.LayoutOrder = #self.Container:GetChildren() + 1
+        buttonFrame.Parent = self.Container
+    
+        -- Estilo do botão
+        local buttonCorner = Instance.new("UICorner")
+        buttonCorner.CornerRadius = UDim.new(0, 6)
+        buttonCorner.Parent = buttonFrame
+    
+        local buttonStroke = Instance.new("UIStroke")
+        buttonStroke.Color = Color3.fromRGB(170, 0, 255)
+        buttonStroke.Thickness = 1
+        buttonStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+        buttonStroke.Parent = buttonFrame
+    
+        -- Nome do botão
+        local buttonLabel = Instance.new("TextButton")
+        buttonLabel.Size = UDim2.new(1, -10, 1, 0)
+        buttonLabel.Position = UDim2.new(0, 5, 0, 0)
+        buttonLabel.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+        buttonLabel.BackgroundTransparency = 0.2
+        buttonLabel.Text = name
+        buttonLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+        buttonLabel.Font = Enum.Font.GothamSemibold
+        buttonLabel.TextSize = 16
+        buttonLabel.TextXAlignment = Enum.TextXAlignment.Center
+        buttonLabel.Parent = buttonFrame
+    
+        -- Ação do botão
+        buttonLabel.MouseButton1Click:Connect(function()
+            callback()  -- Executa a função callback quando o botão é pressionado
+        end)
+    
+        return buttonFrame
     end
     
     --Keybind🟢
@@ -892,3 +899,9 @@ end)
     return tab
 end
 
+
+
+    return Window
+end
+
+return ElixirLib

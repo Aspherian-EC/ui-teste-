@@ -58,7 +58,7 @@ function ElixirLib:MakeWindow(config)
     local divider = Instance.new("Frame")
     divider.Size = UDim2.new(1, -20, 0, 2)
     divider.Position = UDim2.new(0, 10, 0, 40)
-    divider.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
+    divider.BackgroundColor3 = Color3.fromRGB(170, 0, 255)
     divider.BorderSizePixel = 0
     divider.Parent = mainFrame
     Instance.new("UICorner", divider).CornerRadius = UDim.new(1, 0)
@@ -75,7 +75,7 @@ function ElixirLib:MakeWindow(config)
     leftPanel.BackgroundColor3 = Color3.fromRGB(28, 28, 28)
     leftPanel.Parent = contentFrame
     Instance.new("UICorner", leftPanel).CornerRadius = UDim.new(0, 10)
-    Instance.new("UIStroke", leftPanel).Color = Color3.fromRGB(170, 0, 255)
+    Instance.new("UIStroke", leftPanel).Color = Color3.fromRGB(0, 255, 0)
 
     local rightPanel = Instance.new("Frame")
     rightPanel.Size = UDim2.new(1, -180, 1, 0)
@@ -517,7 +517,7 @@ end
         buttonCorner.Parent = buttonFrame
     
         local buttonStroke = Instance.new("UIStroke")
-        buttonStroke.Color = Color3.fromRGB(170, 0, 255)
+        buttonStroke.Color = Color3.fromRGB(0, 255, 0)
         buttonStroke.Thickness = 1
         buttonStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
         buttonStroke.Parent = buttonFrame
@@ -565,7 +565,7 @@ end
         Instance.new("UICorner", bindContainer).CornerRadius = UDim.new(0, 8)
     
         local stroke = Instance.new("UIStroke")
-        stroke.Color = Color3.fromRGB(170, 0, 255)
+        stroke.Color = Color3.fromRGB(0, 255, 0)
         stroke.Thickness = 1
         stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
         stroke.Parent = bindContainer
@@ -596,7 +596,7 @@ end
         Instance.new("UICorner", keyLabel).CornerRadius = UDim.new(0, 6)
     
         local keyStroke = Instance.new("UIStroke")
-        keyStroke.Color = Color3.fromRGB(170, 0, 255)
+        keyStroke.Color = Color3.fromRGB(0, 255, 0)
         keyStroke.Thickness = 1
         keyStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
         keyStroke.Parent = keyLabel
@@ -669,7 +669,7 @@ end
         Instance.new("UICorner", dropdownContainer).CornerRadius = UDim.new(0, 8)
     
         local stroke = Instance.new("UIStroke")
-        stroke.Color = Color3.fromRGB(170, 0, 255)
+        stroke.Color = Color3.fromRGB(0, 255, 0)
         stroke.Thickness = 1
         stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
         stroke.Parent = dropdownContainer
@@ -702,7 +702,7 @@ end
         Instance.new("UICorner", dropButton).CornerRadius = UDim.new(0, 6)
     
         local dropStroke = Instance.new("UIStroke")
-        dropStroke.Color = Color3.fromRGB(170, 0, 255)
+        dropStroke.Color = Color3.fromRGB(0, 255, 0)
         dropStroke.Thickness = 1
         dropStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
         dropStroke.Parent = dropButton
@@ -789,7 +789,7 @@ end
         corner.Parent = sliderContainer
     
         local stroke = Instance.new("UIStroke")
-        stroke.Color = Color3.fromRGB(170, 0, 255)
+        stroke.Color = Color3.fromRGB(0, 255, 0)
         stroke.Thickness = 1
         stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
         stroke.Parent = sliderContainer
@@ -821,7 +821,7 @@ end
         -- Definir borda da caixa de valor
         Instance.new("UICorner", valueBox).CornerRadius = UDim.new(0, 6)
         local valueStroke = Instance.new("UIStroke")
-        valueStroke.Color = Color3.fromRGB(170, 0, 255)
+        valueStroke.Color = Color3.fromRGB(0, 255, 0)
         valueStroke.Thickness = 1
         valueStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
         valueStroke.Parent = valueBox

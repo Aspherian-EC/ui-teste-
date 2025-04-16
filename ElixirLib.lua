@@ -58,7 +58,7 @@ function ElixirLib:MakeWindow(config)
     local divider = Instance.new("Frame")
     divider.Size = UDim2.new(1, -20, 0, 2)
     divider.Position = UDim2.new(0, 10, 0, 40)
-    divider.BackgroundColor3 = Color3.fromRGB(170, 0, 255)
+    divider.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
     divider.BorderSizePixel = 0
     divider.Parent = mainFrame
     Instance.new("UICorner", divider).CornerRadius = UDim.new(1, 0)

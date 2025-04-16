@@ -498,6 +498,51 @@ end
         return toggleButton
     end
     
+    --- aqui eo botao🟢
+
+    function tab:AddButton(buttonData)
+        local name = buttonData.Name or "Button"
+        local callback = buttonData.Callback or function() end
+    
+        -- Container do botão
+        local buttonFrame = Instance.new("Frame")
+        buttonFrame.Size = UDim2.new(1, 0, 0, 30)
+        buttonFrame.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+        buttonFrame.LayoutOrder = #self.Container:GetChildren() + 1
+        buttonFrame.Parent = self.Container
+    
+        -- Estilo do botão
+        local buttonCorner = Instance.new("UICorner")
+        buttonCorner.CornerRadius = UDim.new(0, 6)
+        buttonCorner.Parent = buttonFrame
+    
+        local buttonStroke = Instance.new("UIStroke")
+        buttonStroke.Color = Color3.fromRGB(170, 0, 255)
+        buttonStroke.Thickness = 1
+        buttonStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+        buttonStroke.Parent = buttonFrame
+    
+        -- Nome do botão
+        local buttonLabel = Instance.new("TextButton")
+        buttonLabel.Size = UDim2.new(1, -10, 1, 0)
+        buttonLabel.Position = UDim2.new(0, 5, 0, 0)
+        buttonLabel.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+        buttonLabel.BackgroundTransparency = 0.2
+        buttonLabel.Text = name
+        buttonLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+        buttonLabel.Font = Enum.Font.GothamSemibold
+        buttonLabel.TextSize = 16
+        buttonLabel.TextXAlignment = Enum.TextXAlignment.Center
+        buttonLabel.Parent = buttonFrame
+    
+        -- Ação do botão
+        buttonLabel.MouseButton1Click:Connect(function()
+            callback()  -- Executa a função callback quando o botão é pressionado
+        end)
+    
+        return buttonFrame
+    end
+    
     --Keybind🟢
 
     function tab:AddBind(bindData)

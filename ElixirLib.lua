@@ -289,7 +289,7 @@ function Window:MakeTab(tabData)
 
     local sectionFrame = Instance.new("Frame")
     sectionFrame.Size = UDim2.new(1, 0, 0, 30)
-    sectionFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+    sectionFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
     sectionFrame.LayoutOrder = #self.Container:GetChildren() + 1
     sectionFrame.Parent = self.Container
 
@@ -330,7 +330,7 @@ end
 	function tab:AddLabel(text)
     local label = Instance.new("TextLabel")
     label.Size = UDim2.new(1, 0, 0, 25)
-    label.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+    label.BackgroundColor3 = Color3.fromRGB(250, 250, 250)
     label.Text = text
     label.TextColor3 = Color3.fromRGB(255, 255, 255)
     label.Font = Enum.Font.Gotham

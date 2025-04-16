@@ -1,5 +1,4 @@
 local ElixirLib = {}
-
 function ElixirLib:MakeWindow(data)
 	local Players = game:GetService("Players")
 	local UserInputService = game:GetService("UserInputService")
@@ -319,7 +318,7 @@ function Window:MakeTab(tabData)
         tabContent.Visible = true
     end)
 
-   
+    table.insert(tabContents, tabContent)
 
     function tab:AddSection(sectionData)
         local name = sectionData.Name or "Section"
@@ -839,7 +838,7 @@ function Window:MakeTab(tabData)
         return sliderContainer
     end
     
-    table.insert(tabContents, tabContent)
+    
     return tab
 end
 

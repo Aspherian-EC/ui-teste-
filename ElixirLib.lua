@@ -330,7 +330,7 @@ end
 	function tab:AddLabel(text)
     local label = Instance.new("TextLabel")
     label.Size = UDim2.new(1, 0, 0, 25)
-    label.BackgroundColor3 = Color3.fromRGB(250, 250, 250)
+    label.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
     label.Text = text
     label.TextColor3 = Color3.fromRGB(255, 255, 255)
     label.Font = Enum.Font.Gotham
@@ -344,7 +344,7 @@ end
     corner.Parent = label
 
     local stroke = Instance.new("UIStroke")
-    stroke.Color = Color3.fromRGB(170, 0, 255)
+    stroke.Color = Color3.fromRGB(0, 0, 0)
     stroke.Thickness = 1
     stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
     stroke.Parent = label

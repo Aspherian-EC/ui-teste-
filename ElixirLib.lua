@@ -297,11 +297,11 @@ function Window:MakeTab(tabData)
     sectionCorner.CornerRadius = UDim.new(0, 6)
     sectionCorner.Parent = sectionFrame
 
-    --[[local sectionStroke = Instance.new("UIStroke")
-    sectionStroke.Color = Color3.fromRGB(0, 0, 0)
+    local sectionStroke = Instance.new("UIStroke")
+    sectionStroke.Color = Color3.fromRGB(40, 40, 40)
     sectionStroke.Thickness = 1
     sectionStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-    sectionStroke.Parent = sectionFrame ]]
+    sectionStroke.Parent = sectionFrame
 
     local sectionLabel = Instance.new("TextLabel")
     sectionLabel.Size = UDim2.new(1, -10, 1, 0)

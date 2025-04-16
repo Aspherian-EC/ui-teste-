@@ -83,6 +83,106 @@ function ElixirLib:MakeWindow(config)
     rightPanel.BackgroundTransparency = 1
     rightPanel.Parent = contentFrame
 
+    -- Toggle UI
+local function toggleUI()
+	isMinimized = not isMinimized
+	mainFrame.Visible = not isMinimized
+	if isMinimized then
+		showNotification("Pressione RightShift ou use o botÃ£o flutuante para abrir.")
+	end
+end
+
+UserInputService.InputBegan:Connect(function(input, gameProcessed)
+	if not gameProcessed and input.KeyCode == Enum.KeyCode.RightShift then
+		toggleUI()
+	end
+end)
+
+minimizeButton.MouseButton1Click:Connect(toggleUI)
+
+-- Drag do frame
+local draggingMain = false
+local dragInputMain, mousePosMain, framePosMain
+local function updateMain(input)
+	local delta = input.Position - mousePosMain
+	mainFrame.Position = UDim2.new(framePosMain.X.Scale, framePosMain.X.Offset + delta.X, framePosMain.Y.Scale, framePosMain.Y.Offset + delta.Y)
+end
+
+topBar.InputBegan:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+		draggingMain = true
+		mousePosMain = input.Position
+		framePosMain = mainFrame.Position
+		input.Changed:Connect(function()
+			if input.UserInputState == Enum.UserInputState.End then draggingMain = false end
+		end)
+	end
+end)
+
+UserInputService.InputChanged:Connect(function(input)
+	if input == dragInputMain and draggingMain then
+		updateMain(input)
+	end
+end)
+
+topBar.InputChanged:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+		dragInputMain = input
+	end
+end)
+
+-- BotÃ£o flutuante
+local floatButton = Instance.new("ImageButton")
+floatButton.Name = "FloatingMinimizeButton"
+floatButton.Size = UDim2.new(0, 40, 0, 40)
+floatButton.Position = UDim2.new(0, 20, 0.5, -20)
+floatButton.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+floatButton.Image = "rbxassetid://72671288986713"
+floatButton.Parent = screenGui
+
+local corner = Instance.new("UICorner")
+corner.CornerRadius = UDim.new(0, 100)
+corner.Parent = floatButton
+
+local stroke = Instance.new("UIStroke")
+stroke.Color = Color3.fromRGB(170, 0, 255)
+stroke.Thickness = 2
+stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+stroke.Parent = floatButton
+
+-- Drag do botÃ£o flutuante
+local draggingFloat = false
+local dragInputFloat, dragStartFloat, startPosFloat
+local function updateFloat(input)
+	local delta = input.Position - dragStartFloat
+	floatButton.Position = UDim2.new(startPosFloat.X.Scale, startPosFloat.X.Offset + delta.X, startPosFloat.Y.Scale, startPosFloat.Y.Offset + delta.Y)
+end
+
+floatButton.InputBegan:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+		draggingFloat = true
+		dragStartFloat = input.Position
+		startPosFloat = floatButton.Position
+		input.Changed:Connect(function()
+			if input.UserInputState == Enum.UserInputState.End then draggingFloat = false end
+		end)
+	end
+end)
+
+floatButton.InputChanged:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+		dragInputFloat = input
+	end
+end)
+
+UserInputService.InputChanged:Connect(function(input)
+	if input == dragInputFloat and draggingFloat then
+		updateFloat(input)
+	end
+end)
+
+floatButton.MouseButton1Click:Connect(toggleUI)
+
    -- Sistema de Tabs
 local Window = {}
 local Tabs = {}

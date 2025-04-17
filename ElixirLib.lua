@@ -83,22 +83,26 @@ function ElixirLib:MakeWindow(config)
     rightPanel.BackgroundTransparency = 1
     rightPanel.Parent = contentFrame
 
-    local function showNotification(text)
-        game.StarterGui:SetCore("SendNotification", {
-            Title = "Elixir Client",
-            Text = text,
-            Duration = 5
-        })
-    end
-    
-    -- Toggle UI
-local function toggleUI()
-	isMinimized = not isMinimized
-	mainFrame.Visible = not isMinimized
-	if isMinimized then
-		showNotification("Pressione RightShift ou use o botÃ£o flutuante para abrir.")
-	end
+-- Notificação personalizada
+local function showNotification(message)
+    local notification = loadstring(game:HttpGet('https://raw.githubusercontent.com/9menta/tests/refs/heads/main/notification.lua'))()
+    notification({
+        Title = 'Minimized ',
+        Text = message,
+        Image = 'rbxassetid://72671288986713',
+        Duration = 10
+    })
 end
+
+-- Toggle UI
+local function toggleUI()
+    isMinimized = not isMinimized
+    mainFrame.Visible = not isMinimized
+    if isMinimized then
+        showNotification("Pressione RightShift ou use o botão flutuante para abrir.")
+    end
+end
+
 
 UserInputService.InputBegan:Connect(function(input, gameProcessed)
 	if not gameProcessed and input.KeyCode == Enum.KeyCode.RightShift then

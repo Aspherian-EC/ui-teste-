@@ -715,7 +715,7 @@ end
         optionFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
         optionFrame.BorderSizePixel = 0
         optionFrame.ScrollBarThickness = 2
-        optionFrame.ScrollBarImageColor3 = Color3.fromRGB(170, 0, 255)
+        optionFrame.ScrollBarImageColor3 = Color3.fromRGB(0, 255, 0)
         optionFrame.ClipsDescendants = true
         optionFrame.CanvasSize = UDim2.new(0, 0, 0, #options * 26)
         optionFrame.ZIndex = 5

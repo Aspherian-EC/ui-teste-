@@ -83,23 +83,7 @@ function ElixirLib:MakeWindow(config)
     rightPanel.BackgroundTransparency = 1
     rightPanel.Parent = contentFrame
 
-    -- Toggle UI
-local function toggleUI()
-	isMinimized = not isMinimized
-	mainFrame.Visible = not isMinimized
-	if isMinimized then
-		showNotification("Pressione RightShift ou use o botÃ£o flutuante para abrir.")
-	end
-end
-
-UserInputService.InputBegan:Connect(function(input, gameProcessed)
-	if not gameProcessed and input.KeyCode == Enum.KeyCode.RightShift then
-		toggleUI()
-	end
-end)
-
-minimizeButton.MouseButton1Click:Connect(toggleUI)
-
+    
 -- Drag do frame
 local draggingMain = false
 local dragInputMain, mousePosMain, framePosMain
@@ -149,6 +133,23 @@ stroke.Color = Color3.fromRGB(0, 255, 0)
 stroke.Thickness = 2
 stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
 stroke.Parent = floatButton
+
+-- Toggle UI
+local function toggleUI()
+	isMinimized = not isMinimized
+	mainFrame.Visible = not isMinimized
+	if isMinimized then
+		showNotification("Pressione RightShift ou use o botÃ£o flutuante para abrir.")
+	end
+end
+
+UserInputService.InputBegan:Connect(function(input, gameProcessed)
+	if not gameProcessed and input.KeyCode == Enum.KeyCode.RightShift then
+		toggleUI()
+	end
+end)
+
+minimizeButton.MouseButton1Click:Connect(toggleUI)
 
 -- Drag do botÃ£o flutuante
 local draggingFloat = false

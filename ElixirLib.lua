@@ -353,36 +353,31 @@ end
 end
     
 	--Toggle 🟢
-	
-    function tab:AddToggle(toggleData)
+	function tab:AddToggle(toggleData)
         local toggleName = toggleData.Name or "Toggle"
         local defaultValue = toggleData.Default or false
         local callback = toggleData.Callback or function() end
     
         local TweenService = game:GetService("TweenService")
     
-        -- Criar botÃ£o-base do toggle
         local toggleButton = Instance.new("TextButton")
         toggleButton.Size = UDim2.new(1, 0, 0, 40)
-        toggleButton.BackgroundColor3 = Color3.fromRGB(40, 40, 40) -- fundo cinza escuro
+        toggleButton.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
         toggleButton.Text = ""
         toggleButton.AutoButtonColor = false
         toggleButton.LayoutOrder = #self.Container:GetChildren() + 1
         toggleButton.Parent = self.Container
     
-        -- Canto arredondado
         local corner = Instance.new("UICorner")
         corner.CornerRadius = UDim.new(0, 8)
         corner.Parent = toggleButton
     
-        -- Borda roxa
         local stroke = Instance.new("UIStroke")
         stroke.Color = Color3.fromRGB(0, 255, 0)
         stroke.Thickness = 1
         stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
         stroke.Parent = toggleButton
     
-        -- Label do toggle (nome)
         local label = Instance.new("TextLabel")
         label.Size = UDim2.new(1, -60, 1, 0)
         label.Position = UDim2.new(0, 10, 0, 0)
@@ -394,7 +389,6 @@ end
         label.TextXAlignment = Enum.TextXAlignment.Left
         label.Parent = toggleButton
     
-        -- Switch visual
         local switch = Instance.new("TextButton")
         switch.Size = UDim2.new(0, 50, 0, 24)
         switch.Position = UDim2.new(1, -60, 0.5, -12)
@@ -404,7 +398,6 @@ end
         switch.Text = ""
         switch.Parent = toggleButton
     
-        -- Fundo do switch com degradÃª
         local switchFrame = Instance.new("Frame")
         switchFrame.Size = UDim2.new(1, 0, 1, 0)
         switchFrame.Position = UDim2.new(0, 0, 0, 0)
@@ -425,7 +418,6 @@ end
         }
         frameGradient.Parent = switchFrame
     
-        -- Bolinha do toggle
         local ball = Instance.new("Frame")
         ball.Size = UDim2.new(0, 20, 1, -4)
         ball.Position = defaultValue and UDim2.new(1, -22, 0, 2) or UDim2.new(0, 2, 0, 2)
@@ -449,7 +441,7 @@ end
     
         -- Cores de estado
         local colorOff = Color3.fromRGB(100, 100, 100)
-        local colorOn = Color3.fromRGB(255, 0, 255)
+        local colorOn = Color3.fromRGB(0, 255, 0) -- verde neon
     
         local gradientOff = ColorSequence.new{
             ColorSequenceKeypoint.new(0, Color3.fromRGB(50, 50, 50)),
@@ -457,8 +449,8 @@ end
         }
     
         local gradientOn = ColorSequence.new{
-            ColorSequenceKeypoint.new(0, Color3.fromRGB(90, 0, 120)),
-            ColorSequenceKeypoint.new(1, Color3.fromRGB(180, 80, 255))
+            ColorSequenceKeypoint.new(0, Color3.fromRGB(0, 180, 0)),
+            ColorSequenceKeypoint.new(1, Color3.fromRGB(0, 255, 100))
         }
     
         local ballGradientOff = ColorSequence.new{
@@ -467,8 +459,8 @@ end
         }
     
         local ballGradientOn = ColorSequence.new{
-            ColorSequenceKeypoint.new(0, Color3.fromRGB(100, 0, 130)),
-            ColorSequenceKeypoint.new(1, Color3.fromRGB(200, 100, 255))
+            ColorSequenceKeypoint.new(0, Color3.fromRGB(0, 200, 0)),
+            ColorSequenceKeypoint.new(1, Color3.fromRGB(100, 255, 150))
         }
     
         local tweenInfo = TweenInfo.new(0.25, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
@@ -491,12 +483,12 @@ end
             callback(toggled)
         end
     
-        -- Conecta clique no switch e no botÃ£o externo
         toggleButton.MouseButton1Click:Connect(toggleSwitch)
         switch.MouseButton1Click:Connect(toggleSwitch)
     
         return toggleButton
     end
+    
     
     --- aqui eo botao🟢
 

@@ -325,7 +325,7 @@ function Window:MakeTab(tabData)
     end)
 
     table.insert(tabContents, tabContent)
-end
+
 
 
 	

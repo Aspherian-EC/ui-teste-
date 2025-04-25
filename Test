@@ -205,6 +205,7 @@ end)
 
 floatButton.MouseButton1Click:Connect(toggleUI)
 
+   -- Sistema de Tabs
 -- Sistema de Tabs
 local Window = {}
 local Tabs = {}
@@ -220,7 +221,7 @@ function Window:MakeTab(tabData)
     local button = Instance.new("TextButton")
     button.Size = UDim2.new(1, -20, 0, 40)
     button.Position = UDim2.new(0, 10, 0, 10 + (#leftPanel:GetChildren() - 2) * 45)
-    button.BackgroundColor3 = Color3.fromRGB(40, 40, 40) -- cinza original
+    button.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
     button.Text = ""
     button.AutoButtonColor = true
     button.Parent = leftPanel
@@ -280,29 +281,22 @@ function Window:MakeTab(tabData)
     local scrollContainer = Instance.new("ScrollingFrame")
     scrollContainer.Size = UDim2.new(1, -20, 1, -70)
     scrollContainer.Position = UDim2.new(0, 10, 0, 60)
-    scrollContainer.BackgroundTransparency = 1
+    scrollContainer.BackgroundTransparency = 0
+    scrollContainer.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
     scrollContainer.CanvasSize = UDim2.new(0, 0, 0, 0)
     scrollContainer.ScrollBarThickness = 4
     scrollContainer.AutomaticCanvasSize = Enum.AutomaticSize.Y
     scrollContainer.VerticalScrollBarInset = Enum.ScrollBarInset.ScrollBar
     scrollContainer.Parent = tabContent
 
-    -- ✅ Degradê no scroll da aba
-    local scrollBackground = Instance.new("Frame")
-    scrollBackground.Size = UDim2.new(1, 0, 1, 0)
-    scrollBackground.BackgroundTransparency = 0
-    scrollBackground.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
-    scrollBackground.ZIndex = 0
-    scrollBackground.Parent = scrollContainer
-
-    local scrollGradient = Instance.new("UIGradient", scrollBackground)
-    scrollGradient.Color = ColorSequence.new{
-        ColorSequenceKeypoint.new(0, Color3.fromRGB(30, 30, 30)),
-        ColorSequenceKeypoint.new(1, Color3.fromRGB(45, 45, 60))
-    }
-    scrollGradient.Rotation = 90
-
-    scrollContainer.ClipsDescendants = true
+    -- 🌈 Adicionando o degradê na janela rolável
+    local gradient = Instance.new("UIGradient")
+    gradient.Color = ColorSequence.new({
+        ColorSequenceKeypoint.new(0, Color3.fromRGB(0, 255, 128)), -- Verde água
+        ColorSequenceKeypoint.new(1, Color3.fromRGB(0, 180, 255))  -- Azul claro
+    })
+    gradient.Rotation = 90 -- vertical
+    gradient.Parent = scrollContainer
 
     local listLayout = Instance.new("UIListLayout")
     listLayout.Padding = UDim.new(0, 10)
@@ -319,17 +313,6 @@ function Window:MakeTab(tabData)
         end
         tabContent.Visible = true
     end)
-
-   
--- ✅ Degradê no fundo do painel de botões
-local leftPanelGradient = Instance.new("UIGradient", leftPanel)
-leftPanelGradient.Color = ColorSequence.new{
-    ColorSequenceKeypoint.new(0, Color3.fromRGB(20, 20, 20)),
-    ColorSequenceKeypoint.new(1, Color3.fromRGB(40, 40, 50))
-}
-leftPanelGradient.Rotation = 90
-
-return Window
 
 
     table.insert(tabContents, tabContent)

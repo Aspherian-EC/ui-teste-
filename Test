@@ -205,7 +205,7 @@ end)
 
 floatButton.MouseButton1Click:Connect(toggleUI)
 
-   -- Sistema de Tabs
+ -- Sistema de Tabs
 local Window = {}
 local Tabs = {}
 local tabContents = {}
@@ -216,7 +216,7 @@ function Window:MakeTab(tabData)
     local tab = {}
     tab.Sections = {}
 
-    -- BotÃ£o de tab
+    -- Botão de tab
     local button = Instance.new("TextButton")
     button.Size = UDim2.new(1, -20, 0, 40)
     button.Position = UDim2.new(0, 10, 0, 10 + (#leftPanel:GetChildren() - 2) * 45)
@@ -224,6 +224,13 @@ function Window:MakeTab(tabData)
     button.Text = ""
     button.AutoButtonColor = true
     button.Parent = leftPanel
+
+    local gradientBtn = Instance.new("UIGradient", button)
+    gradientBtn.Color = ColorSequence.new{
+        ColorSequenceKeypoint.new(0, Color3.fromRGB(0, 255, 150)),
+        ColorSequenceKeypoint.new(1, Color3.fromRGB(0, 180, 255))
+    }
+    gradientBtn.Rotation = 0
 
     local icon = Instance.new("ImageLabel")
     icon.Size = UDim2.new(0, 24, 0, 24)
@@ -260,11 +267,18 @@ function Window:MakeTab(tabData)
     tabContent.Visible = false
     tabContent.Parent = rightPanel
 
+    local gradientBg = Instance.new("UIGradient", tabContent)
+    gradientBg.Color = ColorSequence.new{
+        ColorSequenceKeypoint.new(0, Color3.fromRGB(30, 30, 30)),
+        ColorSequenceKeypoint.new(1, Color3.fromRGB(50, 50, 60))
+    }
+    gradientBg.Rotation = 90
+
     local corner = Instance.new("UICorner")
     corner.CornerRadius = UDim.new(0, 12)
     corner.Parent = tabContent
 
-    -- TÃ­tulo da aba
+    -- Título da aba
     local title = Instance.new("TextLabel")
     title.Size = UDim2.new(1, -20, 0, 50)
     title.Position = UDim2.new(0, 10, 0, 10)
@@ -276,7 +290,14 @@ function Window:MakeTab(tabData)
     title.TextXAlignment = Enum.TextXAlignment.Left
     title.Parent = tabContent
 
-    -- Ãrea rolÃ¡vel para os elementos (toggles, etc)
+    local gradientTitle = Instance.new("UIGradient", title)
+    gradientTitle.Color = ColorSequence.new{
+        ColorSequenceKeypoint.new(0, Color3.fromRGB(0, 255, 200)),
+        ColorSequenceKeypoint.new(1, Color3.fromRGB(0, 180, 255))
+    }
+    gradientTitle.Rotation = 0
+
+    -- Área rolável para os elementos (toggles, etc)
     local scrollContainer = Instance.new("ScrollingFrame")
     scrollContainer.Size = UDim2.new(1, -20, 1, -70)
     scrollContainer.Position = UDim2.new(0, 10, 0, 60)

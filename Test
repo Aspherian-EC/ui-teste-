@@ -205,6 +205,7 @@ end)
 
 floatButton.MouseButton1Click:Connect(toggleUI)
 
+-- Sistema de Tabs
 local Window = {}
 local Tabs = {}
 local tabContents = {}
@@ -259,6 +260,14 @@ function Window:MakeTab(tabData)
     tabContent.Visible = false
     tabContent.Parent = rightPanel
 
+    -- Adicionar o degradê no fundo da aba
+    local gradient = Instance.new("UIGradient")
+    gradient.Color = ColorSequence.new({
+        ColorSequenceKeypoint.new(0, Color3.fromRGB(35, 35, 35)),
+        ColorSequenceKeypoint.new(1, Color3.fromRGB(55, 55, 55))
+    })
+    gradient.Parent = tabContent
+
     local corner = Instance.new("UICorner")
     corner.CornerRadius = UDim.new(0, 12)
     corner.Parent = tabContent
@@ -302,9 +311,8 @@ function Window:MakeTab(tabData)
         tabContent.Visible = true
     end)
 
-
-
     table.insert(tabContents, tabContent)
+end
 
 	--Seções🟢
    function tab:AddSection(sectionData)

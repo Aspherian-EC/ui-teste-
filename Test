@@ -255,7 +255,7 @@ function Window:MakeTab(tabData)
     -- Frame base da aba
     local tabContent = Instance.new("Frame")
     tabContent.Size = UDim2.new(1, 0, 1, 0)
-    tabContent.BackgroundTransparency = 1 -- Aqui, alteramos para transparência total
+    tabContent.BackgroundTransparency = 1 -- Sem cor de fundo
     tabContent.Visible = false
     tabContent.Parent = rightPanel
 
@@ -275,7 +275,7 @@ function Window:MakeTab(tabData)
     local titleBackground = Instance.new("Frame")
     titleBackground.Size = UDim2.new(1, -20, 0, 50)
     titleBackground.Position = UDim2.new(0, 10, 0, 10)
-    titleBackground.BackgroundTransparency = 1 -- Deixando o fundo transparente também
+    titleBackground.BackgroundTransparency = 1 -- Sem cor de fundo
     titleBackground.Parent = tabContent
 
     -- Adicionar o degradê ao fundo do título
@@ -301,7 +301,7 @@ function Window:MakeTab(tabData)
     local scrollContainer = Instance.new("ScrollingFrame")
     scrollContainer.Size = UDim2.new(1, -20, 1, -70)
     scrollContainer.Position = UDim2.new(0, 10, 0, 60)
-    scrollContainer.BackgroundTransparency = 1
+    scrollContainer.BackgroundTransparency = 1 -- Sem cor de fundo
     scrollContainer.CanvasSize = UDim2.new(0, 0, 0, 0)
     scrollContainer.ScrollBarThickness = 4
     scrollContainer.AutomaticCanvasSize = Enum.AutomaticSize.Y
@@ -325,6 +325,7 @@ function Window:MakeTab(tabData)
     end)
 
     table.insert(tabContents, tabContent)
+end
 
 
 	

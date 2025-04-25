@@ -272,17 +272,32 @@ function Window:MakeTab(tabData)
     corner.CornerRadius = UDim.new(0, 12)
     corner.Parent = tabContent
 
-    -- Título da aba
+    -- Título da aba com degradê
+    local titleBackground = Instance.new("Frame")
+    titleBackground.Size = UDim2.new(1, -20, 0, 50)
+    titleBackground.Position = UDim2.new(0, 10, 0, 10)
+    titleBackground.BackgroundTransparency = 0
+    titleBackground.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+    titleBackground.Parent = tabContent
+
+    -- Adicionar o degradê ao fundo do título
+    local titleGradient = Instance.new("UIGradient")
+    titleGradient.Color = ColorSequence.new({
+        ColorSequenceKeypoint.new(0, Color3.fromRGB(35, 35, 35)),
+        ColorSequenceKeypoint.new(1, Color3.fromRGB(55, 55, 55))
+    })
+    titleGradient.Parent = titleBackground
+
     local title = Instance.new("TextLabel")
-    title.Size = UDim2.new(1, -20, 0, 50)
-    title.Position = UDim2.new(0, 10, 0, 10)
+    title.Size = UDim2.new(1, -20, 1, 0)
+    title.Position = UDim2.new(0, 10, 0, 0)
     title.BackgroundTransparency = 1
     title.Text = tabName
     title.TextColor3 = Color3.fromRGB(200, 200, 255)
     title.Font = Enum.Font.GothamBold
     title.TextSize = 24
     title.TextXAlignment = Enum.TextXAlignment.Left
-    title.Parent = tabContent
+    title.Parent = titleBackground
 
     -- Área rolável para os elementos (toggles, etc)
     local scrollContainer = Instance.new("ScrollingFrame")
@@ -312,7 +327,6 @@ function Window:MakeTab(tabData)
     end)
 
     table.insert(tabContents, tabContent)
-
 
 	--Seções🟢
    function tab:AddSection(sectionData)

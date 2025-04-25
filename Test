@@ -205,7 +205,7 @@ end)
 
 floatButton.MouseButton1Click:Connect(toggleUI)
 
- -- Sistema de Tabs
+-- Sistema de Tabs
 local Window = {}
 local Tabs = {}
 local tabContents = {}
@@ -255,8 +255,7 @@ function Window:MakeTab(tabData)
     -- Frame base da aba
     local tabContent = Instance.new("Frame")
     tabContent.Size = UDim2.new(1, 0, 1, 0)
-    tabContent.BackgroundTransparency = 0
-    tabContent.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+    tabContent.BackgroundTransparency = 1 -- Aqui, alteramos para transparência total
     tabContent.Visible = false
     tabContent.Parent = rightPanel
 
@@ -276,8 +275,7 @@ function Window:MakeTab(tabData)
     local titleBackground = Instance.new("Frame")
     titleBackground.Size = UDim2.new(1, -20, 0, 50)
     titleBackground.Position = UDim2.new(0, 10, 0, 10)
-    titleBackground.BackgroundTransparency = 0
-    titleBackground.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+    titleBackground.BackgroundTransparency = 1 -- Deixando o fundo transparente também
     titleBackground.Parent = tabContent
 
     -- Adicionar o degradê ao fundo do título
@@ -329,47 +327,6 @@ function Window:MakeTab(tabData)
     table.insert(tabContents, tabContent)
 
 
-	--Seções🟢
-   function tab:AddSection(sectionData)
-    local name = sectionData.Name or "Section"
-
-    local sectionFrame = Instance.new("Frame")
-    sectionFrame.Size = UDim2.new(1, 0, 0, 30)
-    sectionFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
-    sectionFrame.LayoutOrder = #self.Container:GetChildren() + 1
-    sectionFrame.Parent = self.Container
-
-    local sectionCorner = Instance.new("UICorner")
-    sectionCorner.CornerRadius = UDim.new(0, 6)
-    sectionCorner.Parent = sectionFrame
-
-    local sectionStroke = Instance.new("UIStroke")
-    sectionStroke.Color = Color3.fromRGB(40, 40, 40)
-    sectionStroke.Thickness = 1
-    sectionStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-    sectionStroke.Parent = sectionFrame
-
-    local sectionLabel = Instance.new("TextLabel")
-    sectionLabel.Size = UDim2.new(1, -10, 1, 0)
-    sectionLabel.Position = UDim2.new(0, 5, 0, 0)
-    sectionLabel.BackgroundTransparency = 1
-    sectionLabel.Text = name
-    sectionLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-    sectionLabel.Font = Enum.Font.GothamSemibold
-    sectionLabel.TextSize = 16
-    sectionLabel.TextXAlignment = Enum.TextXAlignment.Left
-    sectionLabel.Parent = sectionFrame
-
-    -- Permitir usar Section:AddLabel
-    local section = {}
-    section.Tab = self -- armazena a tab original
-
-    function section:AddLabel(text)
-        return self.Tab:AddLabel(text)
-    end
-
-    return section
-end
 	
 	--label🟢
 	

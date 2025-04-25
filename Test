@@ -205,7 +205,7 @@ end)
 
 floatButton.MouseButton1Click:Connect(toggleUI)
 
--- Sistema de Tabs
+   -- Sistema de Tabs
 local Window = {}
 local Tabs = {}
 local tabContents = {}
@@ -216,7 +216,7 @@ function Window:MakeTab(tabData)
     local tab = {}
     tab.Sections = {}
 
-    -- Botão de tab
+    -- BotÃ£o de tab
     local button = Instance.new("TextButton")
     button.Size = UDim2.new(1, -20, 0, 40)
     button.Position = UDim2.new(0, 10, 0, 10 + (#leftPanel:GetChildren() - 2) * 45)
@@ -260,19 +260,11 @@ function Window:MakeTab(tabData)
     tabContent.Visible = false
     tabContent.Parent = rightPanel
 
-    -- Adicionar o degradê no fundo da aba
-    local gradient = Instance.new("UIGradient")
-    gradient.Color = ColorSequence.new({
-        ColorSequenceKeypoint.new(0, Color3.fromRGB(35, 35, 35)),
-        ColorSequenceKeypoint.new(1, Color3.fromRGB(55, 55, 55))
-    })
-    gradient.Parent = tabContent
-
     local corner = Instance.new("UICorner")
     corner.CornerRadius = UDim.new(0, 12)
     corner.Parent = tabContent
 
-    -- Título da aba
+    -- TÃ­tulo da aba
     local title = Instance.new("TextLabel")
     title.Size = UDim2.new(1, -20, 0, 50)
     title.Position = UDim2.new(0, 10, 0, 10)
@@ -284,7 +276,7 @@ function Window:MakeTab(tabData)
     title.TextXAlignment = Enum.TextXAlignment.Left
     title.Parent = tabContent
 
-    -- Área rolável para os elementos (toggles, etc)
+    -- Ãrea rolÃ¡vel para os elementos (toggles, etc)
     local scrollContainer = Instance.new("ScrollingFrame")
     scrollContainer.Size = UDim2.new(1, -20, 1, -70)
     scrollContainer.Position = UDim2.new(0, 10, 0, 60)
@@ -312,7 +304,6 @@ function Window:MakeTab(tabData)
     end)
 
     table.insert(tabContents, tabContent)
-end
 
 	--Seções🟢
    function tab:AddSection(sectionData)

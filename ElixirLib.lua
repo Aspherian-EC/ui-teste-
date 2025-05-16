@@ -256,106 +256,125 @@ function ElixirLib:MakeWindow(config)
 
     floatButton.MouseButton1Click:Connect(toggleUI)
 
-   -- Sistema de Tabs
-   local Window = {}
-   local Tabs = {}
-   local tabContents = {}
-   
-   function Window:MakeTab(tabData)
-       local tabName = tabData.Name or "Aba"
-       local tabIcon = tabData.Icon or ""
-       local tab = {}
-       tab.Sections = {}
-   
-       -- BotÃ£o de tab
-       local button = Instance.new("TextButton")
-       button.Size = UDim2.new(1, -20, 0, 40)
-       button.Position = UDim2.new(0, 10, 0, 10 + (#leftPanel:GetChildren() - 2) * 45)
-       button.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
-       button.Text = ""
-       button.AutoButtonColor = true
-       button.Parent = leftPanel
-   
-       local icon = Instance.new("ImageLabel")
-       icon.Size = UDim2.new(0, 24, 0, 24)
-       icon.Position = UDim2.new(0, 10, 0.5, -12)
-       icon.BackgroundTransparency = 1
-       icon.Image = tabIcon
-       icon.Parent = button
-   
-       local label = Instance.new("TextLabel")
-       label.Size = UDim2.new(1, -44, 1, 0)
-       label.Position = UDim2.new(0, 40, 0, 0)
-       label.BackgroundTransparency = 1
-       label.Text = tabName
-       label.TextColor3 = Color3.fromRGB(255, 255, 255)
-       label.Font = Enum.Font.GothamBold
-       label.TextSize = 18
-       label.TextXAlignment = Enum.TextXAlignment.Left
-       label.Parent = button
-   
-       local btnCorner = Instance.new("UICorner")
-       btnCorner.CornerRadius = UDim.new(0, 8)
-       btnCorner.Parent = button
-   
-       local btnStroke = Instance.new("UIStroke")
-       btnStroke.Color = Color3.fromRGB(0, 255, 0)
-       btnStroke.Thickness = 1
-       btnStroke.Parent = button
-   
-       -- Frame base da aba
-       local tabContent = Instance.new("Frame")
-       tabContent.Size = UDim2.new(1, 0, 1, 0)
-       tabContent.BackgroundTransparency = 0
-       tabContent.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
-       tabContent.Visible = false
-       tabContent.Parent = rightPanel
-   
-       local corner = Instance.new("UICorner")
-       corner.CornerRadius = UDim.new(0, 12)
-       corner.Parent = tabContent
-   
-       -- TÃ­tulo da aba
-       local title = Instance.new("TextLabel")
-       title.Size = UDim2.new(1, -20, 0, 50)
-       title.Position = UDim2.new(0, 10, 0, 10)
-       title.BackgroundTransparency = 1
-       title.Text = tabName
-       title.TextColor3 = Color3.fromRGB(200, 200, 255)
-       title.Font = Enum.Font.GothamBold
-       title.TextSize = 24
-       title.TextXAlignment = Enum.TextXAlignment.Left
-       title.Parent = tabContent
-   
-       -- Ãrea rolÃ¡vel para os elementos (toggles, etc)
-       local scrollContainer = Instance.new("ScrollingFrame")
-       scrollContainer.Size = UDim2.new(1, -20, 1, -70)
-       scrollContainer.Position = UDim2.new(0, 10, 0, 60)
-       scrollContainer.BackgroundTransparency = 1
-       scrollContainer.CanvasSize = UDim2.new(0, 0, 0, 0)
-       scrollContainer.ScrollBarThickness = 4
-       scrollContainer.AutomaticCanvasSize = Enum.AutomaticSize.Y
-       scrollContainer.VerticalScrollBarInset = Enum.ScrollBarInset.ScrollBar
-       scrollContainer.Parent = tabContent
-   
-       local listLayout = Instance.new("UIListLayout")
-       listLayout.Padding = UDim.new(0, 10)
-       listLayout.SortOrder = Enum.SortOrder.LayoutOrder
-       listLayout.Parent = scrollContainer
-   
-       -- Armazenar o scroll container como lugar dos elementos
-       tab.Container = scrollContainer
-   
-       -- Alternar entre as tabs
-       button.MouseButton1Click:Connect(function()
-           for _, content in pairs(tabContents) do
-               content.Visible = false
-           end
-           tabContent.Visible = true
-       end)
-   
-       table.insert(tabContents, tabContent)
-       
+-- Sistema de Tabs
+local Window = {}
+local Tabs = {}
+local tabContents = {}
+local tabButtons = {}
+
+-- ScrollingFrame para os botões de aba (na lateral esquerda)
+local tabListFrame = Instance.new("ScrollingFrame")
+tabListFrame.Size = UDim2.new(1, 0, 1, 0)
+tabListFrame.Position = UDim2.new(0, 0, 0, 0)
+tabListFrame.BackgroundTransparency = 1
+tabListFrame.CanvasSize = UDim2.new(0, 0, 0, 0)
+tabListFrame.ScrollBarThickness = 4
+tabListFrame.AutomaticCanvasSize = Enum.AutomaticSize.Y
+tabListFrame.VerticalScrollBarInset = Enum.ScrollBarInset.ScrollBar
+tabListFrame.Parent = leftPanel
+
+local tabListLayout = Instance.new("UIListLayout")
+tabListLayout.Padding = UDim.new(0, 5)
+tabListLayout.SortOrder = Enum.SortOrder.LayoutOrder
+tabListLayout.Parent = tabListFrame
+
+function Window:MakeTab(tabData)
+    local tabName = tabData.Name or "Aba"
+    local tabIcon = tabData.Icon or ""
+    local tab = {}
+    tab.Sections = {}
+
+    -- Botão de tab
+    local button = Instance.new("TextButton")
+    button.Size = UDim2.new(1, -20, 0, 40)
+    button.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+    button.Text = ""
+    button.AutoButtonColor = true
+    button.LayoutOrder = #tabButtons + 1
+    button.Parent = tabListFrame
+
+    local icon = Instance.new("ImageLabel")
+    icon.Size = UDim2.new(0, 24, 0, 24)
+    icon.Position = UDim2.new(0, 10, 0.5, -12)
+    icon.BackgroundTransparency = 1
+    icon.Image = tabIcon
+    icon.Parent = button
+
+    local label = Instance.new("TextLabel")
+    label.Size = UDim2.new(1, -44, 1, 0)
+    label.Position = UDim2.new(0, 40, 0, 0)
+    label.BackgroundTransparency = 1
+    label.Text = tabName
+    label.TextColor3 = Color3.fromRGB(255, 255, 255)
+    label.Font = Enum.Font.GothamBold
+    label.TextSize = 18
+    label.TextXAlignment = Enum.TextXAlignment.Left
+    label.Parent = button
+
+    local btnCorner = Instance.new("UICorner")
+    btnCorner.CornerRadius = UDim.new(0, 8)
+    btnCorner.Parent = button
+
+    local btnStroke = Instance.new("UIStroke")
+    btnStroke.Color = Color3.fromRGB(0, 255, 0)
+    btnStroke.Thickness = 1
+    btnStroke.Parent = button
+
+    table.insert(tabButtons, button)
+
+    -- Frame base da aba (janela da tab)
+    local tabContent = Instance.new("Frame")
+    tabContent.Size = UDim2.new(1, 0, 1, 0)
+    tabContent.BackgroundTransparency = 1
+    tabContent.Visible = false
+    tabContent.Parent = rightPanel
+
+    local corner = Instance.new("UICorner")
+    corner.CornerRadius = UDim.new(0, 12)
+    corner.Parent = tabContent
+
+    -- Título da aba
+    local title = Instance.new("TextLabel")
+    title.Size = UDim2.new(1, -20, 0, 50)
+    title.Position = UDim2.new(0, 10, 0, 10)
+    title.BackgroundTransparency = 1
+    title.Text = tabName
+    title.TextColor3 = Color3.fromRGB(200, 200, 255)
+    title.Font = Enum.Font.GothamBold
+    title.TextSize = 24
+    title.TextXAlignment = Enum.TextXAlignment.Left
+    title.Parent = tabContent
+
+    -- Área rolável para os elementos (toggles, sliders, etc)
+    local scrollContainer = Instance.new("ScrollingFrame")
+    scrollContainer.Size = UDim2.new(1, -20, 1, -70)
+    scrollContainer.Position = UDim2.new(0, 10, 0, 60)
+    scrollContainer.BackgroundTransparency = 1
+    scrollContainer.CanvasSize = UDim2.new(0, 0, 0, 0)
+    scrollContainer.ScrollBarThickness = 4
+    scrollContainer.AutomaticCanvasSize = Enum.AutomaticSize.Y
+    scrollContainer.VerticalScrollBarInset = Enum.ScrollBarInset.ScrollBar
+    scrollContainer.Parent = tabContent
+
+    local listLayout = Instance.new("UIListLayout")
+    listLayout.Padding = UDim.new(0, 10)
+    listLayout.SortOrder = Enum.SortOrder.LayoutOrder
+    listLayout.Parent = scrollContainer
+
+    -- Armazenar o scroll container como lugar dos elementos
+    tab.Container = scrollContainer
+
+    -- Alternar entre as tabs
+    button.MouseButton1Click:Connect(function()
+        for _, content in pairs(tabContents) do
+            content.Visible = false
+        end
+        tabContent.Visible = true
+    end)
+
+    table.insert(tabContents, tabContent)
+    table.insert(Tabs, tab)
+
 	--Seções🟢
    function tab:AddSection(sectionData)
     local name = sectionData.Name or "Section"

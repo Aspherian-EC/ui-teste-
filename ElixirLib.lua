@@ -1,46 +1,53 @@
--- ElixirLib UI - Painel com tamanho fixo (sem detectar mobile)
 local ElixirLib = {}
 
 -- === CORES DEFINIDAS AQUI PARA FÁCIL MANUTENÇÃO ===
 local Colors = {
-    MainBackgroundStart = Color3.fromRGB(0, 255, 0),
-    MainBackgroundEnd = Color3.fromRGB(25, 25, 25),
-    Border = Color3.fromRGB(0, 255, 0),
-    TopBarStart = Color3.fromRGB(0, 255, 0),
-    TopBarEnd = Color3.fromRGB(30, 30, 30),
-    TitleText = Color3.fromRGB(200, 200, 255),
-    LeftPanelBackground = Color3.fromRGB(28, 28, 28),
-    FloatButtonBackground = Color3.fromRGB(20, 20, 20),
+    MainBackgroundStart = Color3.fromRGB(0, 255, 0),      -- Neon verde (início degrade)
+    MainBackgroundEnd = Color3.fromRGB(25, 25, 25),       -- Escuro (fim degrade)
+    Border = Color3.fromRGB(0, 255, 0),                   -- Verde neon da borda
+    TopBarStart = Color3.fromRGB(0, 255, 0),              -- Neon verde topbar (início degrade)
+    TopBarEnd = Color3.fromRGB(30, 30, 30),                -- Escuro topbar (fim degrade)
+    TitleText = Color3.fromRGB(200, 200, 255),             -- Cor do texto do título
+    LeftPanelBackground = Color3.fromRGB(28, 28, 28),      -- Fundo painel esquerdo
+    FloatButtonBackground = Color3.fromRGB(20, 20, 20),    -- Fundo botão flutuante
 }
 
 function ElixirLib:MakeWindow(config)
     local Window = {}
 
+    -- Serviços
     local Players = game:GetService("Players")
     local UserInputService = game:GetService("UserInputService")
     local player = Players.LocalPlayer
     local playerGui = player:WaitForChild("PlayerGui")
 
+    -- Criar ou obter ScreenGui
     local screenGui = playerGui:FindFirstChild("CustomUI") or Instance.new("ScreenGui")
     screenGui.Name = "CustomUI"
     screenGui.ResetOnSpawn = false
     screenGui.IgnoreGuiInset = true
     screenGui.Parent = playerGui
 
-    -- Tamanho fixo (sem detecção de mobile)
-    local defaultSize = UDim2.new(0, 700, 0, 400)
+    -- Detecta se é mobile para ajustar tamanho inicial
+    local isMobile = UserInputService.TouchEnabled and not UserInputService.KeyboardEnabled
 
+    -- Tamanhos padrão e mobile
+    local defaultSize = UDim2.new(0, 700, 0, 400)
+    local mobileSize = UDim2.new(0, 350, 0, 200)
+
+    -- Frame principal
     local mainFrame = Instance.new("Frame")
     mainFrame.Name = "MainUIFrame"
-    mainFrame.Size = defaultSize
-    mainFrame.Position = UDim2.new(0.5, -defaultSize.X.Offset/2, 0.2, 0)
-    mainFrame.BackgroundColor3 = Colors.MainBackgroundEnd
+    mainFrame.Size = isMobile and mobileSize or defaultSize
+    mainFrame.Position = UDim2.new(0.5, -mainFrame.Size.X.Offset/2, 0.2, 0)
+    mainFrame.BackgroundColor3 = Colors.MainBackgroundEnd -- fallback degrade
     mainFrame.Parent = screenGui
     mainFrame.ClipsDescendants = true
     Instance.new("UICorner", mainFrame).CornerRadius = UDim.new(0, 12)
     local mainStroke = Instance.new("UIStroke", mainFrame)
     mainStroke.Color = Colors.Border
 
+    -- Degrade fundo principal
     local mainGradient = Instance.new("UIGradient")
     mainGradient.Color = ColorSequence.new({
         ColorSequenceKeypoint.new(0, Colors.MainBackgroundStart),
@@ -48,13 +55,15 @@ function ElixirLib:MakeWindow(config)
     })
     mainGradient.Parent = mainFrame
 
+    -- TopBar
     local topBar = Instance.new("Frame")
     topBar.Size = UDim2.new(1, 0, 0, 40)
-    topBar.BackgroundColor3 = Colors.TopBarEnd
+    topBar.BackgroundColor3 = Colors.TopBarEnd -- fallback degrade
     topBar.BorderSizePixel = 0
     topBar.Parent = mainFrame
     Instance.new("UICorner", topBar).CornerRadius = UDim.new(0, 12)
 
+    -- Degrade topBar
     local topGradient = Instance.new("UIGradient")
     topGradient.Color = ColorSequence.new({
         ColorSequenceKeypoint.new(0, Colors.TopBarStart),
@@ -62,6 +71,7 @@ function ElixirLib:MakeWindow(config)
     })
     topGradient.Parent = topBar
 
+    -- Título
     local titleLabel = Instance.new("TextLabel")
     titleLabel.Size = UDim2.new(1, -60, 1, 0)
     titleLabel.Position = UDim2.new(0, 10, 0, 0)
@@ -73,6 +83,7 @@ function ElixirLib:MakeWindow(config)
     titleLabel.TextXAlignment = Enum.TextXAlignment.Left
     titleLabel.Parent = topBar
 
+    -- Botão minimizar
     local minimizeButton = Instance.new("ImageButton")
     minimizeButton.Size = UDim2.new(0, 30, 0, 30)
     minimizeButton.Position = UDim2.new(1, -40, 0, 5)
@@ -81,6 +92,7 @@ function ElixirLib:MakeWindow(config)
     minimizeButton.Parent = topBar
     Instance.new("UICorner", minimizeButton).CornerRadius = UDim.new(1, 0)
 
+    -- Divider
     local divider = Instance.new("Frame")
     divider.Size = UDim2.new(1, -20, 0, 2)
     divider.Position = UDim2.new(0, 10, 0, 40)
@@ -89,12 +101,14 @@ function ElixirLib:MakeWindow(config)
     divider.Parent = mainFrame
     Instance.new("UICorner", divider).CornerRadius = UDim.new(1, 0)
 
+    -- Conteúdo principal
     local contentFrame = Instance.new("Frame")
     contentFrame.Size = UDim2.new(1, 0, 1, -42)
     contentFrame.Position = UDim2.new(0, 0, 0, 42)
     contentFrame.BackgroundTransparency = 1
     contentFrame.Parent = mainFrame
 
+    -- Painel esquerdo
     local leftPanel = Instance.new("Frame")
     leftPanel.Size = UDim2.new(0, 180, 1, 0)
     leftPanel.BackgroundColor3 = Colors.LeftPanelBackground
@@ -102,19 +116,15 @@ function ElixirLib:MakeWindow(config)
     Instance.new("UICorner", leftPanel).CornerRadius = UDim.new(0, 10)
     local leftStroke = Instance.new("UIStroke", leftPanel)
     leftStroke.Color = Colors.Border
-    local leftGradient = Instance.new("UIGradient")
-    leftGradient.Color = ColorSequence.new({
-        ColorSequenceKeypoint.new(0, Colors.MainBackgroundStart),
-        ColorSequenceKeypoint.new(1, Colors.MainBackgroundEnd)
-    })
-    leftGradient.Parent = leftPanel
 
+    -- Painel direito (transparente)
     local rightPanel = Instance.new("Frame")
     rightPanel.Size = UDim2.new(1, -180, 1, 0)
     rightPanel.Position = UDim2.new(0, 180, 0, 0)
     rightPanel.BackgroundTransparency = 1
     rightPanel.Parent = contentFrame
 
+    -- Notificação personalizada (via módulo externo)
     local function showNotification(message)
         local notification = loadstring(game:HttpGet('https://raw.githubusercontent.com/9menta/tests/refs/heads/main/notification.lua'))()
         notification({
@@ -125,6 +135,7 @@ function ElixirLib:MakeWindow(config)
         })
     end
 
+    -- Controle de minimização e notificação só 1 vez
     local isMinimized = false
     local notificationShown = false
 
@@ -137,6 +148,7 @@ function ElixirLib:MakeWindow(config)
         end
     end
 
+    -- Hotkey para minimizar (RightShift)
     UserInputService.InputBegan:Connect(function(input, gameProcessed)
         if not gameProcessed and input.KeyCode == Enum.KeyCode.RightShift then
             toggleUI()
@@ -199,6 +211,7 @@ function ElixirLib:MakeWindow(config)
     stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
     stroke.Parent = floatButton
 
+    -- Drag do botão flutuante
     local draggingFloat = false
     local dragInputFloat, dragStartFloat, startPosFloat
 

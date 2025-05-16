@@ -255,42 +255,27 @@ function ElixirLib:MakeWindow(config)
     end)
 
     floatButton.MouseButton1Click:Connect(toggleUI)
-
     local Window = {}
     local Tabs = {}
     local tabContents = {}
+    
     local tabButtons = {}
     
-    -- Criação do painel esquerdo (onde os botões das tabs vão ficar)
-    local leftPanel = Instance.new("Frame")
-    leftPanel.Size = UDim2.new(0, 160, 1, 0)
-    leftPanel.Position = UDim2.new(0, 0, 0, 0)
-    leftPanel.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-    leftPanel.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui"):WaitForChild("ScreenGui") -- substitua se estiver em outro lugar
+    -- Cria ScrollingFrame para os botões das abas
+    local tabScroll = Instance.new("ScrollingFrame")
+    tabScroll.Size = UDim2.new(1, 0, 1, 0)
+    tabScroll.Position = UDim2.new(0, 0, 0, 0)
+    tabScroll.BackgroundTransparency = 1
+    tabScroll.CanvasSize = UDim2.new(0, 0, 0, 0)
+    tabScroll.ScrollBarThickness = 4
+    tabScroll.AutomaticCanvasSize = Enum.AutomaticSize.Y
+    tabScroll.VerticalScrollBarInset = Enum.ScrollBarInset.ScrollBar
+    tabScroll.Parent = leftPanel
     
-    -- Cria o ScrollingFrame para os botões das tabs
-    local tabButtonList = Instance.new("ScrollingFrame")
-    tabButtonList.Size = UDim2.new(1, 0, 1, 0)
-    tabButtonList.Position = UDim2.new(0, 0, 0, 0)
-    tabButtonList.BackgroundTransparency = 1
-    tabButtonList.CanvasSize = UDim2.new(0, 0, 0, 0)
-    tabButtonList.AutomaticCanvasSize = Enum.AutomaticSize.Y
-    tabButtonList.ScrollBarThickness = 6
-    tabButtonList.VerticalScrollBarInset = Enum.ScrollBarInset.ScrollBar
-    tabButtonList.Parent = leftPanel
-    
-    -- Layout para os botões das tabs
     local tabListLayout = Instance.new("UIListLayout")
-    tabListLayout.Padding = UDim.new(0, 10)
+    tabListLayout.Padding = UDim.new(0, 5)
     tabListLayout.SortOrder = Enum.SortOrder.LayoutOrder
-    tabListLayout.Parent = tabButtonList
-    
-    -- Painel da direita (onde aparece o conteúdo das tabs)
-    local rightPanel = Instance.new("Frame")
-    rightPanel.Size = UDim2.new(1, -170, 1, 0)
-    rightPanel.Position = UDim2.new(0, 170, 0, 0)
-    rightPanel.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
-    rightPanel.Parent = leftPanel.Parent -- mesmo pai do painel esquerdo
+    tabListLayout.Parent = tabScroll
     
     function Window:MakeTab(tabData)
         local tabName = tabData.Name or "Aba"
@@ -304,9 +289,8 @@ function ElixirLib:MakeWindow(config)
         button.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
         button.Text = ""
         button.AutoButtonColor = true
-        button.Parent = tabButtonList
+        button.Parent = tabScroll  -- agora dentro do scroll
     
-        -- Ícone
         local icon = Instance.new("ImageLabel")
         icon.Size = UDim2.new(0, 24, 0, 24)
         icon.Position = UDim2.new(0, 10, 0.5, -12)
@@ -314,7 +298,6 @@ function ElixirLib:MakeWindow(config)
         icon.Image = tabIcon
         icon.Parent = button
     
-        -- Nome
         local label = Instance.new("TextLabel")
         label.Size = UDim2.new(1, -44, 1, 0)
         label.Position = UDim2.new(0, 40, 0, 0)
@@ -348,7 +331,6 @@ function ElixirLib:MakeWindow(config)
         corner.CornerRadius = UDim.new(0, 12)
         corner.Parent = tabContent
     
-        -- Título
         local title = Instance.new("TextLabel")
         title.Size = UDim2.new(1, -20, 0, 50)
         title.Position = UDim2.new(0, 10, 0, 10)
@@ -360,7 +342,6 @@ function ElixirLib:MakeWindow(config)
         title.TextXAlignment = Enum.TextXAlignment.Left
         title.Parent = tabContent
     
-        -- Container com rolagem para os elementos da tab
         local scrollContainer = Instance.new("ScrollingFrame")
         scrollContainer.Size = UDim2.new(1, -20, 1, -70)
         scrollContainer.Position = UDim2.new(0, 10, 0, 60)
@@ -387,8 +368,7 @@ function ElixirLib:MakeWindow(config)
     
         table.insert(tabContents, tabContent)
         table.insert(Tabs, tab)
-    end
-    
+
 
 	--Seções🟢
    function tab:AddSection(sectionData)

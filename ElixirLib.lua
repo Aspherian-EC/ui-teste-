@@ -292,7 +292,7 @@ function Window:MakeTab(tabData)
 
     -- Botão da aba (esquerda)
     local button = Instance.new("TextButton")
-    button.Size = UDim2.new(1, -20, 0, 40)
+    button.Size = UDim2.new(1, -10, 0, 40) -- largura maior (menos margem direita)
     button.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
     button.Text = ""
     button.AutoButtonColor = true
@@ -386,7 +386,6 @@ function Window:MakeTab(tabData)
 
     table.insert(tabContents, tabContent)
     table.insert(Tabs, tab)
-
 
 
 	--Seções🟢

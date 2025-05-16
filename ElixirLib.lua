@@ -262,11 +262,12 @@ local Tabs = {}
 local tabContents = {}
 local tabButtons = {}
 
--- ScrollingFrame para os botões de aba (na lateral esquerda)
+-- ScrollingFrame para os botões de aba (esquerda)
 local tabListFrame = Instance.new("ScrollingFrame")
 tabListFrame.Size = UDim2.new(1, 0, 1, 0)
 tabListFrame.Position = UDim2.new(0, 0, 0, 0)
 tabListFrame.BackgroundTransparency = 1
+tabListFrame.BorderSizePixel = 0
 tabListFrame.CanvasSize = UDim2.new(0, 0, 0, 0)
 tabListFrame.ScrollBarThickness = 4
 tabListFrame.AutomaticCanvasSize = Enum.AutomaticSize.Y
@@ -284,7 +285,7 @@ function Window:MakeTab(tabData)
     local tab = {}
     tab.Sections = {}
 
-    -- Botão de tab
+    -- Botão da aba (esquerda)
     local button = Instance.new("TextButton")
     button.Size = UDim2.new(1, -20, 0, 40)
     button.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
@@ -322,7 +323,7 @@ function Window:MakeTab(tabData)
 
     table.insert(tabButtons, button)
 
-    -- Frame base da aba (janela da tab)
+    -- Frame de conteúdo da aba (direita)
     local tabContent = Instance.new("Frame")
     tabContent.Size = UDim2.new(1, 0, 1, 0)
     tabContent.BackgroundTransparency = 1
@@ -345,11 +346,12 @@ function Window:MakeTab(tabData)
     title.TextXAlignment = Enum.TextXAlignment.Left
     title.Parent = tabContent
 
-    -- Área rolável para os elementos (toggles, sliders, etc)
+    -- Área rolável para os elementos (direita)
     local scrollContainer = Instance.new("ScrollingFrame")
     scrollContainer.Size = UDim2.new(1, -20, 1, -70)
     scrollContainer.Position = UDim2.new(0, 10, 0, 60)
     scrollContainer.BackgroundTransparency = 1
+    scrollContainer.BorderSizePixel = 0
     scrollContainer.CanvasSize = UDim2.new(0, 0, 0, 0)
     scrollContainer.ScrollBarThickness = 4
     scrollContainer.AutomaticCanvasSize = Enum.AutomaticSize.Y
@@ -361,10 +363,10 @@ function Window:MakeTab(tabData)
     listLayout.SortOrder = Enum.SortOrder.LayoutOrder
     listLayout.Parent = scrollContainer
 
-    -- Armazenar o scroll container como lugar dos elementos
+    -- Área para adicionar elementos da aba
     tab.Container = scrollContainer
 
-    -- Alternar entre as tabs
+    -- Alternar visibilidade das abas
     button.MouseButton1Click:Connect(function()
         for _, content in pairs(tabContents) do
             content.Visible = false
@@ -373,6 +375,7 @@ function Window:MakeTab(tabData)
     end)
 
     table.insert(tabContents, tabContent)
+    table.insert(Tabs, tab)
 
 
 	--Seções🟢

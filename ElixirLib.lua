@@ -344,17 +344,17 @@ function Window:MakeTab(tabData)
     corner.CornerRadius = UDim.new(0, 12)
     corner.Parent = tabContent
 
-    local label = Instance.new("TextLabel")
-    label.Size = UDim2.new(1, -44, 1, 0)
-    label.Position = UDim2.new(0, 30, 0, 0) -- aproximado do ícone
-    label.BackgroundTransparency = 1
-    label.Text = tabName
-    label.TextColor3 = Color3.fromRGB(255, 255, 255)
-    label.Font = Enum.Font.GothamBold
-    label.TextSize = 18
-    label.TextXAlignment = Enum.TextXAlignment.Left
-    label.Parent = button
-    
+    -- Título da aba
+    local title = Instance.new("TextLabel")
+    title.Size = UDim2.new(1, -20, 0, 50)
+    title.Position = UDim2.new(0, 10, 0, 10)
+    title.BackgroundTransparency = 1
+    title.Text = tabName
+    title.TextColor3 = Color3.fromRGB(200, 200, 255)
+    title.Font = Enum.Font.GothamBold
+    title.TextSize = 24
+    title.TextXAlignment = Enum.TextXAlignment.Left
+    title.Parent = tabContent
 
     -- Área rolável para os elementos (direita)
     local scrollContainer = Instance.new("ScrollingFrame")

@@ -1019,7 +1019,6 @@ end
 
 
 
-   -- === REDIMENSIONAMENTO DO PAINEL PELO CANTO INFERIOR DIREITO COM ÍCONE E MELHORIA ===
 local UserInputService = game:GetService("UserInputService")
 
 local resizeButton = Instance.new("ImageButton")
@@ -1032,36 +1031,40 @@ resizeButton.ZIndex = 10
 resizeButton.Parent = mainFrame
 resizeButton.Active = true
 
-
+-- REMOVIDO: Oculta o botão em dispositivos mobile para aparecer em todos
 
 local resizing = false
 local dragStartPos
 local startSize
 
 resizeButton.InputBegan:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
         resizing = true
         dragStartPos = input.Position
         startSize = mainFrame.Size
-    end
-end)
-
-UserInputService.InputEnded:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 then
-        resizing = false
+        input.Changed:Connect(function()
+            if input.UserInputState == Enum.UserInputState.End then
+                resizing = false
+            end
+        end)
     end
 end)
 
 UserInputService.InputChanged:Connect(function(input)
-    if resizing and input.UserInputType == Enum.UserInputType.MouseMovement then
+    if resizing and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
         local delta = input.Position - dragStartPos
         local newWidth = math.clamp(startSize.X.Offset + delta.X, 300, 1200)
         local newHeight = math.clamp(startSize.Y.Offset + delta.Y, 200, 800)
         mainFrame.Size = UDim2.new(0, newWidth, 0, newHeight)
-        -- REMOVIDO: Não centraliza mais a UI para manter a posição atual durante o redimensionamento
-        -- mainFrame.Position = UDim2.new(0.5, -mainFrame.Size.X.Offset / 2, 0.2, 0)
     end
 end)
+
+UserInputService.InputEnded:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        resizing = false
+    end
+end)
+
 
 
     return Window

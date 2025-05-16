@@ -1027,12 +1027,12 @@ resizeButton.Size = UDim2.new(0, 20, 0, 20)
 resizeButton.Position = UDim2.new(1, -20, 1, -20)
 resizeButton.AnchorPoint = Vector2.new(1, 1)
 resizeButton.BackgroundTransparency = 1
-resizeButton.Image = "rbxassetid://6031097226" -- Ícone de redimensionar
+resizeButton.Image = "rbxassetid://6031097226" -- Ícone de redimensionar (setas diagonais)
 resizeButton.ZIndex = 10
 resizeButton.Parent = mainFrame
 resizeButton.Active = true
 
--- Se estiver em celular, não exibe o botão
+-- Oculta o botão em dispositivos mobile
 if UserInputService.TouchEnabled then
     resizeButton.Visible = false
 end
@@ -1061,7 +1061,8 @@ UserInputService.InputChanged:Connect(function(input)
         local newWidth = math.clamp(startSize.X.Offset + delta.X, 300, 1200)
         local newHeight = math.clamp(startSize.Y.Offset + delta.Y, 200, 800)
         mainFrame.Size = UDim2.new(0, newWidth, 0, newHeight)
-        mainFrame.Position = UDim2.new(0.5, -mainFrame.Size.X.Offset / 2, 0.2, 0) -- manter centralizado
+        -- REMOVIDO: Não centraliza mais a UI para manter a posição atual durante o redimensionamento
+        -- mainFrame.Position = UDim2.new(0.5, -mainFrame.Size.X.Offset / 2, 0.2, 0)
     end
 end)
 

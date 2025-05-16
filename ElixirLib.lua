@@ -1012,7 +1012,14 @@ end
     return textboxContainer
 end
 
-       -- === REDIMENSIONAMENTO DO PAINEL PELO CANTO INFERIOR DIREITO COM ÍCONE E MELHORIA ===
+    
+    return tab
+end
+
+
+
+
+   -- === REDIMENSIONAMENTO DO PAINEL PELO CANTO INFERIOR DIREITO COM ÍCONE E MELHORIA ===
 local UserInputService = game:GetService("UserInputService")
 
 local resizeButton = Instance.new("ImageButton")
@@ -1025,10 +1032,7 @@ resizeButton.ZIndex = 10
 resizeButton.Parent = mainFrame
 resizeButton.Active = true
 
--- Oculta o botão em dispositivos mobile
-if UserInputService.TouchEnabled then
-    resizeButton.Visible = false
-end
+
 
 local resizing = false
 local dragStartPos
@@ -1058,11 +1062,6 @@ UserInputService.InputChanged:Connect(function(input)
         -- mainFrame.Position = UDim2.new(0.5, -mainFrame.Size.X.Offset / 2, 0.2, 0)
     end
 end)
-
-
-    return tab
-end
-
 
 
     return Window

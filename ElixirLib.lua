@@ -367,8 +367,7 @@ function ElixirLib:MakeWindow(config)
         end)
     
         table.insert(tabContents, tabContent)
-        table.insert(Tabs, tab)
-
+       
 
 	--Seções🟢
    function tab:AddSection(sectionData)

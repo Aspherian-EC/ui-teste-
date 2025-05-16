@@ -33,7 +33,7 @@ function ElixirLib:MakeWindow(config)
 
     -- Tamanhos padrão e mobile
     local defaultSize = UDim2.new(0, 700, 0, 400)
-    local mobileSize = UDim2.new(0, 600, 0, 300)
+    local mobileSize = UDim2.new(0, 700, 0, 400)
 
     -- Frame principal
     local mainFrame = Instance.new("Frame")

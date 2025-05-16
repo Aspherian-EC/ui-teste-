@@ -33,7 +33,7 @@ function ElixirLib:MakeWindow(config)
 
     -- Tamanhos padrão e mobile
     local defaultSize = UDim2.new(0, 700, 0, 400)
-    local mobileSize = UDim2.new(0, 700, 0, 400)
+    local mobileSize = UDim2.new(0, 600, 0, 300)
 
     -- Frame principal
     local mainFrame = Instance.new("Frame")
@@ -1012,14 +1012,7 @@ end
     return textboxContainer
 end
 
-    
-    return tab
-end
-
-
-
-
-   -- === REDIMENSIONAMENTO DO PAINEL PELO CANTO INFERIOR DIREITO COM ÍCONE E MELHORIA ===
+       -- === REDIMENSIONAMENTO DO PAINEL PELO CANTO INFERIOR DIREITO COM ÍCONE E MELHORIA ===
 local UserInputService = game:GetService("UserInputService")
 
 local resizeButton = Instance.new("ImageButton")
@@ -1065,6 +1058,11 @@ UserInputService.InputChanged:Connect(function(input)
         -- mainFrame.Position = UDim2.new(0.5, -mainFrame.Size.X.Offset / 2, 0.2, 0)
     end
 end)
+
+
+    return tab
+end
+
 
 
     return Window

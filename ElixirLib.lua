@@ -256,7 +256,7 @@ function ElixirLib:MakeWindow(config)
 
     floatButton.MouseButton1Click:Connect(toggleUI)
 
--- Sistema de Tabs 
+---- Sistema de Tabs
 local Window = {}
 local Tabs = {}
 local tabContents = {}
@@ -274,11 +274,6 @@ tabListFrame.AutomaticCanvasSize = Enum.AutomaticSize.Y
 tabListFrame.VerticalScrollBarInset = Enum.ScrollBarInset.ScrollBar
 tabListFrame.Parent = leftPanel
 
--- Adiciona padding para deslocar os botões para direita
-local tabListPadding = Instance.new("UIPadding")
-tabListPadding.PaddingLeft = UDim.new(0, 10) -- desloca todos os botões 10 pixels para a direita
-tabListPadding.Parent = tabListFrame
-
 local tabListLayout = Instance.new("UIListLayout")
 tabListLayout.Padding = UDim.new(0, 5)
 tabListLayout.SortOrder = Enum.SortOrder.LayoutOrder
@@ -292,17 +287,12 @@ function Window:MakeTab(tabData)
 
     -- Botão da aba (esquerda)
     local button = Instance.new("TextButton")
-    button.Size = UDim2.new(1, -5, 0, 40) -- margem direita menor, botão mais largo
+    button.Size = UDim2.new(1, -20, 0, 40)
     button.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
     button.Text = ""
     button.AutoButtonColor = true
     button.LayoutOrder = #tabButtons + 1
     button.Parent = tabListFrame
-
-    -- Padding interno no botão para o conteúdo não ficar colado na borda
-    local buttonPadding = Instance.new("UIPadding")
-    buttonPadding.PaddingLeft = UDim.new(0, 10)
-    buttonPadding.Parent = button
 
     local icon = Instance.new("ImageLabel")
     icon.Size = UDim2.new(0, 24, 0, 24)

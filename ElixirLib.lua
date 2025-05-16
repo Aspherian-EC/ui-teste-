@@ -29,7 +29,7 @@ function ElixirLib:MakeWindow(config)
     screenGui.Parent = playerGui
 
     -- Detecta se é mobile para ajustar tamanho inicial
-    local isMobile = UserInputService.TouchEnabled and not UserInputService.KeyboardEnabled
+   -- local isMobile = UserInputService.TouchEnabled and not UserInputService.KeyboardEnabled
 
     -- Tamanhos padrão e mobile
     local defaultSize = UDim2.new(0, 700, 0, 400)

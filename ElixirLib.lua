@@ -29,11 +29,11 @@ function ElixirLib:MakeWindow(config)
     screenGui.Parent = playerGui
 
     -- Detecta se é mobile para ajustar tamanho inicial
-   -- local isMobile = UserInputService.TouchEnabled and not UserInputService.KeyboardEnabled
+    local isMobile = UserInputService.TouchEnabled and not UserInputService.KeyboardEnabled
 
     -- Tamanhos padrão e mobile
     local defaultSize = UDim2.new(0, 700, 0, 400)
-    local mobileSize = UDim2.new(0, 350, 0, 200)
+    local mobileSize = UDim2.new(0, 600, 0, 300)
 
     -- Frame principal
     local mainFrame = Instance.new("Frame")
@@ -131,7 +131,6 @@ function ElixirLib:MakeWindow(config)
     rightPanel.BackgroundTransparency = 1
     rightPanel.Parent = contentFrame
 
- 
 
     -- Notificação personalizada (via módulo externo)
     local function showNotification(message)
@@ -257,7 +256,6 @@ function ElixirLib:MakeWindow(config)
 
     floatButton.MouseButton1Click:Connect(toggleUI)
 
-
 -- Sistema de Tabs
 local Window = {}
 local Tabs = {}
@@ -302,8 +300,7 @@ function Window:MakeTab(tabData)
     btnCorner.CornerRadius = UDim.new(0, 8)
     btnCorner.Parent = button
 
-    local btnStroke
-     = Instance.new("UIStroke")
+    local btnStroke = Instance.new("UIStroke")
     btnStroke.Color = Color3.fromRGB(0, 255, 0)
     btnStroke.Thickness = 1
     btnStroke.Parent = button

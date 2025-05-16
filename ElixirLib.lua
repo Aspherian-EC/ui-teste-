@@ -234,7 +234,7 @@ function ElixirLib:MakeWindow(config)
     end)
 
     floatButton.MouseButton1Click:Connect(toggleUI)
-end
+
 
 -- Sistema de Tabs
 local Window = {}

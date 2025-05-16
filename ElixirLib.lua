@@ -8,7 +8,7 @@ local Colors = {
     TopBarStart = Color3.fromRGB(0, 255, 0),              -- Neon verde topbar (início degrade)
     TopBarEnd = Color3.fromRGB(30, 30, 30),                -- Escuro topbar (fim degrade)
     TitleText = Color3.fromRGB(200, 200, 255),             -- Cor do texto do título
-    LeftPanelBackground = Color3.fromRGB(28, 28, 28),      -- Fundo painel esquerdo
+    LeftPanelBackground = Color3.fromRGB(28, 28, 28),      -- Fundo painel esquerdo (cor base)
     FloatButtonBackground = Color3.fromRGB(20, 20, 20),    -- Fundo botão flutuante
 }
 
@@ -108,14 +108,21 @@ function ElixirLib:MakeWindow(config)
     contentFrame.BackgroundTransparency = 1
     contentFrame.Parent = mainFrame
 
-    -- Painel esquerdo
+    -- Painel esquerdo com degrade neon -> escuro
     local leftPanel = Instance.new("Frame")
     leftPanel.Size = UDim2.new(0, 180, 1, 0)
-    leftPanel.BackgroundColor3 = Colors.LeftPanelBackground
+    leftPanel.BackgroundColor3 = Colors.LeftPanelBackground -- cor base
     leftPanel.Parent = contentFrame
     Instance.new("UICorner", leftPanel).CornerRadius = UDim.new(0, 10)
     local leftStroke = Instance.new("UIStroke", leftPanel)
     leftStroke.Color = Colors.Border
+
+    local leftGradient = Instance.new("UIGradient")
+    leftGradient.Color = ColorSequence.new({
+        ColorSequenceKeypoint.new(0, Colors.MainBackgroundStart),
+        ColorSequenceKeypoint.new(1, Colors.MainBackgroundEnd)
+    })
+    leftGradient.Parent = leftPanel
 
     -- Painel direito (transparente)
     local rightPanel = Instance.new("Frame")
@@ -123,6 +130,8 @@ function ElixirLib:MakeWindow(config)
     rightPanel.Position = UDim2.new(0, 180, 0, 0)
     rightPanel.BackgroundTransparency = 1
     rightPanel.Parent = contentFrame
+
+ 
 
     -- Notificação personalizada (via módulo externo)
     local function showNotification(message)
@@ -293,7 +302,8 @@ function Window:MakeTab(tabData)
     btnCorner.CornerRadius = UDim.new(0, 8)
     btnCorner.Parent = button
 
-    local btnStroke = Instance.new("UIStroke")
+    local btnStroke
+     = Instance.new("UIStroke")
     btnStroke.Color = Color3.fromRGB(0, 255, 0)
     btnStroke.Thickness = 1
     btnStroke.Parent = button

@@ -1031,27 +1031,30 @@ resizeButton.ZIndex = 10
 resizeButton.Parent = mainFrame
 resizeButton.Active = true
 
--- REMOVIDO: Oculta o botão em dispositivos mobile para aparecer em todos
-
 local resizing = false
-local dragStartPos
-local startSize
+local dragStartPos = nil
+local startSize = nil
+local currentInput = nil
 
 resizeButton.InputBegan:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
         resizing = true
         dragStartPos = input.Position
         startSize = mainFrame.Size
+        currentInput = input
+
+        -- Detecta quando o input termina para parar o redimensionamento
         input.Changed:Connect(function()
             if input.UserInputState == Enum.UserInputState.End then
                 resizing = false
+                currentInput = nil
             end
         end)
     end
 end)
 
 UserInputService.InputChanged:Connect(function(input)
-    if resizing and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+    if resizing and input == currentInput then
         local delta = input.Position - dragStartPos
         local newWidth = math.clamp(startSize.X.Offset + delta.X, 300, 1200)
         local newHeight = math.clamp(startSize.Y.Offset + delta.Y, 200, 800)
@@ -1060,11 +1063,11 @@ UserInputService.InputChanged:Connect(function(input)
 end)
 
 UserInputService.InputEnded:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+    if input == currentInput then
         resizing = false
+        currentInput = nil
     end
 end)
-
 
 
     return Window

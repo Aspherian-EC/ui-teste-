@@ -256,12 +256,24 @@ function ElixirLib:MakeWindow(config)
 
     floatButton.MouseButton1Click:Connect(toggleUI)
 
--- Sistema de Tabs
-local Window = {}
-local Tabs = {}
-local tabContents = {}
+-- Cria o painel que vai conter os botões das tabs, com scroll e transparente
+local tabButtonList = Instance.new("ScrollingFrame")
+tabButtonList.Size = UDim2.new(0, 150, 1, 0) -- largura fixa e altura total do painel
+tabButtonList.Position = UDim2.new(0, 0, 0, 0)
+tabButtonList.BackgroundTransparency = 1 -- totalmente transparente
+tabButtonList.CanvasSize = UDim2.new(0, 0, 0, 0) -- inicialmente zero, vai ser ajustado pelo layout
+tabButtonList.ScrollBarThickness = 6
+tabButtonList.AutomaticCanvasSize = Enum.AutomaticSize.Y -- canvas aumenta conforme os botões crescem
+tabButtonList.VerticalScrollBarInset = Enum.ScrollBarInset.ScrollBar
+tabButtonList.Parent = leftPanel -- ou onde você quiser na UI
 
-local tabButtons = {} -- tabela para guardar os botões das tabs e posicionar certo
+-- Layout vertical automático com espaçamento
+local listLayout = Instance.new("UIListLayout")
+listLayout.Padding = UDim.new(0, 10)
+listLayout.SortOrder = Enum.SortOrder.LayoutOrder
+listLayout.Parent = tabButtonList
+
+-- Depois, dentro da sua função Window:MakeTab, substitua o botão assim:
 
 function Window:MakeTab(tabData)
     local tabName = tabData.Name or "Aba"
@@ -269,15 +281,15 @@ function Window:MakeTab(tabData)
     local tab = {}
     tab.Sections = {}
 
-    -- Botão de tab
+    -- Cria o botão da tab dentro do ScrollingFrame transparente
     local button = Instance.new("TextButton")
     button.Size = UDim2.new(1, -20, 0, 40)
-    button.Position = UDim2.new(0, 10, 0, 10 + #tabButtons * 45) -- posição corrigida
     button.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
     button.Text = ""
     button.AutoButtonColor = true
-    button.Parent = leftPanel
+    button.Parent = tabButtonList -- *aqui* mudou para o scrolling frame dos botões
 
+    -- Ícone da tab
     local icon = Instance.new("ImageLabel")
     icon.Size = UDim2.new(0, 24, 0, 24)
     icon.Position = UDim2.new(0, 10, 0.5, -12)
@@ -285,6 +297,7 @@ function Window:MakeTab(tabData)
     icon.Image = tabIcon
     icon.Parent = button
 
+    -- Texto da tab
     local label = Instance.new("TextLabel")
     label.Size = UDim2.new(1, -44, 1, 0)
     label.Position = UDim2.new(0, 40, 0, 0)
@@ -296,6 +309,7 @@ function Window:MakeTab(tabData)
     label.TextXAlignment = Enum.TextXAlignment.Left
     label.Parent = button
 
+    -- Cantos arredondados e stroke
     local btnCorner = Instance.new("UICorner")
     btnCorner.CornerRadius = UDim.new(0, 8)
     btnCorner.Parent = button
@@ -305,12 +319,15 @@ function Window:MakeTab(tabData)
     btnStroke.Thickness = 1
     btnStroke.Parent = button
 
-    table.insert(tabButtons, button) -- adiciona botão na lista para posicionamento
+    -- (Não precisa mais controlar posição manualmente,
+    -- o UIListLayout já posiciona os botões automaticamente)
 
-    -- Frame base da aba (janela da tab)
+    -- Continua o resto do seu código...
+
+    -- Frame base da aba (conteúdo)
     local tabContent = Instance.new("Frame")
     tabContent.Size = UDim2.new(1, 0, 1, 0)
-    tabContent.BackgroundTransparency = 1  -- totalmente transparente
+    tabContent.BackgroundTransparency = 1
     tabContent.Visible = false
     tabContent.Parent = rightPanel
 
@@ -330,26 +347,24 @@ function Window:MakeTab(tabData)
     title.TextXAlignment = Enum.TextXAlignment.Left
     title.Parent = tabContent
 
-    -- Área rolável para os elementos (toggles, etc)
+    -- Área rolável da tab (scrolling frame dos conteúdos)
     local scrollContainer = Instance.new("ScrollingFrame")
     scrollContainer.Size = UDim2.new(1, -20, 1, -70)
     scrollContainer.Position = UDim2.new(0, 10, 0, 60)
-    scrollContainer.BackgroundTransparency = 1  -- totalmente transparente
+    scrollContainer.BackgroundTransparency = 1
     scrollContainer.CanvasSize = UDim2.new(0, 0, 0, 0)
     scrollContainer.ScrollBarThickness = 4
     scrollContainer.AutomaticCanvasSize = Enum.AutomaticSize.Y
     scrollContainer.VerticalScrollBarInset = Enum.ScrollBarInset.ScrollBar
     scrollContainer.Parent = tabContent
 
-    local listLayout = Instance.new("UIListLayout")
-    listLayout.Padding = UDim.new(0, 10)
-    listLayout.SortOrder = Enum.SortOrder.LayoutOrder
-    listLayout.Parent = scrollContainer
+    local listLayoutContent = Instance.new("UIListLayout")
+    listLayoutContent.Padding = UDim.new(0, 10)
+    listLayoutContent.SortOrder = Enum.SortOrder.LayoutOrder
+    listLayoutContent.Parent = scrollContainer
 
-    -- Armazenar o scroll container como lugar dos elementos
     tab.Container = scrollContainer
 
-    -- Alternar entre as tabs
     button.MouseButton1Click:Connect(function()
         for _, content in pairs(tabContents) do
             content.Visible = false
@@ -359,7 +374,8 @@ function Window:MakeTab(tabData)
 
     table.insert(tabContents, tabContent)
     table.insert(Tabs, tab)
-    
+end
+
 	--Seções🟢
    function tab:AddSection(sectionData)
     local name = sectionData.Name or "Section"

@@ -274,9 +274,9 @@ tabListFrame.AutomaticCanvasSize = Enum.AutomaticSize.Y
 tabListFrame.VerticalScrollBarInset = Enum.ScrollBarInset.ScrollBar
 tabListFrame.Parent = leftPanel
 
--- Adiciona padding à esquerda para deslocar os botões
+-- Adiciona padding para deslocar os botões para direita
 local tabListPadding = Instance.new("UIPadding")
-tabListPadding.PaddingLeft = UDim.new(0, 10)  -- desloca tudo 10 pixels para a direita
+tabListPadding.PaddingLeft = UDim.new(0, 10) -- desloca todos os botões 10 pixels para a direita
 tabListPadding.Parent = tabListFrame
 
 local tabListLayout = Instance.new("UIListLayout")
@@ -299,7 +299,7 @@ function Window:MakeTab(tabData)
     button.LayoutOrder = #tabButtons + 1
     button.Parent = tabListFrame
 
-    -- Padding interno no botão para deslocar conteúdo
+    -- Padding interno no botão para o conteúdo não ficar colado na borda
     local buttonPadding = Instance.new("UIPadding")
     buttonPadding.PaddingLeft = UDim.new(0, 10)
     buttonPadding.Parent = button
@@ -386,6 +386,7 @@ function Window:MakeTab(tabData)
 
     table.insert(tabContents, tabContent)
     table.insert(Tabs, tab)
+
 
 
 	--Seções🟢

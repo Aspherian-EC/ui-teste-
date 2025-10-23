@@ -29,7 +29,7 @@ local SelectedTheme = Themes["Dark"]
 function ElixirLib:MakeWindow(info)
     info = info or {}
     local window = {}
-    
+
     local mainGui = Instance.new("ScreenGui")
     mainGui.Name = "ElixirUI_" .. HttpService:GenerateGUID(false)
     mainGui.ZIndexBehavior = Enum.ZIndexBehavior.Global
@@ -156,16 +156,19 @@ function ElixirLib:MakeWindow(info)
         page.Name = info.Name .. "_Page"
         page.Visible = false
         page.BackgroundTransparency = 1
-        page.CanvasSize = UDim2.new()
-        page.AutomaticCanvasSize = Enum.AutomaticSize.Y
+        page.Size = UDim2.new(1, 0, 1, 0)
         page.ScrollBarThickness = 3
         page.ScrollBarImageColor3 = Color3.fromRGB(100, 100, 100)
-        page.Size = UDim2.new(1, 0, 1, 0)
+        page.AutomaticCanvasSize = Enum.AutomaticSize.Y
         page.Parent = tabContent
 
         local uIList = Instance.new("UIListLayout", page)
         uIList.Padding = UDim.new(0, 10)
         uIList.SortOrder = Enum.SortOrder.LayoutOrder
+
+        local function updateCanvas()
+            page.CanvasSize = UDim2.new(0, 0, 0, uIList.AbsoluteContentSize.Y + 10)
+        end
 
         tabButton.MouseButton1Click:Connect(function()
             for _, otherPage in ipairs(tabContent:GetChildren()) do
@@ -209,6 +212,7 @@ function ElixirLib:MakeWindow(info)
             line.Size = UDim2.new(1, 0, 0, 1)
             line.Parent = section
 
+            updateCanvas()
             return section
         end
 
@@ -219,7 +223,6 @@ function ElixirLib:MakeWindow(info)
             toggleFrame.Name = "Toggle"
             toggleFrame.BackgroundColor3 = SelectedTheme.TabFrame
             toggleFrame.Size = UDim2.new(1, -10, 0, 30)
-            toggleFrame.Position = UDim2.new(0, 0, 0, 0)
             toggleFrame.Parent = page
 
             local uICorner = Instance.new("UICorner", toggleFrame)
@@ -270,6 +273,7 @@ function ElixirLib:MakeWindow(info)
                 end
             end)
 
+            updateCanvas()
             return toggleFrame
         end
 

@@ -159,7 +159,6 @@ function ElixirLib:MakeWindow(info)
         layout.Padding = UDim.new(0, 10)
         layout.SortOrder = Enum.SortOrder.LayoutOrder
 
-        -- Atualiza CanvasSize automaticamente
         layout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
             page.CanvasSize = UDim2.new(0, 0, 0, layout.AbsoluteContentSize.Y + 10)
         end)
@@ -180,58 +179,47 @@ function ElixirLib:MakeWindow(info)
             page.Visible = true
         end)
 
-        --== Seções ==--
+        --== Sections visuais (apenas separadores) ==--
         function page:AddSection(info)
             info = info or {}
-            local sectionFrame = Instance.new("Frame")
-            sectionFrame.Name = info.Name or "Section"
-            sectionFrame.BackgroundColor3 = SelectedTheme.TabFrame
-            sectionFrame.Size = UDim2.new(1, -10, 0, 50)
-            sectionFrame.Parent = page
+            local section = Instance.new("Frame")
+            section.Size = UDim2.new(1, -10, 0, 25)
+            section.BackgroundColor3 = SelectedTheme.TabFrame
+            section.Parent = page
 
-            local sectionTitle = Instance.new("TextLabel")
-            sectionTitle.Text = info.Name or "Section"
-            sectionTitle.Font = Enum.Font.GothamBold
-            sectionTitle.TextSize = 14
-            sectionTitle.TextColor3 = Color3.fromRGB(255, 255, 255)
-            sectionTitle.BackgroundTransparency = 1
-            sectionTitle.Position = UDim2.new(0, 5, 0, 0)
-            sectionTitle.Size = UDim2.new(1, -10, 0, 20)
-            sectionTitle.Parent = sectionFrame
+            local label = Instance.new("TextLabel")
+            label.Text = info.Name or "Section"
+            label.Font = Enum.Font.GothamBold
+            label.TextSize = 13
+            label.TextColor3 = Color3.fromRGB(255, 255, 255)
+            label.BackgroundTransparency = 1
+            label.Size = UDim2.new(1, -10, 1, 0)
+            label.Position = UDim2.new(0, 5, 0, 0)
+            label.Parent = section
 
-            local contentFrame = Instance.new("Frame")
-            contentFrame.BackgroundTransparency = 1
-            contentFrame.Position = UDim2.new(0, 0, 0, 20)
-            contentFrame.Size = UDim2.new(1, 0, 1, -20)
-            contentFrame.Parent = sectionFrame
+            return section
+        end
 
-            local sectionLayout = Instance.new("UIListLayout", contentFrame)
-            sectionLayout.SortOrder = Enum.SortOrder.LayoutOrder
-            sectionLayout.Padding = UDim.new(0, 6)
+        --== Toggles direto na aba ==--
+        function page:AddToggle(info)
+            info = info or {}
+            local toggle = Instance.new("TextButton")
+            toggle.Size = UDim2.new(1, -10, 0, 30)
+            toggle.BackgroundColor3 = SelectedTheme.Main
+            toggle.Text = info.Name or "Toggle"
+            toggle.Font = Enum.Font.Gotham
+            toggle.TextColor3 = Color3.fromRGB(255,255,255)
+            toggle.TextSize = 13
+            toggle.Parent = page
 
-            --== Toggle ==--
-            function sectionFrame:AddToggle(info)
-                info = info or {}
-                local toggleButton = Instance.new("TextButton")
-                toggleButton.Size = UDim2.new(1, -10, 0, 30)
-                toggleButton.BackgroundColor3 = SelectedTheme.Main
-                toggleButton.Text = info.Name or "Toggle"
-                toggleButton.Font = Enum.Font.Gotham
-                toggleButton.TextColor3 = Color3.fromRGB(255,255,255)
-                toggleButton.TextSize = 13
-                toggleButton.Parent = contentFrame
-
-                local value = info.Default or false
-                toggleButton.MouseButton1Click:Connect(function()
-                    value = not value
-                    toggleButton.TextColor3 = value and Color3.fromRGB(100, 255, 100) or Color3.fromRGB(255,255,255)
-                    if info.Callback then
-                        info.Callback(value)
-                    end
-                end)
-            end
-
-            return sectionFrame
+            local value = info.Default or false
+            toggle.MouseButton1Click:Connect(function()
+                value = not value
+                toggle.TextColor3 = value and Color3.fromRGB(100, 255, 100) or Color3.fromRGB(255,255,255)
+                if info.Callback then
+                    info.Callback(value)
+                end
+            end)
         end
 
         return page

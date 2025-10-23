@@ -1,156 +1,181 @@
---[[ 
-    ElixirLib (v1.0) - Sistema de Janelas + Tabs
-    Autor: Luiz (Elixir Client)
---]]
+--// ElixirLib.lua
+local ElixirLib = {
+    Theme = "Dark",
+    Flags = {}
+}
 
-local ElixirLib = {}
-ElixirLib.Theme = "Dark"
-
--- Serviços
-local CoreGui = game:GetService("CoreGui")
+local HttpService = game:GetService("HttpService")
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
+local CoreGui = game:GetService("CoreGui")
 
--- Pasta principal
-local Folder = Instance.new("Folder")
-Folder.Name = "ElixirLibFolder"
-Folder.Parent = CoreGui
-
--- Tema base
+--== TEMAS BÁSICOS (igual MentaLib, simplificado) ==--
 local Themes = {
-    Dark = {
-        Main = Color3.fromRGB(20,20,25),
-        Topbar = Color3.fromRGB(30,30,35),
-        TabContainer = Color3.fromRGB(25,25,30),
-        TabFrame = Color3.fromRGB(35,35,40),
-        TabSelected = Color3.fromRGB(65,65,70),
-        Text = Color3.fromRGB(237,237,237),
-        Shadow = Color3.fromRGB(20,20,25)
+    ["Dark"] = {
+        Topbar = Color3.fromRGB(30, 30, 35),
+        Main = Color3.fromRGB(20, 20, 25),
+        TabContainer = Color3.fromRGB(25, 25, 30),
+        TabFrame = Color3.fromRGB(35, 35, 40),
+        TabText = Color3.fromRGB(237, 237, 237),
+        HoverTab = Color3.fromRGB(53, 53, 57),
+        Lines = Color3.fromRGB(50, 50, 55),
+        SelectedTab = Color3.fromRGB(65, 65, 70)
     }
 }
 
--- Cria janela principal
+local SelectedTheme = Themes["Dark"]
+
+--== FUNÇÃO PRINCIPAL: Criar Janela ==--
 function ElixirLib:MakeWindow(info)
     info = info or {}
-    local theme = Themes[self.Theme] or Themes.Dark
-
     local window = {}
-    window.Tabs = {}
+    
+    local mainGui = Instance.new("ScreenGui")
+    mainGui.Name = "ElixirUI_" .. HttpService:GenerateGUID(false)
+    mainGui.ZIndexBehavior = Enum.ZIndexBehavior.Global
+    mainGui.Parent = CoreGui
 
-    -- Frame principal
-    local main = Instance.new("Frame")
-    main.Size = UDim2.new(0,500,0,350)
-    main.Position = UDim2.new(0.3,0,0.3,0)
-    main.BackgroundColor3 = theme.Main
-    main.Parent = Folder
-    Instance.new("UICorner", main).CornerRadius = UDim.new(0,4)
+    local mainFrame = Instance.new("Frame")
+    mainFrame.Name = "Main"
+    mainFrame.BackgroundColor3 = SelectedTheme.Main
+    mainFrame.BorderSizePixel = 0
+    mainFrame.Position = UDim2.new(0.35, 0, 0.3, 0)
+    mainFrame.Size = UDim2.new(0, 500, 0, 350)
+    mainFrame.Parent = mainGui
+
+    local uICorner = Instance.new("UICorner", mainFrame)
+    uICorner.CornerRadius = UDim.new(0, 4)
 
     -- Topbar
     local topbar = Instance.new("Frame")
-    topbar.Size = UDim2.new(1,0,0,34)
-    topbar.BackgroundColor3 = theme.Topbar
-    topbar.Parent = main
-    Instance.new("UICorner", topbar).CornerRadius = UDim.new(0,4)
+    topbar.Name = "Topbar"
+    topbar.BackgroundColor3 = SelectedTheme.Topbar
+    topbar.Size = UDim2.new(1, 0, 0, 34)
+    topbar.Parent = mainFrame
 
     local title = Instance.new("TextLabel")
-    title.Text = info.Name or "Elixir Client"
+    title.Name = "Title"
+    title.Text = info.Name or "Elixir Window"
     title.Font = Enum.Font.GothamBold
     title.TextSize = 14
-    title.TextColor3 = theme.Text
+    title.TextColor3 = Color3.fromRGB(255, 255, 255)
+    title.TextXAlignment = Enum.TextXAlignment.Left
     title.BackgroundTransparency = 1
-    title.Size = UDim2.new(1,-16,1,0)
-    title.Position = UDim2.new(0,8,0,0)
+    title.Position = UDim2.new(0, 8, 0, 0)
+    title.Size = UDim2.new(0.8, 0, 1, 0)
     title.Parent = topbar
 
-    -- Drag system
+    local closeButton = Instance.new("TextButton")
+    closeButton.Text = "×"
+    closeButton.Font = Enum.Font.GothamBold
+    closeButton.TextColor3 = Color3.fromRGB(255, 80, 80)
+    closeButton.BackgroundTransparency = 1
+    closeButton.Size = UDim2.new(0, 34, 0, 34)
+    closeButton.Position = UDim2.new(1, -34, 0, 0)
+    closeButton.Parent = topbar
+    closeButton.MouseButton1Click:Connect(function()
+        mainGui:Destroy()
+    end)
+
+    -- Arrastar
     local dragging, dragStart, startPos
     local function update(input)
         local delta = input.Position - dragStart
-        main.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X,
-                                  startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+        mainFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
     end
-
     topbar.InputBegan:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 then
             dragging = true
             dragStart = input.Position
-            startPos = main.Position
-            input.Changed:Connect(function()
-                if input.UserInputState == Enum.UserInputState.End then
-                    dragging = false
-                end
-            end)
+            startPos = mainFrame.Position
         end
     end)
-
     UserInputService.InputChanged:Connect(function(input)
         if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
             update(input)
         end
     end)
+    UserInputService.InputEnded:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+            dragging = false
+        end
+    end)
 
-    -- Container de tabs
+    --== Área de Tabs ==--
     local tabContainer = Instance.new("Frame")
-    tabContainer.Size = UDim2.new(0,130,1,-34)
-    tabContainer.Position = UDim2.new(0,0,0,34)
-    tabContainer.BackgroundColor3 = theme.TabContainer
-    tabContainer.Parent = main
+    tabContainer.Name = "TabContainer"
+    tabContainer.BackgroundColor3 = SelectedTheme.TabContainer
+    tabContainer.Size = UDim2.new(0, 130, 0, 316)
+    tabContainer.Position = UDim2.new(0, 5, 0, 36)
+    tabContainer.Parent = mainFrame
 
-    local layout = Instance.new("UIListLayout", tabContainer)
-    layout.SortOrder = Enum.SortOrder.LayoutOrder
-    layout.Padding = UDim.new(0,6)
+    local uIListLayout = Instance.new("UIListLayout", tabContainer)
+    uIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
+    uIListLayout.Padding = UDim.new(0, 4)
 
-    -- Área de conteúdo das tabs
     local tabContent = Instance.new("Frame")
-    tabContent.Size = UDim2.new(1,-130,1,-34)
-    tabContent.Position = UDim2.new(0,130,0,34)
+    tabContent.Name = "TabContent"
     tabContent.BackgroundTransparency = 1
-    tabContent.Parent = main
+    tabContent.Position = UDim2.new(0, 140, 0, 36)
+    tabContent.Size = UDim2.new(1, -145, 1, -40)
+    tabContent.Parent = mainFrame
 
-    -- Cria uma tab
-    function window:MakeTab(tabInfo)
-        local tab = {}
-        tab.Sections = {}
+    --== Criar Aba ==--
+    function window:MakeTab(info)
+        info = info or {}
+        local tabButton = Instance.new("TextButton")
+        tabButton.Name = "TabButton"
+        tabButton.Text = ""
+        tabButton.Size = UDim2.new(1, -8, 0, 28)
+        tabButton.BackgroundColor3 = SelectedTheme.TabFrame
+        tabButton.Parent = tabContainer
 
-        -- Botão da tab
-        local button = Instance.new("TextButton")
-        button.Size = UDim2.new(1,-10,0,26)
-        button.BackgroundColor3 = theme.TabFrame
-        button.Text = tabInfo.Name or "Tab"
-        button.Font = Enum.Font.GothamBold
-        button.TextSize = 12
-        button.TextColor3 = theme.Text
-        button.Parent = tabContainer
-        Instance.new("UICorner", button).CornerRadius = UDim.new(0,3)
+        local icon = Instance.new("ImageLabel")
+        icon.Image = info.Icon or "rbxassetid://0"
+        icon.BackgroundTransparency = 1
+        icon.Size = UDim2.new(0, 20, 0, 20)
+        icon.Position = UDim2.new(0, 6, 0.5, -10)
+        icon.Parent = tabButton
 
-        -- Frame do conteúdo da tab
-        local tabFrame = Instance.new("ScrollingFrame")
-        tabFrame.Size = UDim2.new(1,0,1,0)
-        tabFrame.CanvasSize = UDim2.new()
-        tabFrame.ScrollBarThickness = 0
-        tabFrame.BackgroundTransparency = 1
-        tabFrame.Visible = false
-        tabFrame.Parent = tabContent
+        local label = Instance.new("TextLabel")
+        label.Text = info.Name or "Tab"
+        label.Font = Enum.Font.GothamBold
+        label.TextColor3 = SelectedTheme.TabText
+        label.BackgroundTransparency = 1
+        label.Position = UDim2.new(0, 32, 0, 0)
+        label.Size = UDim2.new(1, -32, 1, 0)
+        label.TextXAlignment = Enum.TextXAlignment.Left
+        label.TextSize = 12
+        label.Parent = tabButton
 
-        local layout = Instance.new("UIListLayout", tabFrame)
-        layout.SortOrder = Enum.SortOrder.LayoutOrder
-        layout.Padding = UDim.new(0,8)
+        local page = Instance.new("ScrollingFrame")
+        page.Name = info.Name .. "_Page"
+        page.Visible = false
+        page.BackgroundTransparency = 1
+        page.CanvasSize = UDim2.new()
+        page.Size = UDim2.new(1, 0, 1, 0)
+        page.Parent = tabContent
 
-        -- Ativar tab ao clicar
-        button.MouseButton1Click:Connect(function()
-            for _, t in pairs(window.Tabs) do
-                t.Frame.Visible = false
-                t.Button.BackgroundColor3 = theme.TabFrame
+        local uIList = Instance.new("UIListLayout", page)
+        uIList.Padding = UDim.new(0, 10)
+        uIList.SortOrder = Enum.SortOrder.LayoutOrder
+
+        tabButton.MouseButton1Click:Connect(function()
+            for _, otherPage in ipairs(tabContent:GetChildren()) do
+                if otherPage:IsA("ScrollingFrame") then
+                    otherPage.Visible = false
+                end
             end
-            tabFrame.Visible = true
-            TweenService:Create(button, TweenInfo.new(0.15), {BackgroundColor3 = theme.TabSelected}):Play()
+            for _, otherTab in ipairs(tabContainer:GetChildren()) do
+                if otherTab:IsA("TextButton") then
+                    TweenService:Create(otherTab, TweenInfo.new(0.15), {BackgroundColor3 = SelectedTheme.TabFrame}):Play()
+                end
+            end
+            TweenService:Create(tabButton, TweenInfo.new(0.15), {BackgroundColor3 = SelectedTheme.SelectedTab}):Play()
+            page.Visible = true
         end)
 
-        tab.Button = button
-        tab.Frame = tabFrame
-        table.insert(window.Tabs, tab)
-
-        return tab
+        return page
     end
 
     return window

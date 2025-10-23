@@ -1,6 +1,5 @@
 --[[ 
-    ElixirLib (v1.0) - Base + Tabs
-    Sistema: só janelas + abas
+    ElixirLib (v1.0) - Sistema de Janelas + Tabs
     Autor: Luiz (Elixir Client)
 --]]
 
@@ -11,61 +10,45 @@ ElixirLib.Theme = "Dark"
 local CoreGui = game:GetService("CoreGui")
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
-local HttpService = game:GetService("HttpService")
 
 -- Pasta principal
 local Folder = Instance.new("Folder")
-Folder.Name = HttpService:GenerateGUID(false)
+Folder.Name = "ElixirLibFolder"
 Folder.Parent = CoreGui
 
--- Temas base
+-- Tema base
 local Themes = {
-    ["Dark"] = {
+    Dark = {
         Main = Color3.fromRGB(20,20,25),
         Topbar = Color3.fromRGB(30,30,35),
         TabContainer = Color3.fromRGB(25,25,30),
-        Lines = Color3.fromRGB(50,50,55),
         TabFrame = Color3.fromRGB(35,35,40),
-        TabHover = Color3.fromRGB(53,53,57),
         TabSelected = Color3.fromRGB(65,65,70),
         Text = Color3.fromRGB(237,237,237),
-        Accent = Color3.fromRGB(80,201,206),
         Shadow = Color3.fromRGB(20,20,25)
     }
 }
 
--- Função para criar a janela principal
+-- Cria janela principal
 function ElixirLib:MakeWindow(info)
     info = info or {}
-    local theme = Themes[self.Theme] or Themes["Dark"]
+    local theme = Themes[self.Theme] or Themes.Dark
 
     local window = {}
     window.Tabs = {}
 
-    -- Sombra
-    local shadow = Instance.new("ImageLabel")
-    shadow.Image = "rbxassetid://1316045217"
-    shadow.ImageColor3 = theme.Shadow
-    shadow.ImageTransparency = 0.3
-    shadow.BackgroundTransparency = 1
-    shadow.Position = UDim2.new(0.35,0,0.3,0)
-    shadow.Size = UDim2.new(0,520,0,370)
-    shadow.Parent = Folder
-
     -- Frame principal
     local main = Instance.new("Frame")
-    main.BackgroundColor3 = theme.Main
     main.Size = UDim2.new(0,500,0,350)
-    main.Position = UDim2.new(0.35,0,0.3,0)
+    main.Position = UDim2.new(0.3,0,0.3,0)
+    main.BackgroundColor3 = theme.Main
     main.Parent = Folder
     Instance.new("UICorner", main).CornerRadius = UDim.new(0,4)
-    local stroke = Instance.new("UIStroke", main)
-    stroke.Color = theme.Lines
 
     -- Topbar
     local topbar = Instance.new("Frame")
-    topbar.BackgroundColor3 = theme.Topbar
     topbar.Size = UDim2.new(1,0,0,34)
+    topbar.BackgroundColor3 = theme.Topbar
     topbar.Parent = main
     Instance.new("UICorner", topbar).CornerRadius = UDim.new(0,4)
 
@@ -75,8 +58,8 @@ function ElixirLib:MakeWindow(info)
     title.TextSize = 14
     title.TextColor3 = theme.Text
     title.BackgroundTransparency = 1
-    title.Position = UDim2.new(0,8,0,0)
     title.Size = UDim2.new(1,-16,1,0)
+    title.Position = UDim2.new(0,8,0,0)
     title.Parent = topbar
 
     -- Drag system
@@ -85,7 +68,6 @@ function ElixirLib:MakeWindow(info)
         local delta = input.Position - dragStart
         main.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X,
                                   startPos.Y.Scale, startPos.Y.Offset + delta.Y)
-        shadow.Position = main.Position
     end
 
     topbar.InputBegan:Connect(function(input)
@@ -107,41 +89,41 @@ function ElixirLib:MakeWindow(info)
         end
     end)
 
-    -- Container de abas
+    -- Container de tabs
     local tabContainer = Instance.new("Frame")
-    tabContainer.BackgroundColor3 = theme.TabContainer
     tabContainer.Size = UDim2.new(0,130,1,-34)
     tabContainer.Position = UDim2.new(0,0,0,34)
+    tabContainer.BackgroundColor3 = theme.TabContainer
     tabContainer.Parent = main
 
-    local tabLayout = Instance.new("UIListLayout", tabContainer)
-    tabLayout.SortOrder = Enum.SortOrder.LayoutOrder
-    tabLayout.Padding = UDim.new(0,6)
+    local layout = Instance.new("UIListLayout", tabContainer)
+    layout.SortOrder = Enum.SortOrder.LayoutOrder
+    layout.Padding = UDim.new(0,6)
 
-    -- Área de conteúdo
+    -- Área de conteúdo das tabs
     local tabContent = Instance.new("Frame")
-    tabContent.BackgroundTransparency = 1
     tabContent.Size = UDim2.new(1,-130,1,-34)
     tabContent.Position = UDim2.new(0,130,0,34)
+    tabContent.BackgroundTransparency = 1
     tabContent.Parent = main
 
-    -- Função para criar uma aba
+    -- Cria uma tab
     function window:MakeTab(tabInfo)
         local tab = {}
         tab.Sections = {}
 
-        -- Botão da aba
+        -- Botão da tab
         local button = Instance.new("TextButton")
-        button.BackgroundColor3 = theme.TabFrame
         button.Size = UDim2.new(1,-10,0,26)
+        button.BackgroundColor3 = theme.TabFrame
         button.Text = tabInfo.Name or "Tab"
         button.Font = Enum.Font.GothamBold
-        button.TextColor3 = theme.Text
         button.TextSize = 12
+        button.TextColor3 = theme.Text
         button.Parent = tabContainer
         Instance.new("UICorner", button).CornerRadius = UDim.new(0,3)
 
-        -- Frame da aba
+        -- Frame do conteúdo da tab
         local tabFrame = Instance.new("ScrollingFrame")
         tabFrame.Size = UDim2.new(1,0,1,0)
         tabFrame.CanvasSize = UDim2.new()
@@ -150,11 +132,11 @@ function ElixirLib:MakeWindow(info)
         tabFrame.Visible = false
         tabFrame.Parent = tabContent
 
-        local tabLayout = Instance.new("UIListLayout", tabFrame)
-        tabLayout.Padding = UDim.new(0,8)
-        tabLayout.SortOrder = Enum.SortOrder.LayoutOrder
+        local layout = Instance.new("UIListLayout", tabFrame)
+        layout.SortOrder = Enum.SortOrder.LayoutOrder
+        layout.Padding = UDim.new(0,8)
 
-        -- Ativar aba ao clicar
+        -- Ativar tab ao clicar
         button.MouseButton1Click:Connect(function()
             for _, t in pairs(window.Tabs) do
                 t.Frame.Visible = false

@@ -1,0 +1,558 @@
+--// ElixirLib.lua (Versão Final Testável)
+local ElixirLib = {
+    Theme = "Dark",
+    Flags = {}
+}
+
+local HttpService = game:GetService("HttpService")
+local TweenService = game:GetService("TweenService")
+local UserInputService = game:GetService("UserInputService")
+local CoreGui = game:GetService("CoreGui")
+
+--== TEMAS ==--
+local Themes = {
+    ["Dark"] = {
+        Topbar = Color3.fromRGB(30, 30, 35),
+        Main = Color3.fromRGB(20, 20, 25),
+        TabContainer = Color3.fromRGB(25, 25, 30),
+        TabFrame = Color3.fromRGB(35, 35, 40),
+        TabText = Color3.fromRGB(237, 237, 237),
+        HoverTab = Color3.fromRGB(53, 53, 57),
+        Lines = Color3.fromRGB(50, 50, 55),
+        SelectedTab = Color3.fromRGB(65, 65, 70)
+    }
+}
+
+local SelectedTheme = Themes["Dark"]
+
+--== CRIAR JANELA ==--
+function ElixirLib:MakeWindow(info)
+    info = info or {}
+    local window = {}
+
+    local mainGui = Instance.new("ScreenGui")
+    mainGui.Name = "ElixirUI_" .. HttpService:GenerateGUID(false)
+    mainGui.ZIndexBehavior = Enum.ZIndexBehavior.Global
+    mainGui.Parent = CoreGui
+
+    local mainFrame = Instance.new("Frame")
+    mainFrame.Name = "Main"
+    mainFrame.BackgroundColor3 = SelectedTheme.Main
+    mainFrame.BorderSizePixel = 0
+    mainFrame.Position = UDim2.new(0.35, 0, 0.3, 0)
+    mainFrame.Size = UDim2.new(0, 500, 0, 350)
+    mainFrame.Parent = mainGui
+
+    local uICorner = Instance.new("UICorner", mainFrame)
+    uICorner.CornerRadius = UDim.new(0, 4)
+
+    -- Topbar
+    local topbar = Instance.new("Frame")
+    topbar.Name = "Topbar"
+    topbar.BackgroundColor3 = SelectedTheme.Topbar
+    topbar.Size = UDim2.new(1, 0, 0, 34)
+    topbar.Parent = mainFrame
+
+    local title = Instance.new("TextLabel")
+    title.Name = "Title"
+    title.Text = info.Name or "Elixir Window"
+    title.Font = Enum.Font.GothamBold
+    title.TextSize = 14
+    title.TextColor3 = Color3.fromRGB(255, 255, 255)
+    title.TextXAlignment = Enum.TextXAlignment.Left
+    title.BackgroundTransparency = 1
+    title.Position = UDim2.new(0, 8, 0, 0)
+    title.Size = UDim2.new(0.8, 0, 1, 0)
+    title.Parent = topbar
+
+    local closeButton = Instance.new("TextButton")
+    closeButton.Text = "×"
+    closeButton.Font = Enum.Font.GothamBold
+    closeButton.TextColor3 = Color3.fromRGB(255, 80, 80)
+    closeButton.BackgroundTransparency = 1
+    closeButton.Size = UDim2.new(0, 34, 0, 34)
+    closeButton.Position = UDim2.new(1, -34, 0, 0)
+    closeButton.Parent = topbar
+    closeButton.MouseButton1Click:Connect(function()
+        mainGui:Destroy()
+    end)
+
+    -- Arrastar
+    local dragging, dragStart, startPos
+    local function update(input)
+        local delta = input.Position - dragStart
+        mainFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+    end
+    topbar.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+            dragging = true
+            dragStart = input.Position
+            startPos = mainFrame.Position
+        end
+    end)
+    UserInputService.InputChanged:Connect(function(input)
+        if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
+            update(input)
+        end
+    end)
+    UserInputService.InputEnded:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+            dragging = false
+        end
+    end)
+
+    --== Tabs (roláveis) ==--
+    local tabContainer = Instance.new("ScrollingFrame")
+    tabContainer.Name = "TabContainer"
+    tabContainer.BackgroundColor3 = SelectedTheme.TabContainer
+    tabContainer.Size = UDim2.new(0, 130, 0, 316)
+    tabContainer.Position = UDim2.new(0, 5, 0, 36)
+    tabContainer.ScrollBarThickness = 3
+    tabContainer.ScrollBarImageColor3 = Color3.fromRGB(100, 100, 100)
+    tabContainer.AutomaticCanvasSize = Enum.AutomaticSize.Y
+    tabContainer.CanvasSize = UDim2.new(0, 0, 0, 0)
+    tabContainer.Parent = mainFrame
+
+    local uIListLayout = Instance.new("UIListLayout", tabContainer)
+    uIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
+    uIListLayout.Padding = UDim.new(0, 4)
+
+    local tabContent = Instance.new("Frame")
+    tabContent.Name = "TabContent"
+    tabContent.BackgroundTransparency = 1
+    tabContent.Position = UDim2.new(0, 140, 0, 36)
+    tabContent.Size = UDim2.new(1, -145, 1, -40)
+    tabContent.Parent = mainFrame
+
+    --== CRIAR TAB ==--
+    function window:MakeTab(info)
+        info = info or {}
+        local tabButton = Instance.new("TextButton")
+        tabButton.Name = "TabButton"
+        tabButton.Text = ""
+        tabButton.Size = UDim2.new(1, -8, 0, 28)
+        tabButton.BackgroundColor3 = SelectedTheme.TabFrame
+        tabButton.Parent = tabContainer
+
+        local icon = Instance.new("ImageLabel")
+        icon.Image = info.Icon or "rbxassetid://0"
+        icon.BackgroundTransparency = 1
+        icon.Size = UDim2.new(0, 20, 0, 20)
+        icon.Position = UDim2.new(0, 6, 0.5, -10)
+        icon.Parent = tabButton
+
+        local label = Instance.new("TextLabel")
+        label.Text = info.Name or "Tab"
+        label.Font = Enum.Font.GothamBold
+        label.TextColor3 = SelectedTheme.TabText
+        label.BackgroundTransparency = 1
+        label.Position = UDim2.new(0, 32, 0, 0)
+        label.Size = UDim2.new(1, -32, 1, 0)
+        label.TextXAlignment = Enum.TextXAlignment.Left
+        label.TextSize = 12
+        label.Parent = tabButton
+
+        local page = Instance.new("ScrollingFrame")
+        page.Name = info.Name .. "_Page"
+        page.Visible = false
+        page.BackgroundColor3 = Color3.fromRGB(25, 25, 30) -- fundo testável
+        page.Size = UDim2.new(1, 0, 1, 0)
+        page.ScrollBarThickness = 4
+        page.ScrollBarImageColor3 = Color3.fromRGB(100, 100, 100)
+        page.AutomaticCanvasSize = Enum.AutomaticSize.Y
+        page.Parent = tabContent
+
+        local uIList = Instance.new("UIListLayout", page)
+        uIList.Padding = UDim.new(0, 8)
+        uIList.SortOrder = Enum.SortOrder.LayoutOrder
+
+        local function updateCanvas()
+            page.CanvasSize = UDim2.new(0, 0, 0, uIList.AbsoluteContentSize.Y + 10)
+        end
+
+        tabButton.MouseButton1Click:Connect(function()
+            for _, otherPage in ipairs(tabContent:GetChildren()) do
+                if otherPage:IsA("ScrollingFrame") then
+                    otherPage.Visible = false
+                end
+            end
+            for _, otherTab in ipairs(tabContainer:GetChildren()) do
+                if otherTab:IsA("TextButton") then
+                    TweenService:Create(otherTab, TweenInfo.new(0.15), {BackgroundColor3 = SelectedTheme.TabFrame}):Play()
+                end
+            end
+            TweenService:Create(tabButton, TweenInfo.new(0.15), {BackgroundColor3 = SelectedTheme.SelectedTab}):Play()
+            page.Visible = true
+        end)
+
+        --== SECTION ==--
+        function page:AddSection(sectionInfo)
+            sectionInfo = sectionInfo or {}
+            local section = Instance.new("Frame")
+            section.Name = "Section"
+            section.BackgroundColor3 = Color3.fromRGB(50, 50, 55) -- fundo testável
+            section.Size = UDim2.new(1, -10, 0, 30)
+            section.Parent = page
+
+            local title = Instance.new("TextLabel")
+            title.Text = sectionInfo.Name or "Section"
+            title.Font = Enum.Font.GothamBold
+            title.TextColor3 = Color3.fromRGB(255, 255, 255)
+            title.BackgroundTransparency = 1
+            title.TextSize = 13
+            title.TextXAlignment = Enum.TextXAlignment.Left
+            title.Position = UDim2.new(0, 6, 0, 0)
+            title.Size = UDim2.new(1, -10, 1, 0)
+            title.Parent = section
+
+            updateCanvas()
+            return section
+        end
+
+        --== TOGGLE ==--
+        function page:AddToggle(tInfo)
+            tInfo = tInfo or {}
+            local toggleFrame = Instance.new("Frame")
+            toggleFrame.Name = "Toggle"
+            toggleFrame.BackgroundColor3 = Color3.fromRGB(60, 60, 65) -- fundo testável
+            toggleFrame.Size = UDim2.new(1, -10, 0, 28)
+            toggleFrame.Parent = page
+
+            local uICorner = Instance.new("UICorner", toggleFrame)
+            uICorner.CornerRadius = UDim.new(0, 4)
+
+            local label = Instance.new("TextLabel")
+            label.Text = tInfo.Name or "Toggle"
+            label.Font = Enum.Font.GothamBold
+            label.TextSize = 12
+            label.TextColor3 = Color3.fromRGB(255, 255, 255)
+            label.TextXAlignment = Enum.TextXAlignment.Left
+            label.BackgroundTransparency = 1
+            label.Position = UDim2.new(0, 10, 0, 0)
+            label.Size = UDim2.new(1, -50, 1, 0)
+            label.Parent = toggleFrame
+
+            local button = Instance.new("TextButton")
+            button.Text = ""
+            button.BackgroundTransparency = 1
+            button.Size = UDim2.new(1, 0, 1, 0)
+            button.Parent = toggleFrame
+
+            local indicator = Instance.new("Frame")
+            indicator.Size = UDim2.new(0, 16, 0, 16)
+            indicator.Position = UDim2.new(1, -26, 0.5, -8)
+            indicator.BackgroundColor3 = Color3.fromRGB(50, 50, 55)
+            indicator.BorderSizePixel = 0
+            indicator.Parent = toggleFrame
+
+            local indCorner = Instance.new("UICorner", indicator)
+            indCorner.CornerRadius = UDim.new(1, 0)
+
+            local enabled = tInfo.Default or false
+            local function updateState()
+                TweenService:Create(
+                    indicator,
+                    TweenInfo.new(0.15, Enum.EasingStyle.Linear, Enum.EasingDirection.InOut),
+                    {BackgroundColor3 = enabled and Color3.fromRGB(80, 201, 206) or Color3.fromRGB(50, 50, 55)}
+                ):Play()
+            end
+            updateState()
+
+            button.MouseButton1Click:Connect(function()
+                enabled = not enabled
+                updateState()
+                if tInfo.Callback then
+                    task.spawn(tInfo.Callback, enabled)
+                end
+            end)
+
+            updateCanvas()
+            return toggleFrame
+        end
+
+        return page
+    end
+
+    return window
+end
+
+return ElixirLib
+--// ElixirLib.lua (Versão Final Testável)
+local ElixirLib = {
+    Theme = "Dark",
+    Flags = {}
+}
+
+local HttpService = game:GetService("HttpService")
+local TweenService = game:GetService("TweenService")
+local UserInputService = game:GetService("UserInputService")
+local CoreGui = game:GetService("CoreGui")
+
+--== TEMAS ==--
+local Themes = {
+    ["Dark"] = {
+        Topbar = Color3.fromRGB(30, 30, 35),
+        Main = Color3.fromRGB(20, 20, 25),
+        TabContainer = Color3.fromRGB(25, 25, 30),
+        TabFrame = Color3.fromRGB(35, 35, 40),
+        TabText = Color3.fromRGB(237, 237, 237),
+        HoverTab = Color3.fromRGB(53, 53, 57),
+        Lines = Color3.fromRGB(50, 50, 55),
+        SelectedTab = Color3.fromRGB(65, 65, 70)
+    }
+}
+
+local SelectedTheme = Themes["Dark"]
+
+--== CRIAR JANELA ==--
+function ElixirLib:MakeWindow(info)
+    info = info or {}
+    local window = {}
+
+    local mainGui = Instance.new("ScreenGui")
+    mainGui.Name = "ElixirUI_" .. HttpService:GenerateGUID(false)
+    mainGui.ZIndexBehavior = Enum.ZIndexBehavior.Global
+    mainGui.Parent = CoreGui
+
+    local mainFrame = Instance.new("Frame")
+    mainFrame.Name = "Main"
+    mainFrame.BackgroundColor3 = SelectedTheme.Main
+    mainFrame.BorderSizePixel = 0
+    mainFrame.Position = UDim2.new(0.35, 0, 0.3, 0)
+    mainFrame.Size = UDim2.new(0, 500, 0, 350)
+    mainFrame.Parent = mainGui
+
+    local uICorner = Instance.new("UICorner", mainFrame)
+    uICorner.CornerRadius = UDim.new(0, 4)
+
+    -- Topbar
+    local topbar = Instance.new("Frame")
+    topbar.Name = "Topbar"
+    topbar.BackgroundColor3 = SelectedTheme.Topbar
+    topbar.Size = UDim2.new(1, 0, 0, 34)
+    topbar.Parent = mainFrame
+
+    local title = Instance.new("TextLabel")
+    title.Name = "Title"
+    title.Text = info.Name or "Elixir Window"
+    title.Font = Enum.Font.GothamBold
+    title.TextSize = 14
+    title.TextColor3 = Color3.fromRGB(255, 255, 255)
+    title.TextXAlignment = Enum.TextXAlignment.Left
+    title.BackgroundTransparency = 1
+    title.Position = UDim2.new(0, 8, 0, 0)
+    title.Size = UDim2.new(0.8, 0, 1, 0)
+    title.Parent = topbar
+
+    local closeButton = Instance.new("TextButton")
+    closeButton.Text = "×"
+    closeButton.Font = Enum.Font.GothamBold
+    closeButton.TextColor3 = Color3.fromRGB(255, 80, 80)
+    closeButton.BackgroundTransparency = 1
+    closeButton.Size = UDim2.new(0, 34, 0, 34)
+    closeButton.Position = UDim2.new(1, -34, 0, 0)
+    closeButton.Parent = topbar
+    closeButton.MouseButton1Click:Connect(function()
+        mainGui:Destroy()
+    end)
+
+    -- Arrastar
+    local dragging, dragStart, startPos
+    local function update(input)
+        local delta = input.Position - dragStart
+        mainFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+    end
+    topbar.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+            dragging = true
+            dragStart = input.Position
+            startPos = mainFrame.Position
+        end
+    end)
+    UserInputService.InputChanged:Connect(function(input)
+        if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
+            update(input)
+        end
+    end)
+    UserInputService.InputEnded:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+            dragging = false
+        end
+    end)
+
+    --== Tabs (roláveis) ==--
+    local tabContainer = Instance.new("ScrollingFrame")
+    tabContainer.Name = "TabContainer"
+    tabContainer.BackgroundColor3 = SelectedTheme.TabContainer
+    tabContainer.Size = UDim2.new(0, 130, 0, 316)
+    tabContainer.Position = UDim2.new(0, 5, 0, 36)
+    tabContainer.ScrollBarThickness = 3
+    tabContainer.ScrollBarImageColor3 = Color3.fromRGB(100, 100, 100)
+    tabContainer.AutomaticCanvasSize = Enum.AutomaticSize.Y
+    tabContainer.CanvasSize = UDim2.new(0, 0, 0, 0)
+    tabContainer.Parent = mainFrame
+
+    local uIListLayout = Instance.new("UIListLayout", tabContainer)
+    uIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
+    uIListLayout.Padding = UDim.new(0, 4)
+
+    local tabContent = Instance.new("Frame")
+    tabContent.Name = "TabContent"
+    tabContent.BackgroundTransparency = 1
+    tabContent.Position = UDim2.new(0, 140, 0, 36)
+    tabContent.Size = UDim2.new(1, -145, 1, -40)
+    tabContent.Parent = mainFrame
+
+    --== CRIAR TAB ==--
+    function window:MakeTab(info)
+        info = info or {}
+        local tabButton = Instance.new("TextButton")
+        tabButton.Name = "TabButton"
+        tabButton.Text = ""
+        tabButton.Size = UDim2.new(1, -8, 0, 28)
+        tabButton.BackgroundColor3 = SelectedTheme.TabFrame
+        tabButton.Parent = tabContainer
+
+        local icon = Instance.new("ImageLabel")
+        icon.Image = info.Icon or "rbxassetid://0"
+        icon.BackgroundTransparency = 1
+        icon.Size = UDim2.new(0, 20, 0, 20)
+        icon.Position = UDim2.new(0, 6, 0.5, -10)
+        icon.Parent = tabButton
+
+        local label = Instance.new("TextLabel")
+        label.Text = info.Name or "Tab"
+        label.Font = Enum.Font.GothamBold
+        label.TextColor3 = SelectedTheme.TabText
+        label.BackgroundTransparency = 1
+        label.Position = UDim2.new(0, 32, 0, 0)
+        label.Size = UDim2.new(1, -32, 1, 0)
+        label.TextXAlignment = Enum.TextXAlignment.Left
+        label.TextSize = 12
+        label.Parent = tabButton
+
+        local page = Instance.new("ScrollingFrame")
+        page.Name = info.Name .. "_Page"
+        page.Visible = false
+        page.BackgroundColor3 = Color3.fromRGB(25, 25, 30) -- fundo testável
+        page.Size = UDim2.new(1, 0, 1, 0)
+        page.ScrollBarThickness = 4
+        page.ScrollBarImageColor3 = Color3.fromRGB(100, 100, 100)
+        page.AutomaticCanvasSize = Enum.AutomaticSize.Y
+        page.Parent = tabContent
+
+        local uIList = Instance.new("UIListLayout", page)
+        uIList.Padding = UDim.new(0, 8)
+        uIList.SortOrder = Enum.SortOrder.LayoutOrder
+
+        local function updateCanvas()
+            page.CanvasSize = UDim2.new(0, 0, 0, uIList.AbsoluteContentSize.Y + 10)
+        end
+
+        tabButton.MouseButton1Click:Connect(function()
+            for _, otherPage in ipairs(tabContent:GetChildren()) do
+                if otherPage:IsA("ScrollingFrame") then
+                    otherPage.Visible = false
+                end
+            end
+            for _, otherTab in ipairs(tabContainer:GetChildren()) do
+                if otherTab:IsA("TextButton") then
+                    TweenService:Create(otherTab, TweenInfo.new(0.15), {BackgroundColor3 = SelectedTheme.TabFrame}):Play()
+                end
+            end
+            TweenService:Create(tabButton, TweenInfo.new(0.15), {BackgroundColor3 = SelectedTheme.SelectedTab}):Play()
+            page.Visible = true
+        end)
+
+        --== SECTION ==--
+        function page:AddSection(sectionInfo)
+            sectionInfo = sectionInfo or {}
+            local section = Instance.new("Frame")
+            section.Name = "Section"
+            section.BackgroundColor3 = Color3.fromRGB(50, 50, 55) -- fundo testável
+            section.Size = UDim2.new(1, -10, 0, 30)
+            section.Parent = page
+
+            local title = Instance.new("TextLabel")
+            title.Text = sectionInfo.Name or "Section"
+            title.Font = Enum.Font.GothamBold
+            title.TextColor3 = Color3.fromRGB(255, 255, 255)
+            title.BackgroundTransparency = 1
+            title.TextSize = 13
+            title.TextXAlignment = Enum.TextXAlignment.Left
+            title.Position = UDim2.new(0, 6, 0, 0)
+            title.Size = UDim2.new(1, -10, 1, 0)
+            title.Parent = section
+
+            updateCanvas()
+            return section
+        end
+
+        --== TOGGLE ==--
+        function page:AddToggle(tInfo)
+            tInfo = tInfo or {}
+            local toggleFrame = Instance.new("Frame")
+            toggleFrame.Name = "Toggle"
+            toggleFrame.BackgroundColor3 = Color3.fromRGB(60, 60, 65) -- fundo testável
+            toggleFrame.Size = UDim2.new(1, -10, 0, 28)
+            toggleFrame.Parent = page
+
+            local uICorner = Instance.new("UICorner", toggleFrame)
+            uICorner.CornerRadius = UDim.new(0, 4)
+
+            local label = Instance.new("TextLabel")
+            label.Text = tInfo.Name or "Toggle"
+            label.Font = Enum.Font.GothamBold
+            label.TextSize = 12
+            label.TextColor3 = Color3.fromRGB(255, 255, 255)
+            label.TextXAlignment = Enum.TextXAlignment.Left
+            label.BackgroundTransparency = 1
+            label.Position = UDim2.new(0, 10, 0, 0)
+            label.Size = UDim2.new(1, -50, 1, 0)
+            label.Parent = toggleFrame
+
+            local button = Instance.new("TextButton")
+            button.Text = ""
+            button.BackgroundTransparency = 1
+            button.Size = UDim2.new(1, 0, 1, 0)
+            button.Parent = toggleFrame
+
+            local indicator = Instance.new("Frame")
+            indicator.Size = UDim2.new(0, 16, 0, 16)
+            indicator.Position = UDim2.new(1, -26, 0.5, -8)
+            indicator.BackgroundColor3 = Color3.fromRGB(50, 50, 55)
+            indicator.BorderSizePixel = 0
+            indicator.Parent = toggleFrame
+
+            local indCorner = Instance.new("UICorner", indicator)
+            indCorner.CornerRadius = UDim.new(1, 0)
+
+            local enabled = tInfo.Default or false
+            local function updateState()
+                TweenService:Create(
+                    indicator,
+                    TweenInfo.new(0.15, Enum.EasingStyle.Linear, Enum.EasingDirection.InOut),
+                    {BackgroundColor3 = enabled and Color3.fromRGB(80, 201, 206) or Color3.fromRGB(50, 50, 55)}
+                ):Play()
+            end
+            updateState()
+
+            button.MouseButton1Click:Connect(function()
+                enabled = not enabled
+                updateState()
+                if tInfo.Callback then
+                    task.spawn(tInfo.Callback, enabled)
+                end
+            end)
+
+            updateCanvas()
+            return toggleFrame
+        end
+
+        return page
+    end
+
+    return window
+end
+
+return ElixirLib

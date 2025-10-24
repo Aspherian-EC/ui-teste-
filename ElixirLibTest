@@ -1,4 +1,4 @@
--- // ElixirLib Base UI System
+-- // ElixirLib Base UI System (com Toggle estilo MentaLib)
 local ElixirLib = {}
 
 local TweenService = game:GetService("TweenService")
@@ -116,23 +116,20 @@ function ElixirLib:MakeWindow(cfg)
         local TabCorner = Instance.new("UICorner", TabButton)
         TabCorner.CornerRadius = UDim.new(0, 3)
         
-        -- Desloca o texto mais para a direita
         local padding = Instance.new("UIPadding")
-        padding.PaddingLeft = UDim.new(0, 25) -- ajuste aqui para mais à direita
+        padding.PaddingLeft = UDim.new(0, 25)
         padding.Parent = TabButton
         
-        -- Ícone opcional à direita, levemente para a esquerda
         if tabIcon then
             local Icon = Instance.new("ImageLabel")
             Icon.Size = UDim2.new(0, 18, 0, 18)
-            Icon.Position = UDim2.new(1, -28, 0.5, -9) -- levemente mais para esquerda
+            Icon.Position = UDim2.new(1, -28, 0.5, -9)
             Icon.BackgroundTransparency = 1
             Icon.Image = tabIcon
             Icon.Parent = TabButton
             TabButton.TextXAlignment = Enum.TextXAlignment.Left
         end
         
-        -- Frame da Tab (rolável)
         local TabFrame = Instance.new("ScrollingFrame")
         TabFrame.Name = tabName .. "_Frame"
         TabFrame.Size = UDim2.new(1, -10, 1, -10)
@@ -146,7 +143,6 @@ function ElixirLib:MakeWindow(cfg)
         TabLayout.Padding = UDim.new(0, 6)
         TabLayout.SortOrder = Enum.SortOrder.LayoutOrder
         
-        -- Seleção da Tab
         TabButton.MouseButton1Click:Connect(function()
             for _, child in ipairs(RightPanel:GetChildren()) do
                 if child:IsA("ScrollingFrame") then
@@ -163,6 +159,75 @@ function ElixirLib:MakeWindow(cfg)
             end
             TweenService:Create(TabButton, TweenInfo.new(0.15), {BackgroundColor3 = Color3.fromRGB(70, 70, 75)}):Play()
         end)
+        
+        -- Função AddToggle (estilo MentaLib)
+        function TabFrame:AddToggle(cfg)
+            cfg = cfg or {}
+            local name = cfg.Name or "Toggle"
+            local default = cfg.Default or false
+            local callback = cfg.Callback or function() end
+            
+            local Toggle = Instance.new("Frame")
+            Toggle.Name = name
+            Toggle.Size = UDim2.new(1, -10, 0, 28)
+            Toggle.BackgroundColor3 = Color3.fromRGB(40, 40, 45)
+            Toggle.BorderSizePixel = 0
+            Toggle.Parent = TabFrame
+            
+            local ToggleCorner = Instance.new("UICorner", Toggle)
+            ToggleCorner.CornerRadius = UDim.new(0, 5)
+            
+            local Label = Instance.new("TextLabel")
+            Label.Text = name
+            Label.Font = Enum.Font.Gotham
+            Label.TextSize = 13
+            Label.TextColor3 = Color3.fromRGB(230, 230, 230)
+            Label.BackgroundTransparency = 1
+            Label.Size = UDim2.new(1, -60, 1, 0)
+            Label.TextXAlignment = Enum.TextXAlignment.Left
+            Label.Parent = Toggle
+            
+            local Button = Instance.new("TextButton")
+            Button.BackgroundTransparency = 1
+            Button.Size = UDim2.new(1, 0, 1, 0)
+            Button.Text = ""
+            Button.Parent = Toggle
+            
+            local Switch = Instance.new("Frame")
+            Switch.Size = UDim2.new(0, 36, 0, 18)
+            Switch.Position = UDim2.new(1, -46, 0.5, -9)
+            Switch.BackgroundColor3 = Color3.fromRGB(60, 60, 65)
+            Switch.BorderSizePixel = 0
+            Switch.Parent = Toggle
+            
+            local SwitchCorner = Instance.new("UICorner", Switch)
+            SwitchCorner.CornerRadius = UDim.new(1, 0)
+            
+            local Circle = Instance.new("Frame")
+            Circle.Size = UDim2.new(0, 14, 0, 14)
+            Circle.Position = default and UDim2.new(1, -16, 0.5, -7) or UDim2.new(0, 2, 0.5, -7)
+            Circle.BackgroundColor3 = default and Color3.fromRGB(100, 255, 100) or Color3.fromRGB(200, 200, 200)
+            Circle.BorderSizePixel = 0
+            Circle.Parent = Switch
+            
+            local CircleCorner = Instance.new("UICorner", Circle)
+            CircleCorner.CornerRadius = UDim.new(1, 0)
+            
+            local Toggled = default
+            callback(Toggled)
+            
+            local function SetToggle(state)
+                Toggled = state
+                local goalColor = state and Color3.fromRGB(80, 255, 80) or Color3.fromRGB(200, 200, 200)
+                local goalPos = state and UDim2.new(1, -16, 0.5, -7) or UDim2.new(0, 2, 0.5, -7)
+                TweenService:Create(Circle, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {BackgroundColor3 = goalColor, Position = goalPos}):Play()
+                callback(Toggled)
+            end
+            
+            Button.MouseButton1Click:Connect(function()
+                SetToggle(not Toggled)
+            end)
+        end
         
         return TabFrame
     end

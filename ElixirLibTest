@@ -1,37 +1,39 @@
--- // ElixirLibTest.lua
--- Visual idêntico ao MentaLib (tema Dark)
--- Compatível com: loadstring(game:HttpGet("https://raw.githubusercontent.com/Aspherian-EC/ui-teste-/refs/heads/main/ElixirLibTest"))()
+--// ElixirLib UI System (Base + Toggle estilo MentaLib)
+local ElixirLib = {}
 
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
 local CoreGui = game:GetService("CoreGui")
 
-local ElixirLib = {}
-
 function ElixirLib:MakeWindow(cfg)
     cfg = cfg or {}
     local title = cfg.Name or "Elixir Client"
-
+    
+    -- ScreenGui
     local Gui = Instance.new("ScreenGui")
     Gui.Name = "ElixirClientUI"
     Gui.ZIndexBehavior = Enum.ZIndexBehavior.Global
     Gui.Parent = CoreGui
-
+    
+    -- Janela principal
     local Main = Instance.new("Frame")
+    Main.Name = "Main"
     Main.Size = UDim2.new(0, 550, 0, 400)
     Main.Position = UDim2.new(0.3, 0, 0.3, 0)
-    Main.BackgroundColor3 = Color3.fromRGB(20, 20, 25)
+    Main.BackgroundColor3 = Color3.fromRGB(25, 25, 30)
     Main.BorderSizePixel = 0
     Main.Parent = Gui
-
+    
     Instance.new("UICorner", Main).CornerRadius = UDim.new(0, 4)
-
+    
+    -- Topbar
     local Topbar = Instance.new("Frame")
     Topbar.Size = UDim2.new(1, 0, 0, 34)
     Topbar.BackgroundColor3 = Color3.fromRGB(30, 30, 35)
     Topbar.BorderSizePixel = 0
     Topbar.Parent = Main
-
+    Instance.new("UICorner", Topbar).CornerRadius = UDim.new(0, 4)
+    
     local Title = Instance.new("TextLabel")
     Title.Text = title
     Title.Font = Enum.Font.GothamBold
@@ -42,8 +44,8 @@ function ElixirLib:MakeWindow(cfg)
     Title.Size = UDim2.new(0, 300, 1, 0)
     Title.TextXAlignment = Enum.TextXAlignment.Left
     Title.Parent = Topbar
-
-    -- Drag
+    
+    -- Drag da janela
     local dragging, dragStart, startPos
     Topbar.InputBegan:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 then
@@ -63,19 +65,21 @@ function ElixirLib:MakeWindow(cfg)
             Main.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
         end
     end)
-
+    
+    -- Lista de Tabs
     local TabList = Instance.new("ScrollingFrame")
     TabList.Size = UDim2.new(0, 150, 1, -34)
     TabList.Position = UDim2.new(0, 0, 0, 34)
-    TabList.BackgroundColor3 = Color3.fromRGB(25, 25, 30)
+    TabList.BackgroundColor3 = Color3.fromRGB(20, 20, 25)
     TabList.BorderSizePixel = 0
     TabList.ScrollBarThickness = 4
     TabList.Parent = Main
-
+    
     local TabListLayout = Instance.new("UIListLayout", TabList)
     TabListLayout.SortOrder = Enum.SortOrder.LayoutOrder
     TabListLayout.Padding = UDim.new(0, 5)
-
+    
+    -- Painel da direita
     local RightPanel = Instance.new("Frame")
     RightPanel.Size = UDim2.new(1, -150, 1, -34)
     RightPanel.Position = UDim2.new(0, 150, 0, 34)
@@ -83,13 +87,15 @@ function ElixirLib:MakeWindow(cfg)
     RightPanel.BorderSizePixel = 0
     RightPanel.Visible = false
     RightPanel.Parent = Main
-
+    
     local Tabs = {}
-
+    
+    -- Função para criar uma nova Tab
     function Tabs:MakeTab(info)
         info = info or {}
         local tabName = info.Name or "Tab"
-
+        local tabIcon = info.Icon or nil
+        
         local TabButton = Instance.new("TextButton")
         TabButton.Text = tabName
         TabButton.Font = Enum.Font.GothamBold
@@ -98,12 +104,11 @@ function ElixirLib:MakeWindow(cfg)
         TabButton.BackgroundColor3 = Color3.fromRGB(35, 35, 40)
         TabButton.Size = UDim2.new(1, -10, 0, 28)
         TabButton.Parent = TabList
-
         Instance.new("UICorner", TabButton).CornerRadius = UDim.new(0, 3)
-
+        
         local padding = Instance.new("UIPadding", TabButton)
-        padding.PaddingLeft = UDim.new(0, 20)
-
+        padding.PaddingLeft = UDim.new(0, 25)
+        
         local TabFrame = Instance.new("ScrollingFrame")
         TabFrame.Size = UDim2.new(1, -10, 1, -10)
         TabFrame.Position = UDim2.new(0, 5, 0, 5)
@@ -111,11 +116,12 @@ function ElixirLib:MakeWindow(cfg)
         TabFrame.ScrollBarThickness = 6
         TabFrame.Visible = false
         TabFrame.Parent = RightPanel
-
-        local Layout = Instance.new("UIListLayout", TabFrame)
-        Layout.Padding = UDim.new(0, 6)
-        Layout.SortOrder = Enum.SortOrder.LayoutOrder
-
+        
+        local TabLayout = Instance.new("UIListLayout", TabFrame)
+        TabLayout.Padding = UDim.new(0, 6)
+        TabLayout.SortOrder = Enum.SortOrder.LayoutOrder
+        
+        -- Troca de aba
         TabButton.MouseButton1Click:Connect(function()
             for _, child in ipairs(RightPanel:GetChildren()) do
                 if child:IsA("ScrollingFrame") then
@@ -124,102 +130,104 @@ function ElixirLib:MakeWindow(cfg)
             end
             RightPanel.Visible = true
             TabFrame.Visible = true
-
+            
             for _, btn in ipairs(TabList:GetChildren()) do
                 if btn:IsA("TextButton") then
-                    btn.BackgroundColor3 = Color3.fromRGB(35, 35, 40)
+                    TweenService:Create(btn, TweenInfo.new(0.15), {BackgroundColor3 = Color3.fromRGB(35, 35, 40)}):Play()
                 end
             end
             TweenService:Create(TabButton, TweenInfo.new(0.15), {BackgroundColor3 = Color3.fromRGB(70, 70, 75)}):Play()
         end)
-
-        -- Função de adicionar toggles dentro da tab
-        function TabFrame:AddToggle(data)
-            data = data or {}
-            local name = data.Name or "Toggle"
-            local default = data.Default or false
-            local callback = data.Callback or function() end
-
-            local ToggleFrame = Instance.new("Frame")
-            ToggleFrame.Size = UDim2.new(1, -10, 0, 30)
-            ToggleFrame.BackgroundColor3 = Color3.fromRGB(35, 35, 40)
-            ToggleFrame.BorderSizePixel = 0
-            ToggleFrame.Parent = TabFrame
-
-            Instance.new("UICorner", ToggleFrame).CornerRadius = UDim.new(0, 3)
-
-            local Label = Instance.new("TextLabel")
-            Label.Text = name
-            Label.Font = Enum.Font.GothamBold
-            Label.TextSize = 13
-            Label.TextColor3 = Color3.fromRGB(237, 237, 237)
-            Label.BackgroundTransparency = 1
-            Label.Position = UDim2.new(0, 10, 0, 0)
-            Label.Size = UDim2.new(1, -60, 1, 0)
-            Label.TextXAlignment = Enum.TextXAlignment.Left
-            Label.Parent = ToggleFrame
-
-            local ToggleOuter = Instance.new("Frame")
-            ToggleOuter.AnchorPoint = Vector2.new(1, 0.5)
-            ToggleOuter.Position = UDim2.new(1, -15, 0.5, 0)
-            ToggleOuter.Size = UDim2.new(0, 32, 0, 16)
-            ToggleOuter.BackgroundColor3 = Color3.fromRGB(35, 35, 40)
-            ToggleOuter.BorderSizePixel = 0
-            ToggleOuter.Parent = ToggleFrame
-
-            Instance.new("UICorner", ToggleOuter).CornerRadius = UDim.new(1, 0)
-
-            local UIStroke = Instance.new("UIStroke")
-            UIStroke.Color = Color3.fromRGB(54, 54, 62)
-            UIStroke.Thickness = 1
-            UIStroke.Parent = ToggleOuter
-
-            local ToggleInner = Instance.new("Frame")
-            ToggleInner.Size = UDim2.new(0, 14, 0, 14)
-            ToggleInner.Position = UDim2.new(0, 1, 0.5, -7)
-            ToggleInner.BackgroundColor3 = Color3.fromRGB(66, 66, 76)
-            ToggleInner.BorderSizePixel = 0
-            ToggleInner.Parent = ToggleOuter
-
-            Instance.new("UICorner", ToggleInner).CornerRadius = UDim.new(1, 0)
-
-            local state = default
+        
+        -- Função para criar toggles dentro da aba
+        function TabFrame:AddToggle(opts)
+            opts = opts or {}
+            local name = opts.Name or "Toggle"
+            local default = opts.Default or false
+            local callback = opts.Callback or function() end
+            
+            local toggle = Instance.new("Frame")
+            toggle.Name = name
+            toggle.Size = UDim2.new(1, -10, 0, 30)
+            toggle.BackgroundColor3 = Color3.fromRGB(35, 35, 40)
+            toggle.BorderSizePixel = 0
+            toggle.Parent = TabFrame
+            
+            Instance.new("UICorner", toggle).CornerRadius = UDim.new(0, 3)
+            
+            local label = Instance.new("TextLabel")
+            label.Text = name
+            label.Font = Enum.Font.GothamBold
+            label.TextSize = 12
+            label.TextColor3 = Color3.fromRGB(230, 230, 230)
+            label.BackgroundTransparency = 1
+            label.Position = UDim2.new(0, 10, 0, 0)
+            label.Size = UDim2.new(1, -50, 1, 0)
+            label.TextXAlignment = Enum.TextXAlignment.Left
+            label.Parent = toggle
+            
+            -- Caixa externa
+            local outer = Instance.new("Frame")
+            outer.Size = UDim2.new(0, 40, 0, 18)
+            outer.Position = UDim2.new(1, -55, 0.5, -9)
+            outer.AnchorPoint = Vector2.new(0, 0)
+            outer.BackgroundColor3 = Color3.fromRGB(48, 56, 75)
+            outer.BorderSizePixel = 0
+            outer.Parent = toggle
+            Instance.new("UICorner", outer).CornerRadius = UDim.new(1, 0)
+            
+            local stroke = Instance.new("UIStroke", outer)
+            stroke.Color = Color3.fromRGB(54, 54, 62)
+            
+            -- Botão interno
+            local inner = Instance.new("Frame")
+            inner.Size = UDim2.new(0, 16, 0, 16)
+            inner.Position = UDim2.new(0, 1, 0.5, -8)
+            inner.BackgroundColor3 = Color3.fromRGB(66, 66, 76)
+            inner.BorderSizePixel = 0
+            inner.Parent = outer
+            Instance.new("UICorner", inner).CornerRadius = UDim.new(1, 0)
+            
+            local button = Instance.new("TextButton")
+            button.Size = UDim2.new(1, 0, 1, 0)
+            button.BackgroundTransparency = 1
+            button.Text = ""
+            button.Parent = toggle
+            
+            local toggled = default
+            
             local function updateVisual()
-                if state then
-                    TweenService:Create(ToggleOuter, TweenInfo.new(0.15), {BackgroundColor3 = Color3.fromRGB(53, 53, 61)}):Play()
-                    TweenService:Create(UIStroke, TweenInfo.new(0.15), {Color = Color3.fromRGB(67, 67, 77)}):Play()
-                    TweenService:Create(ToggleInner, TweenInfo.new(0.15), {
-                        BackgroundColor3 = Color3.fromRGB(80, 201, 206),
-                        Position = UDim2.new(1, -15, 0.5, -7)
-                    }):Play()
+                if toggled then
+                    TweenService:Create(outer, TweenInfo.new(0.15), {BackgroundColor3 = Color3.fromRGB(53, 61, 90)}):Play()
+                    TweenService:Create(inner, TweenInfo.new(0.15), {Position = UDim2.new(1, -17, 0.5, -8), BackgroundColor3 = Color3.fromRGB(178, 64, 210)}):Play()
+                    TweenService:Create(stroke, TweenInfo.new(0.15), {Color = Color3.fromRGB(178, 64, 210)}):Play()
                 else
-                    TweenService:Create(ToggleOuter, TweenInfo.new(0.15), {BackgroundColor3 = Color3.fromRGB(35, 35, 40)}):Play()
-                    TweenService:Create(UIStroke, TweenInfo.new(0.15), {Color = Color3.fromRGB(54, 54, 62)}):Play()
-                    TweenService:Create(ToggleInner, TweenInfo.new(0.15), {
-                        BackgroundColor3 = Color3.fromRGB(66, 66, 76),
-                        Position = UDim2.new(0, 1, 0.5, -7)
-                    }):Play()
+                    TweenService:Create(outer, TweenInfo.new(0.15), {BackgroundColor3 = Color3.fromRGB(48, 56, 75)}):Play()
+                    TweenService:Create(inner, TweenInfo.new(0.15), {Position = UDim2.new(0, 1, 0.5, -8), BackgroundColor3 = Color3.fromRGB(66, 66, 76)}):Play()
+                    TweenService:Create(stroke, TweenInfo.new(0.15), {Color = Color3.fromRGB(54, 54, 62)}):Play()
                 end
             end
-
+            
             updateVisual()
-
-            local ClickBtn = Instance.new("TextButton")
-            ClickBtn.BackgroundTransparency = 1
-            ClickBtn.Size = UDim2.new(1, 0, 1, 0)
-            ClickBtn.Text = ""
-            ClickBtn.Parent = ToggleFrame
-
-            ClickBtn.MouseButton1Click:Connect(function()
-                state = not state
+            
+            button.MouseButton1Click:Connect(function()
+                toggled = not toggled
                 updateVisual()
-                callback(state)
+                task.spawn(callback, toggled)
             end)
+            
+            return {
+                Set = function(_, val)
+                    toggled = val
+                    updateVisual()
+                end,
+                Get = function() return toggled end
+            }
         end
-
+        
         return TabFrame
     end
-
+    
     return Tabs
 end
 

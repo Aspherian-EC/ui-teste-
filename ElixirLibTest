@@ -690,212 +690,222 @@ function ElixirLib:MakeWindow(info)
             }
         end
 
--- AddSection ajustado
-function tabAPI:AddSection(opt)
-    opt = opt or {}
-    local name = opt.Name or "Section"
+        -- AddDropdown
+        function tabAPI:AddDropdown(opt)
+            opt = opt or {}
+            local name = opt.Name or "Dropdown"
+            local options = opt.Options or {}
+            local default = opt.Default
+            local callback = opt.Callback or function() end
+            local changeText = opt.ChangeTextOnPick or true
+            local flag = opt.Flag or HttpService:GenerateGUID(false)
 
-    local item = newItemFrame() -- usa o mesmo estilo dos outros itens
-    item.Size = UDim2.new(1,-12,0,24) -- altura do section
+            if default then ElixirLib.Flags[flag] = default else ElixirLib.Flags[flag] = nil end
 
-    local label = new("TextLabel", {
-        Parent = item,
-        Text = name,
-        Font = Enum.Font.GothamBold,
-        TextSize = 12,
-        TextColor3 = Theme.SectionText,
-        BackgroundTransparency = 1,
-        Position = UDim2.new(0,8,0,0),
-        Size = UDim2.new(1, -16, 1, 0),
-        TextXAlignment = Enum.TextXAlignment.Left
-    })
+            local item = new("Frame", {
+                Parent = tabContent,
+                BackgroundColor3 = Theme.ItemFrame,
+                Size = UDim2.new(1,-12,0,30),
+                BorderSizePixel = 0
+            })
+            makeCorner(item, 4)
+            local stroke = Instance.new("UIStroke", item)
+            stroke.Color = Theme.ItemUIStroke
 
-    return item
-end
-
-function tabAPI:AddKBind(opt)
-    opt = opt or {}
-    local name = opt.Name or "Keybind"
-    local default = opt.Default or Enum.KeyCode.Unknown
-    local callback = opt.Callback or function() end
-    local flag = opt.Flag or HttpService:GenerateGUID(false)
-
-    ElixirLib.Flags[flag] = default.Name or "Set Key"
-
-    local item = newItemFrame()
-    item.Size = UDim2.new(1,-12,0,30)
-
-    local label = new("TextLabel", {
-        Parent = item,
-        Text = name,
-        Font = Enum.Font.GothamBold,
-        TextSize = 12,
-        TextColor3 = Theme.ItemText,
-        BackgroundTransparency = 1,
-        Position = UDim2.new(0,8,0,0),
-        Size = UDim2.new(0.6,-8,1,0),
-        TextXAlignment = Enum.TextXAlignment.Left
-    })
-
-    local btn = new("TextButton", {
-        Parent = item,
-        Text = ElixirLib.Flags[flag],
-        Font = Enum.Font.GothamBold,
-        TextSize = 12,
-        TextColor3 = Theme.ItemText,
-        BackgroundColor3 = Theme.ToggleOuter,
-        Size = UDim2.new(0,90,0,22),
-        Position = UDim2.new(1,-104,0.5,-11),
-        BorderSizePixel = 0
-    })
-    makeCorner(btn, 4)
-    local stroke = Instance.new("UIStroke", btn)
-    stroke.Color = Theme.ToggleOuterUIStroke
-
-    local waiting = false
-    local conn
-    btn.MouseButton1Click:Connect(function()
-        if waiting then return end
-        waiting = true
-        btn.Text = "..."
-        stroke.Color = Theme.ItemUIStrokeSelected
-        conn = UserInputService.InputBegan:Connect(function(input, gp)
-            if gp then return end
-            if input.KeyCode and input.KeyCode ~= Enum.KeyCode.Unknown then
-                ElixirLib.Flags[flag] = input.KeyCode.Name
-                btn.Text = input.KeyCode.Name
-                waiting = false
-                stroke.Color = Theme.ToggleOuterUIStroke
-                conn:Disconnect()
-            end
-        end)
-    end)
-
-    -- Key press listener
-    UserInputService.InputBegan:Connect(function(input, gp)
-        if gp then return end
-        if input.KeyCode.Name == ElixirLib.Flags[flag] then
-            task.spawn(callback)
-        end
-    end)
-
-    return {
-        Get = function() return ElixirLib.Flags[flag] end,
-        Set = function(k)
-            if typeof(k) == "EnumItem" then k = k.Name end
-            ElixirLib.Flags[flag] = tostring(k)
-            btn.Text = tostring(k)
-        end,
-        Flag = flag
-    }
-end
-
--- AddDropdown ajustado para flutuar acima do tabContent
-function tabAPI:AddDropdown(opt)
-    opt = opt or {}
-    local name = opt.Name or "Dropdown"
-    local options = opt.Options or {}
-    local default = opt.Default or "Select"
-    local callback = opt.Callback or function() end
-    local changeText = opt.ChangeTextOnPick ~= false
-    local flag = opt.Flag or HttpService:GenerateGUID(false)
-    ElixirLib.Flags[flag] = default
-
-    local item = newItemFrame()
-    local label = new("TextLabel", {
-        Parent = item,
-        Text = name,
-        Font = Enum.Font.GothamBold,
-        TextSize = 12,
-        TextColor3 = Theme.ItemText,
-        BackgroundTransparency = 1,
-        Position = UDim2.new(0,8,0,0),
-        Size = UDim2.new(0.5, -8,1,0),
-        TextXAlignment = Enum.TextXAlignment.Left
-    })
-
-    local dropdownBtn = new("TextButton", {
-        Parent = item,
-        Text = default,
-        Font = Enum.Font.GothamBold,
-        TextSize = 12,
-        TextColor3 = Theme.ItemText,
-        BackgroundColor3 = Theme.ItemFrame,
-        Size = UDim2.new(0.45,0,0,24),
-        Position = UDim2.new(0.5,4,0.5,-12),
-        BorderSizePixel = 0,
-        ZIndex = 2
-    })
-    makeCorner(dropdownBtn, 4)
-
-    -- lista de opções flutuante (parent fora do scroll)
-    local list = new("Frame", {
-        Parent = main, -- fora do tabContent para não ser cortado
-        BackgroundColor3 = Theme.ItemFrame,
-        Size = UDim2.new(0, dropdownBtn.AbsoluteSize.X, 0, 0),
-        Position = dropdownBtn.AbsolutePosition + Vector2.new(0, dropdownBtn.AbsoluteSize.Y),
-        BorderSizePixel = 0,
-        ClipsDescendants = false,
-        ZIndex = 10
-    })
-    makeCorner(list, 4)
-
-    local listLayout = new("UIListLayout", { Parent = list })
-    listLayout.SortOrder = Enum.SortOrder.LayoutOrder
-    listLayout.Padding = UDim.new(0,2)
-
-    local opened = false
-    local totalY = 0
-
-    local function rebuildOptions()
-        list:ClearAllChildren()
-        totalY = 0
-        for _, optVal in ipairs(options) do
-            local btn = new("TextButton", {
-                Parent = list,
-                Text = tostring(optVal),
+            local label = new("TextLabel", {
+                Parent = item,
+                Text = name,
                 Font = Enum.Font.GothamBold,
                 TextSize = 12,
                 TextColor3 = Theme.ItemText,
                 BackgroundTransparency = 1,
-                Size = UDim2.new(1,0,0,24),
-                AutoButtonColor = false,
-                ZIndex = 11
+                Position = UDim2.new(0,8,0,0),
+                Size = UDim2.new(0.45,-8,1,0),
+                TextXAlignment = Enum.TextXAlignment.Left
             })
-            totalY = totalY + 24
-            btn.MouseEnter:Connect(function() TweenService:Create(btn, TweenInfo.new(.08), {TextColor3 = Theme.Highlight}):Play() end)
-            btn.MouseLeave:Connect(function() TweenService:Create(btn, TweenInfo.new(.08), {TextColor3 = Theme.ItemText}):Play() end)
-            btn.MouseButton1Click:Connect(function()
-                ElixirLib.Flags[flag] = optVal
-                if changeText then dropdownBtn.Text = tostring(optVal) end
-                task.spawn(callback, optVal)
-                opened = false
-                TweenService:Create(list, TweenInfo.new(.12), {Size = UDim2.new(list.Size.X.Scale, list.Size.X.Offset, 0, 0)}):Play()
+
+            local dropdownBtn = new("TextButton", {
+                Parent = item,
+                Text = default or "Select",
+                Font = Enum.Font.GothamBold,
+                TextSize = 12,
+                TextColor3 = Theme.ItemText,
+                BackgroundColor3 = Theme.ItemFrame,
+                Size = UDim2.new(0.5,-12,0,24),
+                Position = UDim2.new(1,-(0.5*item.AbsoluteSize.X) - 12,0.5,-12),
+                BorderSizePixel = 0
+            })
+            -- Because absolute sizes may be 0 at creation, we'll position after a short wait
+            task.wait(0.01)
+            dropdownBtn.Position = UDim2.new(1,-(dropdownBtn.Size.X.Offset + 12),0.5,-12)
+            -- icon
+            local chevron = new("ImageLabel", {
+                Parent = dropdownBtn,
+                Size = UDim2.new(0,16,0,16),
+                Position = UDim2.new(1,-22,0.5,-8),
+                BackgroundTransparency = 1,
+                Image = "rbxassetid://10325147619"
+            })
+
+            local container = new("Frame", {
+                Parent = item,
+                BackgroundTransparency = 1,
+                Position = UDim2.new(0,2,0,30),
+                Size = UDim2.new(1, -4, 0, 0),
+                ClipsDescendants = true
+            })
+
+            local list = new("Frame", {
+                Parent = container,
+                BackgroundColor3 = Theme.ItemFrame,
+                Size = UDim2.new(1,0,0,0),
+                BorderSizePixel = 0
+            })
+            makeCorner(list, 4)
+
+            local listLayout = new("UIListLayout", { Parent = list })
+            listLayout.SortOrder = Enum.SortOrder.LayoutOrder
+            listLayout.Padding = UDim.new(0,2)
+
+            local opened = false
+            local totalY = 0
+            local function rebuildOptions()
+                for i,v in pairs(list:GetChildren()) do
+                    if v.ClassName == "TextButton" or v:IsA("Frame") and v.Name == "Option" then
+                        v:Destroy()
+                    end
+                end
+                totalY = 0
+                for _,optVal in ipairs(options) do
+                    local btn = new("TextButton", {
+                        Parent = list,
+                        Text = tostring(optVal),
+                        Font = Enum.Font.GothamBold,
+                        TextSize = 12,
+                        TextColor3 = Theme.ItemText,
+                        BackgroundTransparency = 1,
+                        Size = UDim2.new(1,0,0,24),
+                        AutoButtonColor = false,
+                        Name = "Option"
+                    })
+                    totalY = totalY + 24
+                    btn.MouseEnter:Connect(function() TweenService:Create(btn, TweenInfo.new(.08), {TextColor3 = Theme.Highlight}):Play() end)
+                    btn.MouseLeave:Connect(function() TweenService:Create(btn, TweenInfo.new(.08), {TextColor3 = Theme.ItemText}):Play() end)
+                    btn.MouseButton1Click:Connect(function()
+                        ElixirLib.Flags[flag] = optVal
+                        if changeText then dropdownBtn.Text = tostring(optVal) end
+                        task.spawn(callback, optVal)
+                        -- close
+                        opened = false
+                        TweenService:Create(list, TweenInfo.new(.12), {Size = UDim2.new(1,0,0,0)}):Play()
+                        TweenService:Create(container, TweenInfo.new(.12), {Size = UDim2.new(1,-4,0,0)}):Play()
+                    end)
+                end
+                list.Size = UDim2.new(1,0,0,totalY)
+                container.Size = UDim2.new(1,-4,0,totalY)
+                if not opened then
+                    list.Size = UDim2.new(1,0,0,0)
+                    container.Size = UDim2.new(1,-4,0,0)
+                end
+            end
+
+            rebuildOptions()
+
+            dropdownBtn.MouseButton1Click:Connect(function()
+                opened = not opened
+                if opened then
+                    TweenService:Create(list, TweenInfo.new(.12), {Size = UDim2.new(1,0,0,totalY)}):Play()
+                    TweenService:Create(container, TweenInfo.new(.12), {Size = UDim2.new(1,-4,0,totalY)}):Play()
+                else
+                    TweenService:Create(list, TweenInfo.new(.12), {Size = UDim2.new(1,0,0,0)}):Play()
+                    TweenService:Create(container, TweenInfo.new(.12), {Size = UDim2.new(1,-4,0,0)}):Play()
+                end
             end)
+
+            return {
+                SetOptions = function(newOptions) options = newOptions or {} rebuildOptions() end,
+                Set = function(v) ElixirLib.Flags[flag] = v if changeText then dropdownBtn.Text = tostring(v) end end,
+                Get = function() return ElixirLib.Flags[flag] end,
+                Flag = flag
+            }
         end
-        list.Size = UDim2.new(0, dropdownBtn.AbsoluteSize.X, 0, 0)
-    end
 
-    rebuildOptions()
+        -- AddKeybind
+        function tabAPI:AddKeybind(opt)
+            opt = opt or {}
+            local name = opt.Name or "Keybind"
+            local default = opt.Default or Enum.KeyCode.Unknown
+            local callback = opt.Callback or function() end
+            local flag = opt.Flag or HttpService:GenerateGUID(false)
 
-    dropdownBtn.MouseButton1Click:Connect(function()
-        opened = not opened
-        if opened then
-            list.Position = dropdownBtn.AbsolutePosition + Vector2.new(0, dropdownBtn.AbsoluteSize.Y)
-            TweenService:Create(list, TweenInfo.new(.12), {Size = UDim2.new(0, dropdownBtn.AbsoluteSize.X, 0, totalY)}):Play()
-        else
-            TweenService:Create(list, TweenInfo.new(.12), {Size = UDim2.new(0, dropdownBtn.AbsoluteSize.X, 0, 0)}):Play()
+            ElixirLib.Flags[flag] = default.Name or default
+
+            local item = newItemFrame()
+            item.Size = UDim2.new(1,-12,0,30)
+            local label = new("TextLabel", {
+                Parent = item,
+                Text = name,
+                Font = Enum.Font.GothamBold,
+                TextSize = 12,
+                TextColor3 = Theme.ItemText,
+                BackgroundTransparency = 1,
+                Position = UDim2.new(0,8,0,0),
+                Size = UDim2.new(0.6,-8,1,0),
+                TextXAlignment = Enum.TextXAlignment.Left
+            })
+
+            local btn = new("TextButton", {
+                Parent = item,
+                Text = default.Name or "Unknown",
+                Font = Enum.Font.GothamBold,
+                TextSize = 12,
+                TextColor3 = Theme.ItemText,
+                BackgroundColor3 = Theme.ToggleOuter,
+                Size = UDim2.new(0,90,0,22),
+                Position = UDim2.new(1,-104,0.5,-11),
+                BorderSizePixel = 0
+            })
+            makeCorner(btn, 4)
+            local stroke = Instance.new("UIStroke", btn)
+            stroke.Color = Theme.ToggleOuterUIStroke
+
+            local waiting = false
+            local conn
+            btn.MouseButton1Click:Connect(function()
+                if waiting then return end
+                waiting = true
+                btn.Text = "..."
+                stroke.Color = Theme.ItemUIStrokeSelected
+                conn = UserInputService.InputBegan:Connect(function(input, gp)
+                    if gp then return end
+                    if input.KeyCode and input.KeyCode ~= Enum.KeyCode.Unknown then
+                        ElixirLib.Flags[flag] = input.KeyCode.Name
+                        btn.Text = input.KeyCode.Name
+                        waiting = false
+                        stroke.Color = Theme.ToggleOuterUIStroke
+                        conn:Disconnect()
+                    end
+                end)
+            end)
+
+            -- listen to keypress
+            UserInputService.InputBegan:Connect(function(input, gp)
+                if gp then return end
+                if input.KeyCode and input.KeyCode.Name == ElixirLib.Flags[flag] then
+                    task.spawn(callback)
+                end
+            end)
+
+            return {
+                Get = function() return ElixirLib.Flags[flag] end,
+                Set = function(k)
+                    if typeof(k) == "EnumItem" then k = k.Name end
+                    ElixirLib.Flags[flag] = tostring(k)
+                    btn.Text = tostring(k)
+                end,
+                Flag = flag
+            }
         end
-    end)
-
-    return {
-        SetOptions = function(newOptions) options = newOptions or {} rebuildOptions() end,
-        Set = function(v) ElixirLib.Flags[flag] = v if changeText then dropdownBtn.Text = tostring(v) end end,
-        Get = function() return ElixirLib.Flags[flag] end,
-        Flag = flag
-    }
-end
-
 
         -- return tabAPI with only public methods mapped
         local public = {
@@ -904,7 +914,7 @@ end
             AddSlider = tabAPI.AddSlider,
             AddInput = tabAPI.AddInput,
             AddDropdown = tabAPI.AddDropdown,
-            AddKeybind = tabAPI.AddKeybind,
+            AddBind = tabAPI.AddKeybind,
             _internalId = id
         }
 

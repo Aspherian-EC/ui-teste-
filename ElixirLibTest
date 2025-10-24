@@ -704,6 +704,7 @@ function tabAPI:AddDropdown(opt)
     local item = newItemFrame()
     item.AutomaticSize = Enum.AutomaticSize.Y
 
+    -- Nome do dropdown
     local label = new("TextLabel", {
         Parent = item,
         Text = name,
@@ -716,6 +717,7 @@ function tabAPI:AddDropdown(opt)
         TextXAlignment = Enum.TextXAlignment.Left
     })
 
+    -- Texto que mostra a opção atual
     local currentText = new("TextLabel", {
         Parent = item,
         Text = tostring(default),
@@ -729,6 +731,7 @@ function tabAPI:AddDropdown(opt)
         TextXAlignment = Enum.TextXAlignment.Right
     })
 
+    -- Moldura do dropdown (onde aparecerá a lista)
     local dropdownFrame = new("Frame", {
         Parent = item,
         BackgroundColor3 = Theme.ItemFrame,
@@ -752,6 +755,7 @@ function tabAPI:AddDropdown(opt)
         PaddingRight = UDim.new(0,6)
     })
 
+    -- Área rolável da lista
     local scrollFrame = new("ScrollingFrame", {
         Parent = dropdownFrame,
         BackgroundTransparency = 1,
@@ -771,6 +775,7 @@ function tabAPI:AddDropdown(opt)
 
     local opened = false
 
+    -- Cria as opções
     local function rebuildOptions()
         for _,v in pairs(scrollFrame:GetChildren()) do
             if v:IsA("TextButton") then v:Destroy() end
@@ -791,41 +796,62 @@ function tabAPI:AddDropdown(opt)
             makeCorner(btn, 4)
 
             btn.MouseEnter:Connect(function()
-                TweenService:Create(btn, TweenInfo.new(.08), {BackgroundColor3 = Theme.Highlight, TextColor3 = Color3.new(1,1,1)}):Play()
+                TweenService:Create(btn, TweenInfo.new(.08), {
+                    BackgroundColor3 = Theme.Highlight,
+                    TextColor3 = Color3.new(1,1,1)
+                }):Play()
             end)
+
             btn.MouseLeave:Connect(function()
-                TweenService:Create(btn, TweenInfo.new(.08), {BackgroundColor3 = Theme.ItemFrame, TextColor3 = Theme.ItemText}):Play()
+                TweenService:Create(btn, TweenInfo.new(.08), {
+                    BackgroundColor3 = Theme.ItemFrame,
+                    TextColor3 = Theme.ItemText
+                }):Play()
             end)
+
             btn.MouseButton1Click:Connect(function()
                 ElixirLib.Flags[flag] = optVal
                 currentText.Text = tostring(optVal)
                 callback(optVal)
-                opened = false
-                TweenService:Create(scrollFrame, TweenInfo.new(.12), {Size = UDim2.new(1,0,0,0)}):Play()
+                closeList()
             end)
         end
     end
-    rebuildOptions()
 
     local function openList()
         opened = true
         local count = #options
-        local visibleCount = math.min(count, 5) -- máximo de 5 visíveis antes de rolar
-        TweenService:Create(scrollFrame, TweenInfo.new(.15), {Size = UDim2.new(1,0,0,visibleCount*26)}):Play()
+        local visibleCount = math.min(count, 5) -- mostra até 5 antes de rolar
+        TweenService:Create(scrollFrame, TweenInfo.new(.15), {
+            Size = UDim2.new(1,0,0,visibleCount*26)
+        }):Play()
     end
 
-    local function closeList()
+    function closeList()
         opened = false
-        TweenService:Create(scrollFrame, TweenInfo.new(.15), {Size = UDim2.new(1,0,0,0)}):Play()
+        TweenService:Create(scrollFrame, TweenInfo.new(.15), {
+            Size = UDim2.new(1,0,0,0)
+        }):Play()
     end
 
-    item.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 then
-            if opened then
-                closeList()
-            else
-                openList()
-            end
+    rebuildOptions()
+    scrollFrame.Size = UDim2.new(1,0,0,0)
+
+    -- Área clicável (apenas o campo do dropdown)
+    local dropdownClickArea = new("TextButton", {
+        Parent = item,
+        BackgroundTransparency = 1,
+        Size = UDim2.new(1,0,0,24),
+        ZIndex = 2,
+        Text = "",
+        AutoButtonColor = false
+    })
+
+    dropdownClickArea.MouseButton1Click:Connect(function()
+        if opened then
+            closeList()
+        else
+            openList()
         end
     end)
 

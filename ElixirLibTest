@@ -690,138 +690,30 @@ function ElixirLib:MakeWindow(info)
             }
         end
 
--- AddDropdown ajustado
-function tabAPI:AddDropdown(opt)
-    opt = opt or {}
-    local name = opt.Name or "Dropdown"
-    local options = opt.Options or {}
-    local default = opt.Default or "Select"
-    local callback = opt.Callback or function() end
-    local changeText = opt.ChangeTextOnPick ~= false
-    local flag = opt.Flag or HttpService:GenerateGUID(false)
-    ElixirLib.Flags[flag] = default
-
-    local item = newItemFrame()
-    local label = new("TextLabel", {
-        Parent = item,
-        Text = name,
-        Font = Enum.Font.GothamBold,
-        TextSize = 12,
-        TextColor3 = Theme.ItemText,
-        BackgroundTransparency = 1,
-        Position = UDim2.new(0,8,0,0),
-        Size = UDim2.new(0.5, -8,1,0),
-        TextXAlignment = Enum.TextXAlignment.Left
-    })
-
-    local dropdownBtn = new("TextButton", {
-        Parent = item,
-        Text = default,
-        Font = Enum.Font.GothamBold,
-        TextSize = 12,
-        TextColor3 = Theme.ItemText,
-        BackgroundColor3 = Theme.ItemFrame,
-        Size = UDim2.new(0.45,0,0,24),
-        Position = UDim2.new(0.5,4,0.5,-12),
-        BorderSizePixel = 0
-    })
-    makeCorner(dropdownBtn, 4)
-
-    -- lista de opções fora do item, para flutuar
-    local list = new("Frame", {
-        Parent = tabContent,
-        BackgroundColor3 = Theme.ItemFrame,
-        Size = UDim2.new(0, dropdownBtn.AbsoluteSize.X, 0, 0),
-        Position = item.Position + UDim2.new(0,0,0, item.Size.Y.Offset),
-        ZIndex = 10,
-        BorderSizePixel = 0,
-        ClipsDescendants = false
-    })
-    makeCorner(list, 4)
-
-    local listLayout = new("UIListLayout", { Parent = list })
-    listLayout.SortOrder = Enum.SortOrder.LayoutOrder
-    listLayout.Padding = UDim.new(0,2)
-
-    local opened = false
-    local totalY = 0
-
-    local function rebuildOptions()
-        list:ClearAllChildren()
-        totalY = 0
-        for _, optVal in ipairs(options) do
-            local btn = new("TextButton", {
-                Parent = list,
-                Text = tostring(optVal),
-                Font = Enum.Font.GothamBold,
-                TextSize = 12,
-                TextColor3 = Theme.ItemText,
-                BackgroundTransparency = 1,
-                Size = UDim2.new(1,0,0,24),
-                AutoButtonColor = false
-            })
-            totalY = totalY + 24
-            btn.MouseEnter:Connect(function() TweenService:Create(btn, TweenInfo.new(.08), {TextColor3 = Theme.Highlight}):Play() end)
-            btn.MouseLeave:Connect(function() TweenService:Create(btn, TweenInfo.new(.08), {TextColor3 = Theme.ItemText}):Play() end)
-            btn.MouseButton1Click:Connect(function()
-                ElixirLib.Flags[flag] = optVal
-                if changeText then dropdownBtn.Text = tostring(optVal) end
-                task.spawn(callback, optVal)
-                opened = false
-                TweenService:Create(list, TweenInfo.new(.12), {Size = UDim2.new(0, dropdownBtn.AbsoluteSize.X,0,0)}):Play()
-            end)
-        end
-        list.Size = UDim2.new(0, dropdownBtn.AbsoluteSize.X, 0, 0)
-    end
-
-    rebuildOptions()
-
-    dropdownBtn.MouseButton1Click:Connect(function()
-        opened = not opened
-        if opened then
-            list.Position = item.Position + UDim2.new(0,0,0, item.AbsoluteSize.Y)
-            TweenService:Create(list, TweenInfo.new(.12), {Size = UDim2.new(0, dropdownBtn.AbsoluteSize.X, 0, totalY)}):Play()
-        else
-            TweenService:Create(list, TweenInfo.new(.12), {Size = UDim2.new(0, dropdownBtn.AbsoluteSize.X, 0, 0)}):Play()
-        end
-    end)
-
-    return {
-        SetOptions = function(newOptions) options = newOptions or {} rebuildOptions() end,
-        Set = function(v) ElixirLib.Flags[flag] = v if changeText then dropdownBtn.Text = tostring(v) end end,
-        Get = function() return ElixirLib.Flags[flag] end,
-        Flag = flag
-    }
-end
-
--- AddSection simples
+-- AddSection ajustado
 function tabAPI:AddSection(opt)
     opt = opt or {}
     local name = opt.Name or "Section"
-    local sectionFrame = new("Frame", {
-        Parent = tabContent,
-        BackgroundColor3 = Theme.SectionFrame,
-        Size = UDim2.new(1,-12,0,2),
-        BorderSizePixel = 0
-    })
-    makeCorner(sectionFrame, 2)
+
+    local item = newItemFrame() -- usa o mesmo estilo dos outros itens
+    item.Size = UDim2.new(1,-12,0,24) -- altura do section
 
     local label = new("TextLabel", {
-        Parent = sectionFrame,
+        Parent = item,
         Text = name,
         Font = Enum.Font.GothamBold,
         TextSize = 12,
         TextColor3 = Theme.SectionText,
         BackgroundTransparency = 1,
-        Position = UDim2.new(0,8,0,-12),
-        Size = UDim2.new(0.5,0,1,0),
+        Position = UDim2.new(0,8,0,0),
+        Size = UDim2.new(1, -16, 1, 0),
         TextXAlignment = Enum.TextXAlignment.Left
     })
 
-    return sectionFrame
+    return item
 end
 
--- AddKeybind simples
+-- AddKeybind ajustado
 function tabAPI:AddKeybind(opt)
     opt = opt or {}
     local name = opt.Name or "Keybind"
@@ -831,6 +723,7 @@ function tabAPI:AddKeybind(opt)
     ElixirLib.Flags[flag] = default.Name
 
     local item = newItemFrame()
+
     local label = new("TextLabel", {
         Parent = item,
         Text = name,
@@ -882,6 +775,112 @@ function tabAPI:AddKeybind(opt)
 
     return {
         Set = function(k) ElixirLib.Flags[flag] = k.Name or k; btn.Text = ElixirLib.Flags[flag] end,
+        Get = function() return ElixirLib.Flags[flag] end,
+        Flag = flag
+    }
+end
+
+-- AddDropdown ajustado para flutuar acima do tabContent
+function tabAPI:AddDropdown(opt)
+    opt = opt or {}
+    local name = opt.Name or "Dropdown"
+    local options = opt.Options or {}
+    local default = opt.Default or "Select"
+    local callback = opt.Callback or function() end
+    local changeText = opt.ChangeTextOnPick ~= false
+    local flag = opt.Flag or HttpService:GenerateGUID(false)
+    ElixirLib.Flags[flag] = default
+
+    local item = newItemFrame()
+    local label = new("TextLabel", {
+        Parent = item,
+        Text = name,
+        Font = Enum.Font.GothamBold,
+        TextSize = 12,
+        TextColor3 = Theme.ItemText,
+        BackgroundTransparency = 1,
+        Position = UDim2.new(0,8,0,0),
+        Size = UDim2.new(0.5, -8,1,0),
+        TextXAlignment = Enum.TextXAlignment.Left
+    })
+
+    local dropdownBtn = new("TextButton", {
+        Parent = item,
+        Text = default,
+        Font = Enum.Font.GothamBold,
+        TextSize = 12,
+        TextColor3 = Theme.ItemText,
+        BackgroundColor3 = Theme.ItemFrame,
+        Size = UDim2.new(0.45,0,0,24),
+        Position = UDim2.new(0.5,4,0.5,-12),
+        BorderSizePixel = 0,
+        ZIndex = 2
+    })
+    makeCorner(dropdownBtn, 4)
+
+    -- lista de opções flutuante (parent fora do scroll)
+    local list = new("Frame", {
+        Parent = main, -- fora do tabContent para não ser cortado
+        BackgroundColor3 = Theme.ItemFrame,
+        Size = UDim2.new(0, dropdownBtn.AbsoluteSize.X, 0, 0),
+        Position = dropdownBtn.AbsolutePosition + Vector2.new(0, dropdownBtn.AbsoluteSize.Y),
+        BorderSizePixel = 0,
+        ClipsDescendants = false,
+        ZIndex = 10
+    })
+    makeCorner(list, 4)
+
+    local listLayout = new("UIListLayout", { Parent = list })
+    listLayout.SortOrder = Enum.SortOrder.LayoutOrder
+    listLayout.Padding = UDim.new(0,2)
+
+    local opened = false
+    local totalY = 0
+
+    local function rebuildOptions()
+        list:ClearAllChildren()
+        totalY = 0
+        for _, optVal in ipairs(options) do
+            local btn = new("TextButton", {
+                Parent = list,
+                Text = tostring(optVal),
+                Font = Enum.Font.GothamBold,
+                TextSize = 12,
+                TextColor3 = Theme.ItemText,
+                BackgroundTransparency = 1,
+                Size = UDim2.new(1,0,0,24),
+                AutoButtonColor = false,
+                ZIndex = 11
+            })
+            totalY = totalY + 24
+            btn.MouseEnter:Connect(function() TweenService:Create(btn, TweenInfo.new(.08), {TextColor3 = Theme.Highlight}):Play() end)
+            btn.MouseLeave:Connect(function() TweenService:Create(btn, TweenInfo.new(.08), {TextColor3 = Theme.ItemText}):Play() end)
+            btn.MouseButton1Click:Connect(function()
+                ElixirLib.Flags[flag] = optVal
+                if changeText then dropdownBtn.Text = tostring(optVal) end
+                task.spawn(callback, optVal)
+                opened = false
+                TweenService:Create(list, TweenInfo.new(.12), {Size = UDim2.new(list.Size.X.Scale, list.Size.X.Offset, 0, 0)}):Play()
+            end)
+        end
+        list.Size = UDim2.new(0, dropdownBtn.AbsoluteSize.X, 0, 0)
+    end
+
+    rebuildOptions()
+
+    dropdownBtn.MouseButton1Click:Connect(function()
+        opened = not opened
+        if opened then
+            list.Position = dropdownBtn.AbsolutePosition + Vector2.new(0, dropdownBtn.AbsoluteSize.Y)
+            TweenService:Create(list, TweenInfo.new(.12), {Size = UDim2.new(0, dropdownBtn.AbsoluteSize.X, 0, totalY)}):Play()
+        else
+            TweenService:Create(list, TweenInfo.new(.12), {Size = UDim2.new(0, dropdownBtn.AbsoluteSize.X, 0, 0)}):Play()
+        end
+    end)
+
+    return {
+        SetOptions = function(newOptions) options = newOptions or {} rebuildOptions() end,
+        Set = function(v) ElixirLib.Flags[flag] = v if changeText then dropdownBtn.Text = tostring(v) end end,
         Get = function() return ElixirLib.Flags[flag] end,
         Flag = flag
     }

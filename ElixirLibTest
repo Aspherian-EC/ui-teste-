@@ -1,4 +1,4 @@
--- // ElixirLib Base UI System
+-- ElixirLib Base UI System
 local ElixirLib = {}
 
 local TweenService = game:GetService("TweenService")
@@ -100,7 +100,7 @@ function ElixirLib:MakeWindow(cfg)
     function Tabs:MakeTab(info)
         info = info or {}
         local tabName = info.Name or "Tab"
-        local tabIcon = info.IconId -- AssetId opcional
+        local tabIcon = info.IconId
         
         -- Botão da Tab
         local TabButton = Instance.new("TextButton")
@@ -116,16 +116,14 @@ function ElixirLib:MakeWindow(cfg)
         local TabCorner = Instance.new("UICorner", TabButton)
         TabCorner.CornerRadius = UDim.new(0, 3)
         
-        -- Desloca o texto mais para a direita
         local padding = Instance.new("UIPadding")
-        padding.PaddingLeft = UDim.new(0, 25) -- ajuste aqui para mais à direita
+        padding.PaddingLeft = UDim.new(0, 25)
         padding.Parent = TabButton
         
-        -- Ícone opcional à direita, levemente para a esquerda
         if tabIcon then
             local Icon = Instance.new("ImageLabel")
             Icon.Size = UDim2.new(0, 18, 0, 18)
-            Icon.Position = UDim2.new(1, -28, 0.5, -9) -- levemente mais para esquerda
+            Icon.Position = UDim2.new(1, -28, 0.5, -9)
             Icon.BackgroundTransparency = 1
             Icon.Image = tabIcon
             Icon.Parent = TabButton
@@ -145,7 +143,7 @@ function ElixirLib:MakeWindow(cfg)
         local TabLayout = Instance.new("UIListLayout", TabFrame)
         TabLayout.Padding = UDim.new(0, 6)
         TabLayout.SortOrder = Enum.SortOrder.LayoutOrder
-        
+
         -- Seleção da Tab
         TabButton.MouseButton1Click:Connect(function()
             for _, child in ipairs(RightPanel:GetChildren()) do
@@ -163,6 +161,38 @@ function ElixirLib:MakeWindow(cfg)
             end
             TweenService:Create(TabButton, TweenInfo.new(0.15), {BackgroundColor3 = Color3.fromRGB(70, 70, 75)}):Play()
         end)
+        
+        -- Função para adicionar Toggle dentro da tab
+        function TabFrame:AddToggle(info)
+            info = info or {}
+            local toggleName = info.Name or "Toggle"
+            local default = info.Default or false
+            local callback = info.Callback or function() end
+
+            local Toggle = Instance.new("TextButton")
+            Toggle.Text = toggleName .. (default and " [ON]" or " [OFF]")
+            Toggle.Font = Enum.Font.GothamBold
+            Toggle.TextSize = 13
+            Toggle.TextColor3 = Color3.fromRGB(230, 230, 230)
+            Toggle.BackgroundColor3 = Color3.fromRGB(40, 40, 45)
+            Toggle.Size = UDim2.new(1, -10, 0, 28)
+            Toggle.Parent = TabFrame
+
+            local ToggleCorner = Instance.new("UICorner", Toggle)
+            ToggleCorner.CornerRadius = UDim.new(0, 4)
+
+            local state = default
+
+            Toggle.MouseButton1Click:Connect(function()
+                state = not state
+                Toggle.Text = toggleName .. (state and " [ON]" or " [OFF]")
+                pcall(function()
+                    callback(state)
+                end)
+            end)
+
+            return Toggle
+        end
         
         return TabFrame
     end

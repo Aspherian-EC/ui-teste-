@@ -691,144 +691,137 @@ function ElixirLib:MakeWindow(info)
         end
 
         -- AddDropdown
-        function tabAPI:AddDropdown(opt)
-            opt = opt or {}
-            local name = opt.Name or "Dropdown"
-            local options = opt.Options or {}
-            local default = opt.Default
-            local callback = opt.Callback or function() end
-            local changeText = opt.ChangeTextOnPick or true
-            local flag = opt.Flag or HttpService:GenerateGUID(false)
+function tabAPI:AddDropdown(opt)
+    opt = opt or {}
+    local name = opt.Name or "Dropdown"
+    local options = opt.Options or {}
+    local default = opt.Default
+    local callback = opt.Callback or function() end
+    local changeText = opt.ChangeTextOnPick or true
+    local flag = opt.Flag or HttpService:GenerateGUID(false)
 
-            if default then ElixirLib.Flags[flag] = default else ElixirLib.Flags[flag] = nil end
+    if default then ElixirLib.Flags[flag] = default else ElixirLib.Flags[flag] = nil end
 
-            local item = new("Frame", {
-                Parent = tabContent,
-                BackgroundColor3 = Theme.ItemFrame,
-                Size = UDim2.new(1,-12,0,30),
-                BorderSizePixel = 0
-            })
-            makeCorner(item, 4)
-            local stroke = Instance.new("UIStroke", item)
-            stroke.Color = Theme.ItemUIStroke
+    -- Item container no tab
+    local item = new("Frame", {
+        Parent = tabContent,
+        BackgroundColor3 = Theme.ItemFrame,
+        Size = UDim2.new(1,-12,0,30),
+        BorderSizePixel = 0
+    })
+    makeCorner(item, 4)
+    local stroke = Instance.new("UIStroke", item)
+    stroke.Color = Theme.ItemUIStroke
 
-            local label = new("TextLabel", {
-                Parent = item,
-                Text = name,
-                Font = Enum.Font.GothamBold,
-                TextSize = 12,
-                TextColor3 = Theme.ItemText,
-                BackgroundTransparency = 1,
-                Position = UDim2.new(0,8,0,0),
-                Size = UDim2.new(0.45,-8,1,0),
-                TextXAlignment = Enum.TextXAlignment.Left
-            })
+    local label = new("TextLabel", {
+        Parent = item,
+        Text = name,
+        Font = Enum.Font.GothamBold,
+        TextSize = 12,
+        TextColor3 = Theme.ItemText,
+        BackgroundTransparency = 1,
+        Position = UDim2.new(0,8,0,0),
+        Size = UDim2.new(0.45,-8,1,0),
+        TextXAlignment = Enum.TextXAlignment.Left
+    })
 
-            local dropdownBtn = new("TextButton", {
-                Parent = item,
-                Text = default or "Select",
-                Font = Enum.Font.GothamBold,
-                TextSize = 12,
-                TextColor3 = Theme.ItemText,
-                BackgroundColor3 = Theme.ItemFrame,
-                Size = UDim2.new(0.5,-12,0,24),
-                Position = UDim2.new(1,-(0.5*item.AbsoluteSize.X) - 12,0.5,-12),
-                BorderSizePixel = 0
-            })
-            -- Because absolute sizes may be 0 at creation, we'll position after a short wait
-            task.wait(0.01)
-            dropdownBtn.Position = UDim2.new(1,-(dropdownBtn.Size.X.Offset + 12),0.5,-12)
-            -- icon
-            local chevron = new("ImageLabel", {
-                Parent = dropdownBtn,
-                Size = UDim2.new(0,16,0,16),
-                Position = UDim2.new(1,-22,0.5,-8),
-                BackgroundTransparency = 1,
-                Image = "rbxassetid://10325147619"
-            })
+    -- Botão que abre a lista
+    local dropdownBtn = new("TextButton", {
+        Parent = item,
+        Text = default or "Select",
+        Font = Enum.Font.GothamBold,
+        TextSize = 12,
+        TextColor3 = Theme.ItemText,
+        BackgroundColor3 = Theme.ItemFrame,
+        Size = UDim2.new(0.5,-12,0,24),
+        Position = UDim2.new(1,-(0.5*item.AbsoluteSize.X) - 12,0.5,-12),
+        BorderSizePixel = 0
+    })
+    task.wait(0.01)
+    dropdownBtn.Position = UDim2.new(1,-(dropdownBtn.Size.X.Offset + 12),0.5,-12)
 
-            local container = new("Frame", {
-                Parent = item,
-                BackgroundTransparency = 1,
-                Position = UDim2.new(0,2,0,30),
-                Size = UDim2.new(1, -4, 0, 0),
-                ClipsDescendants = true
-            })
+    local chevron = new("ImageLabel", {
+        Parent = dropdownBtn,
+        Size = UDim2.new(0,16,0,16),
+        Position = UDim2.new(1,-22,0.5,-8),
+        BackgroundTransparency = 1,
+        Image = "rbxassetid://10325147619"
+    })
 
-            local list = new("Frame", {
-                Parent = container,
-                BackgroundColor3 = Theme.ItemFrame,
-                Size = UDim2.new(1,0,0,0),
-                BorderSizePixel = 0
-            })
-            makeCorner(list, 4)
+    -- Lista sobreposta diretamente no ScreenGui
+    local dropdownList = new("Frame", {
+        Parent = screenGui, -- aparece na frente de tudo
+        BackgroundColor3 = Theme.ItemFrame,
+        Size = UDim2.new(0, dropdownBtn.AbsoluteSize.X, 0, 0),
+        Position = UDim2.new(0, dropdownBtn.AbsolutePosition.X, 0, dropdownBtn.AbsolutePosition.Y + dropdownBtn.AbsoluteSize.Y),
+        BorderSizePixel = 0
+    })
+    makeCorner(dropdownList, 4)
 
-            local listLayout = new("UIListLayout", { Parent = list })
-            listLayout.SortOrder = Enum.SortOrder.LayoutOrder
-            listLayout.Padding = UDim.new(0,2)
+    local listLayout = new("UIListLayout", { Parent = dropdownList })
+    listLayout.SortOrder = Enum.SortOrder.LayoutOrder
+    listLayout.Padding = UDim.new(0,2)
 
-            local opened = false
-            local totalY = 0
-            local function rebuildOptions()
-                for i,v in pairs(list:GetChildren()) do
-                    if v.ClassName == "TextButton" or v:IsA("Frame") and v.Name == "Option" then
-                        v:Destroy()
-                    end
-                end
-                totalY = 0
-                for _,optVal in ipairs(options) do
-                    local btn = new("TextButton", {
-                        Parent = list,
-                        Text = tostring(optVal),
-                        Font = Enum.Font.GothamBold,
-                        TextSize = 12,
-                        TextColor3 = Theme.ItemText,
-                        BackgroundTransparency = 1,
-                        Size = UDim2.new(1,0,0,24),
-                        AutoButtonColor = false,
-                        Name = "Option"
-                    })
-                    totalY = totalY + 24
-                    btn.MouseEnter:Connect(function() TweenService:Create(btn, TweenInfo.new(.08), {TextColor3 = Theme.Highlight}):Play() end)
-                    btn.MouseLeave:Connect(function() TweenService:Create(btn, TweenInfo.new(.08), {TextColor3 = Theme.ItemText}):Play() end)
-                    btn.MouseButton1Click:Connect(function()
-                        ElixirLib.Flags[flag] = optVal
-                        if changeText then dropdownBtn.Text = tostring(optVal) end
-                        task.spawn(callback, optVal)
-                        -- close
-                        opened = false
-                        TweenService:Create(list, TweenInfo.new(.12), {Size = UDim2.new(1,0,0,0)}):Play()
-                        TweenService:Create(container, TweenInfo.new(.12), {Size = UDim2.new(1,-4,0,0)}):Play()
-                    end)
-                end
-                list.Size = UDim2.new(1,0,0,totalY)
-                container.Size = UDim2.new(1,-4,0,totalY)
-                if not opened then
-                    list.Size = UDim2.new(1,0,0,0)
-                    container.Size = UDim2.new(1,-4,0,0)
-                end
-            end
+    local opened = false
+    local totalY = 0
 
-            rebuildOptions()
-
-            dropdownBtn.MouseButton1Click:Connect(function()
-                opened = not opened
-                if opened then
-                    TweenService:Create(list, TweenInfo.new(.12), {Size = UDim2.new(1,0,0,totalY)}):Play()
-                    TweenService:Create(container, TweenInfo.new(.12), {Size = UDim2.new(1,-4,0,totalY)}):Play()
-                else
-                    TweenService:Create(list, TweenInfo.new(.12), {Size = UDim2.new(1,0,0,0)}):Play()
-                    TweenService:Create(container, TweenInfo.new(.12), {Size = UDim2.new(1,-4,0,0)}):Play()
-                end
-            end)
-
-            return {
-                SetOptions = function(newOptions) options = newOptions or {} rebuildOptions() end,
-                Set = function(v) ElixirLib.Flags[flag] = v if changeText then dropdownBtn.Text = tostring(v) end end,
-                Get = function() return ElixirLib.Flags[flag] end,
-                Flag = flag
-            }
+    local function rebuildOptions()
+        for i,v in pairs(dropdownList:GetChildren()) do
+            if v:IsA("TextButton") then v:Destroy() end
         end
+        totalY = 0
+        for _,optVal in ipairs(options) do
+            local btn = new("TextButton", {
+                Parent = dropdownList,
+                Text = tostring(optVal),
+                Font = Enum.Font.GothamBold,
+                TextSize = 12,
+                TextColor3 = Theme.ItemText,
+                BackgroundTransparency = 1,
+                Size = UDim2.new(1,0,0,24),
+                AutoButtonColor = false
+            })
+            totalY = totalY + 24
+            btn.MouseEnter:Connect(function() TweenService:Create(btn, TweenInfo.new(.08), {TextColor3 = Theme.Highlight}):Play() end)
+            btn.MouseLeave:Connect(function() TweenService:Create(btn, TweenInfo.new(.08), {TextColor3 = Theme.ItemText}):Play() end)
+            btn.MouseButton1Click:Connect(function()
+                ElixirLib.Flags[flag] = optVal
+                if changeText then dropdownBtn.Text = tostring(optVal) end
+                task.spawn(callback, optVal)
+                -- fechar
+                opened = false
+                TweenService:Create(dropdownList, TweenInfo.new(.12), {Size = UDim2.new(dropdownList.Size.X.Scale, dropdownList.Size.X.Offset, 0,0)}):Play()
+            end)
+        end
+        dropdownList.Size = UDim2.new(dropdownList.Size.X.Scale, dropdownList.Size.X.Offset, 0, totalY)
+        if not opened then
+            dropdownList.Size = UDim2.new(dropdownList.Size.X.Scale, dropdownList.Size.X.Offset, 0, 0)
+        end
+    end
+
+    rebuildOptions()
+
+    dropdownBtn.MouseButton1Click:Connect(function()
+        opened = not opened
+        if opened then
+            dropdownList.Position = UDim2.new(0, dropdownBtn.AbsolutePosition.X, 0, dropdownBtn.AbsolutePosition.Y + dropdownBtn.AbsoluteSize.Y)
+            TweenService:Create(dropdownList, TweenInfo.new(.12), {Size = UDim2.new(dropdownList.Size.X.Scale, dropdownList.Size.X.Offset, 0, totalY)}):Play()
+        else
+            TweenService:Create(dropdownList, TweenInfo.new(.12), {Size = UDim2.new(dropdownList.Size.X.Scale, dropdownList.Size.X.Offset, 0,0)}):Play()
+        end
+    end)
+
+    return {
+        SetOptions = function(newOptions) options = newOptions or {} rebuildOptions() end,
+        Set = function(v) 
+            ElixirLib.Flags[flag] = v 
+            if changeText then dropdownBtn.Text = tostring(v) end
+        end,
+        Get = function() return ElixirLib.Flags[flag] end,
+        Flag = flag
+    }
+end
+
 
         -- AddKeybind
         function tabAPI:AddKeybind(opt)
@@ -905,7 +898,40 @@ function ElixirLib:MakeWindow(info)
                 end,
                 Flag = flag
             }
-        end
+        
+            
+
+            function tabAPI:AddSection(opt)
+                opt = opt or {}
+                local name = opt.Name or ""
+                
+                local sectionFrame = new("Frame", {
+                    Parent = tabContent,
+                    BackgroundColor3 = Theme.SectionFrame,
+                    Size = UDim2.new(1, -12, 0, 2),
+                    BorderSizePixel = 0
+                })
+                makeCorner(sectionFrame, 1) -- canto arredondado pequeno
+                
+                if name ~= "" then
+                    local label = new("TextLabel", {
+                        Parent = tabContent,
+                        Text = name,
+                        Font = Enum.Font.GothamBold,
+                        TextSize = 12,
+                        TextColor3 = Theme.SectionText,
+                        BackgroundTransparency = 1,
+                        Size = UDim2.new(1,-12,0,20),
+                        TextXAlignment = Enum.TextXAlignment.Left
+                    })
+                end
+            
+                return {
+                    _frame = sectionFrame,
+                    _label = label
+                }
+            end
+            
 
         -- return tabAPI with only public methods mapped
         local public = {

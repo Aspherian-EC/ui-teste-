@@ -1,12 +1,15 @@
 local ElixirLib = {}
 ElixirLib.__index = ElixirLib
 
--- Inicializa a UI principal
 function ElixirLib:MakeWindow(info)
     info = info or {}
     local Window = {}
 
-    local ScreenGui = Instance.new("ScreenGui", game:GetService("CoreGui"))
+    local CoreGui = game:GetService("CoreGui")
+    local UserInputService = game:GetService("UserInputService")
+    local TweenService = game:GetService("TweenService")
+
+    local ScreenGui = Instance.new("ScreenGui", CoreGui)
     ScreenGui.Name = info.Name or "Elixir Client"
 
     -- Janela principal
@@ -15,36 +18,15 @@ function ElixirLib:MakeWindow(info)
     Main.Position = UDim2.new(0.35, 0, 0.3, 0)
     Main.BackgroundColor3 = Color3.fromRGB(20, 20, 25)
     Main.BorderSizePixel = 0
+    Main.Active = true
+    Main.ClipsDescendants = true
 
-    -- Tabs scrollável (à esquerda)
-    local TabList = Instance.new("ScrollingFrame", Main)
-    TabList.Size = UDim2.new(0, 130, 1, -40)
-    TabList.Position = UDim2.new(0, 0, 0, 40)
-    TabList.BackgroundColor3 = Color3.fromRGB(25, 25, 30)
-    TabList.ScrollBarThickness = 3
-    TabList.AutomaticCanvasSize = Enum.AutomaticSize.Y
-
-    local TabLayout = Instance.new("UIListLayout", TabList)
-    TabLayout.SortOrder = Enum.SortOrder.LayoutOrder
-    TabLayout.Padding = UDim.new(0, 5)
-
-    -- Painel direito (onde toggles e sliders aparecerão)
-    local ContentFrame = Instance.new("ScrollingFrame", Main)
-    ContentFrame.Size = UDim2.new(1, -140, 1, -40)
-    ContentFrame.Position = UDim2.new(0, 140, 0, 40)
-    ContentFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 35)
-    ContentFrame.ScrollBarThickness = 4
-    ContentFrame.Visible = false -- só aparece quando uma tab é clicada
-    ContentFrame.AutomaticCanvasSize = Enum.AutomaticSize.Y
-
-    local ContentLayout = Instance.new("UIListLayout", ContentFrame)
-    ContentLayout.SortOrder = Enum.SortOrder.LayoutOrder
-    ContentLayout.Padding = UDim.new(0, 8)
-
-    -- Barra superior
+    -- Barra superior (Topbar)
     local Topbar = Instance.new("Frame", Main)
     Topbar.Size = UDim2.new(1, 0, 0, 34)
     Topbar.BackgroundColor3 = Color3.fromRGB(35, 35, 45)
+    Topbar.BorderSizePixel = 0
+    Topbar.Active = true
 
     local Title = Instance.new("TextLabel", Topbar)
     Title.Size = UDim2.new(1, -10, 1, 0)
@@ -55,7 +37,110 @@ function ElixirLib:MakeWindow(info)
     Title.Font = Enum.Font.GothamBold
     Title.Text = info.Name or "Elixir Client"
 
-    -- Adiciona Tabs
+    -- Tab scroll (esquerda)
+    local TabList = Instance.new("ScrollingFrame", Main)
+    TabList.Size = UDim2.new(0, 130, 1, -40)
+    TabList.Position = UDim2.new(0, 0, 0, 40)
+    TabList.BackgroundColor3 = Color3.fromRGB(25, 25, 30)
+    TabList.ScrollBarThickness = 3
+    TabList.AutomaticCanvasSize = Enum.AutomaticSize.Y
+    TabList.BorderSizePixel = 0
+
+    local TabLayout = Instance.new("UIListLayout", TabList)
+    TabLayout.SortOrder = Enum.SortOrder.LayoutOrder
+    TabLayout.Padding = UDim.new(0, 5)
+
+    -- Painel direito
+    local ContentFrame = Instance.new("ScrollingFrame", Main)
+    ContentFrame.Size = UDim2.new(1, -140, 1, -40)
+    ContentFrame.Position = UDim2.new(0, 140, 0, 40)
+    ContentFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 35)
+    ContentFrame.ScrollBarThickness = 4
+    ContentFrame.Visible = false
+    ContentFrame.AutomaticCanvasSize = Enum.AutomaticSize.Y
+    ContentFrame.BorderSizePixel = 0
+
+    local ContentLayout = Instance.new("UIListLayout", ContentFrame)
+    ContentLayout.SortOrder = Enum.SortOrder.LayoutOrder
+    ContentLayout.Padding = UDim.new(0, 8)
+
+    ----------------------------------------------------------------
+    -- 🖱️ Sistema de movimentação (Topbar drag)
+    ----------------------------------------------------------------
+    local dragging, dragInput, dragStart, startPos
+
+    local function update(input)
+        local delta = input.Position - dragStart
+        Main.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+    end
+
+    Topbar.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            dragging = true
+            dragStart = input.Position
+            startPos = Main.Position
+
+            input.Changed:Connect(function()
+                if input.UserInputState == Enum.UserInputState.End then
+                    dragging = false
+                end
+            end)
+        end
+    end)
+
+    Topbar.InputChanged:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+            dragInput = input
+        end
+    end)
+
+    UserInputService.InputChanged:Connect(function(input)
+        if input == dragInput and dragging then
+            update(input)
+        end
+    end)
+
+    ----------------------------------------------------------------
+    -- ↘️ Sistema de redimensionamento (Resize)
+    ----------------------------------------------------------------
+    local ResizeButton = Instance.new("ImageButton", Main)
+    ResizeButton.Size = UDim2.new(0, 20, 0, 20)
+    ResizeButton.AnchorPoint = Vector2.new(1, 1)
+    ResizeButton.Position = UDim2.new(1, 0, 1, 0)
+    ResizeButton.Image = "rbxassetid://7072717697" -- ícone de seta diagonal
+    ResizeButton.ImageColor3 = Color3.fromRGB(180, 180, 180)
+    ResizeButton.BackgroundTransparency = 1
+    ResizeButton.Active = true
+
+    local resizing = false
+    local resizeStart, startSize
+
+    ResizeButton.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            resizing = true
+            resizeStart = input.Position
+            startSize = Main.Size
+
+            input.Changed:Connect(function()
+                if input.UserInputState == Enum.UserInputState.End then
+                    resizing = false
+                end
+            end)
+        end
+    end)
+
+    UserInputService.InputChanged:Connect(function(input)
+        if resizing and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+            local delta = input.Position - resizeStart
+            local newX = math.clamp(startSize.X.Offset + delta.X, 300, 900)
+            local newY = math.clamp(startSize.Y.Offset + delta.Y, 200, 700)
+            Main.Size = UDim2.new(0, newX, 0, newY)
+        end
+    end)
+
+    ----------------------------------------------------------------
+    -- 🧭 Tabs (como antes)
+    ----------------------------------------------------------------
     function Window:MakeTab(tabInfo)
         local TabButton = Instance.new("TextButton", TabList)
         TabButton.Size = UDim2.new(1, -10, 0, 30)
@@ -64,6 +149,7 @@ function ElixirLib:MakeWindow(info)
         TabButton.Font = Enum.Font.GothamBold
         TabButton.TextSize = 13
         TabButton.Text = tabInfo.Name or "Tab"
+        TabButton.AutoButtonColor = false
 
         local TabFrame = Instance.new("Frame", ContentFrame)
         TabFrame.Size = UDim2.new(1, 0, 0, 0)
@@ -75,16 +161,22 @@ function ElixirLib:MakeWindow(info)
         TabLayout.SortOrder = Enum.SortOrder.LayoutOrder
         TabLayout.Padding = UDim.new(0, 6)
 
-        -- Clicar na Tab alterna a janela direita
         TabButton.MouseButton1Click:Connect(function()
             for _, v in pairs(ContentFrame:GetChildren()) do
                 if v:IsA("Frame") then v.Visible = false end
             end
             ContentFrame.Visible = true
             TabFrame.Visible = true
+
+            -- feedback visual
+            for _, btn in pairs(TabList:GetChildren()) do
+                if btn:IsA("TextButton") then
+                    TweenService:Create(btn, TweenInfo.new(0.15), {BackgroundColor3 = Color3.fromRGB(35, 35, 40)}):Play()
+                end
+            end
+            TweenService:Create(TabButton, TweenInfo.new(0.15), {BackgroundColor3 = Color3.fromRGB(80, 201, 206)}):Play()
         end)
 
-        -- Sistema de toggles, sliders, etc
         function TabFrame:AddToggle(info)
             local Toggle = Instance.new("TextButton", TabFrame)
             Toggle.Size = UDim2.new(1, -10, 0, 30)
@@ -107,209 +199,6 @@ function ElixirLib:MakeWindow(info)
     end
 
     return Window
-end
-
-local TweenService = game:GetService("TweenService")
-
-function ElixirLib:AddToggle(parent, info)
-    info = info or {}
-    local Title = info.Name or "Toggle"
-    local Default = info.Default or false
-    local Callback = info.Callback or function() end
-
-    local ToggleFrame = Instance.new("Frame")
-    ToggleFrame.Name = "Toggle"
-    ToggleFrame.Size = UDim2.new(1, -10, 0, 32)
-    ToggleFrame.BackgroundTransparency = 1
-    ToggleFrame.Parent = parent
-
-    local ToggleMain = Instance.new("Frame")
-    ToggleMain.Name = "ToggleMain"
-    ToggleMain.BackgroundColor3 = Color3.fromRGB(35, 35, 40)
-    ToggleMain.Size = UDim2.new(0.96, 0, 0, 28)
-    ToggleMain.AnchorPoint = Vector2.new(0.5, 0.5)
-    ToggleMain.Position = UDim2.new(0.5, 0, 0.5, 0)
-    ToggleMain.Parent = ToggleFrame
-
-    local UICorner = Instance.new("UICorner", ToggleMain)
-    UICorner.CornerRadius = UDim.new(0, 3)
-
-    local UIStroke = Instance.new("UIStroke", ToggleMain)
-    UIStroke.Color = Color3.fromRGB(45, 45, 55)
-
-    local Label = Instance.new("TextLabel")
-    Label.Name = "Label"
-    Label.BackgroundTransparency = 1
-    Label.Size = UDim2.new(1, -40, 1, 0)
-    Label.Position = UDim2.new(0, 10, 0, 0)
-    Label.Font = Enum.Font.GothamBold
-    Label.Text = Title
-    Label.TextColor3 = Color3.fromRGB(230, 230, 230)
-    Label.TextSize = 12
-    Label.TextXAlignment = Enum.TextXAlignment.Left
-    Label.Parent = ToggleMain
-
-    local Button = Instance.new("TextButton")
-    Button.BackgroundTransparency = 1
-    Button.Size = UDim2.new(1, 0, 1, 0)
-    Button.Text = ""
-    Button.Parent = ToggleMain
-
-    -- Outer circle
-    local Outer = Instance.new("Frame")
-    Outer.Name = "Outer"
-    Outer.Size = UDim2.new(0, 26, 0, 12)
-    Outer.AnchorPoint = Vector2.new(1, 0.5)
-    Outer.Position = UDim2.new(1, -10, 0.5, 0)
-    Outer.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
-    Outer.Parent = ToggleMain
-
-    local OuterCorner = Instance.new("UICorner", Outer)
-    OuterCorner.CornerRadius = UDim.new(1, 0)
-
-    local OuterStroke = Instance.new("UIStroke", Outer)
-    OuterStroke.Color = Color3.fromRGB(60, 60, 70)
-
-    -- Inner circle
-    local Inner = Instance.new("Frame")
-    Inner.Name = "Inner"
-    Inner.Size = UDim2.new(0, 10, 0, 10)
-    Inner.Position = UDim2.new(0, 1, 0.5, -5)
-    Inner.BackgroundColor3 = Color3.fromRGB(80, 201, 206)
-    Inner.Parent = Outer
-
-    local InnerCorner = Instance.new("UICorner", Inner)
-    InnerCorner.CornerRadius = UDim.new(1, 0)
-
-    local function SetState(on)
-        Default = on
-        if on then
-            TweenService:Create(Inner, TweenInfo.new(0.15, Enum.EasingStyle.Quad), {Position = UDim2.new(1, -11, 0.5, -5)}):Play()
-            TweenService:Create(Outer, TweenInfo.new(0.15, Enum.EasingStyle.Quad), {BackgroundColor3 = Color3.fromRGB(60, 60, 70)}):Play()
-        else
-            TweenService:Create(Inner, TweenInfo.new(0.15, Enum.EasingStyle.Quad), {Position = UDim2.new(0, 1, 0.5, -5)}):Play()
-            TweenService:Create(Outer, TweenInfo.new(0.15, Enum.EasingStyle.Quad), {BackgroundColor3 = Color3.fromRGB(40, 40, 50)}):Play()
-        end
-        task.spawn(Callback, Default)
-    end
-
-    Button.MouseButton1Click:Connect(function()
-        SetState(not Default)
-    end)
-
-    SetState(Default)
-end
-
-
-function ElixirLib:AddSlider(parent, info)
-    info = info or {}
-    local Title = info.Name or "Slider"
-    local Min = info.Min or 0
-    local Max = info.Max or 100
-    local Default = info.Default or 50
-    local Callback = info.Callback or function() end
-
-    local SliderFrame = Instance.new("Frame")
-    SliderFrame.Name = "Slider"
-    SliderFrame.Size = UDim2.new(1, -10, 0, 40)
-    SliderFrame.BackgroundTransparency = 1
-    SliderFrame.Parent = parent
-
-    local SliderMain = Instance.new("Frame")
-    SliderMain.Name = "SliderMain"
-    SliderMain.BackgroundColor3 = Color3.fromRGB(35, 35, 40)
-    SliderMain.Size = UDim2.new(0.96, 0, 0, 36)
-    SliderMain.AnchorPoint = Vector2.new(0.5, 0.5)
-    SliderMain.Position = UDim2.new(0.5, 0, 0.5, 0)
-    SliderMain.Parent = SliderFrame
-
-    local UICorner = Instance.new("UICorner", SliderMain)
-    UICorner.CornerRadius = UDim.new(0, 3)
-
-    local UIStroke = Instance.new("UIStroke", SliderMain)
-    UIStroke.Color = Color3.fromRGB(45, 45, 55)
-
-    local Label = Instance.new("TextLabel")
-    Label.Name = "Label"
-    Label.BackgroundTransparency = 1
-    Label.Size = UDim2.new(1, -50, 0, 16)
-    Label.Position = UDim2.new(0, 10, 0, 2)
-    Label.Font = Enum.Font.GothamBold
-    Label.Text = Title
-    Label.TextColor3 = Color3.fromRGB(230, 230, 230)
-    Label.TextSize = 12
-    Label.TextXAlignment = Enum.TextXAlignment.Left
-    Label.Parent = SliderMain
-
-    local ValueLabel = Instance.new("TextLabel")
-    ValueLabel.Name = "ValueLabel"
-    ValueLabel.BackgroundTransparency = 1
-    ValueLabel.Size = UDim2.new(0, 40, 0, 16)
-    ValueLabel.Position = UDim2.new(1, -45, 0, 2)
-    ValueLabel.Font = Enum.Font.GothamBold
-    ValueLabel.Text = tostring(Default)
-    ValueLabel.TextColor3 = Color3.fromRGB(230, 230, 230)
-    ValueLabel.TextSize = 12
-    ValueLabel.TextXAlignment = Enum.TextXAlignment.Right
-    ValueLabel.Parent = SliderMain
-
-    local Bar = Instance.new("Frame")
-    Bar.Name = "Bar"
-    Bar.Size = UDim2.new(0.9, 0, 0, 6)
-    Bar.Position = UDim2.new(0.05, 0, 0, 24)
-    Bar.BackgroundColor3 = Color3.fromRGB(60, 60, 70)
-    Bar.Parent = SliderMain
-    local BarCorner = Instance.new("UICorner", Bar)
-    BarCorner.CornerRadius = UDim.new(1, 0)
-
-    local Fill = Instance.new("Frame")
-    Fill.Name = "Fill"
-    Fill.Size = UDim2.new((Default - Min) / (Max - Min), 0, 1, 0)
-    Fill.BackgroundColor3 = Color3.fromRGB(80, 201, 206)
-    Fill.Parent = Bar
-    local FillCorner = Instance.new("UICorner", Fill)
-    FillCorner.CornerRadius = UDim.new(1, 0)
-
-    local Circle = Instance.new("Frame")
-    Circle.Name = "Circle"
-    Circle.Size = UDim2.new(0, 10, 0, 10)
-    Circle.Position = UDim2.new((Default - Min) / (Max - Min), -5, 0.5, -5)
-    Circle.BackgroundColor3 = Color3.fromRGB(80, 201, 206)
-    Circle.Parent = Bar
-    local CircleCorner = Instance.new("UICorner", Circle)
-    CircleCorner.CornerRadius = UDim.new(1, 0)
-
-    local Dragging = false
-
-    local function SetValue(v)
-        v = math.clamp(v, Min, Max)
-        local percent = (v - Min) / (Max - Min)
-        TweenService:Create(Fill, TweenInfo.new(0.1), {Size = UDim2.new(percent, 0, 1, 0)}):Play()
-        TweenService:Create(Circle, TweenInfo.new(0.1), {Position = UDim2.new(percent, -5, 0.5, -5)}):Play()
-        ValueLabel.Text = tostring(math.floor(v))
-        task.spawn(Callback, v)
-    end
-
-    Bar.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 then
-            Dragging = true
-            local mouse = game.Players.LocalPlayer:GetMouse()
-            while Dragging do
-                local relative = math.clamp((mouse.X - Bar.AbsolutePosition.X) / Bar.AbsoluteSize.X, 0, 1)
-                local val = Min + (Max - Min) * relative
-                SetValue(val)
-                task.wait()
-            end
-        end
-    end)
-
-    game:GetService("UserInputService").InputEnded:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 then
-            Dragging = false
-        end
-    end)
-
-    SetValue(Default)
 end
 
 return ElixirLib

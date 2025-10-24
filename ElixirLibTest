@@ -713,7 +713,7 @@ function tabAPI:AddSection(opt)
     return item
 end
 
-function tabAPI:AddKeybind(opt)
+function tabAPI:AddKBind(opt)
     opt = opt or {}
     local name = opt.Name or "Keybind"
     local default = opt.Default or Enum.KeyCode.Unknown

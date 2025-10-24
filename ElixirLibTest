@@ -694,15 +694,16 @@ function ElixirLib:MakeWindow(info)
 function tabAPI:AddSection(opt)
     opt = opt or {}
     local name = opt.Name or "Section"
-    
-    local section = new("Frame", {
+
+    -- Linha fina
+    local line = new("Frame", {
         Parent = tabContent,
         BackgroundColor3 = Theme.SectionLine,
         Size = UDim2.new(1, -12, 0, 2),
-        BorderSizePixel = 0,
-        Name = name
+        BorderSizePixel = 0
     })
-    
+
+    -- Label do nome
     local label = new("TextLabel", {
         Parent = tabContent,
         Text = name,
@@ -714,8 +715,8 @@ function tabAPI:AddSection(opt)
         Size = UDim2.new(0.6,-8,0,20),
         TextXAlignment = Enum.TextXAlignment.Left
     })
-    
-    return section
+
+    return { Line = line, Label = label }
 end
 
 -- AddDropdown
@@ -756,24 +757,16 @@ function tabAPI:AddDropdown(opt)
         BorderSizePixel = 0
     })
     makeCorner(dropdownBtn, 4)
-    
-    local chevron = new("ImageLabel", {
-        Parent = dropdownBtn,
-        Size = UDim2.new(0,16,0,16),
-        Position = UDim2.new(1,-22,0.5,-8),
-        BackgroundTransparency = 1,
-        Image = "rbxassetid://10325147619"
-    })
 
     local container = new("Frame", {
-        Parent = tabContent, -- colocar fora do item pra sobreposição
+        Parent = screenGui, -- sobreposto
         BackgroundTransparency = 1,
         Position = UDim2.new(0, item.AbsolutePosition.X,0, item.AbsolutePosition.Y + 30),
-        Size = UDim2.new(0, dropdownBtn.AbsoluteSize.X, 0, 0),
+        Size = UDim2.new(0, dropdownBtn.AbsoluteSize.X,0,0),
         ClipsDescendants = true,
         ZIndex = 10
     })
-    
+
     local list = new("Frame", {
         Parent = container,
         BackgroundColor3 = Theme.ItemFrame,
@@ -788,6 +781,7 @@ function tabAPI:AddDropdown(opt)
     local totalY = 0
     local function rebuildOptions()
         list:ClearAllChildren()
+        listLayout.Parent = list
         totalY = 0
         for _,optVal in ipairs(options) do
             local btn = new("TextButton", {
@@ -840,9 +834,9 @@ function tabAPI:AddDropdown(opt)
     }
 end
 
--- AddKeybind
+-- AddKeybind / AddBind
 do
-    local activeKeybinds = {} -- tabela global para gerenciar keybinds
+    local activeKeybinds = {}
     UserInputService.InputBegan:Connect(function(input, gp)
         if gp then return end
         if input.KeyCode then
@@ -914,7 +908,6 @@ function tabAPI:AddKeybind(opt)
         end)
     end)
 
-    -- registra keybind global
     table.insert(activeKeybinds, {FlagValue = ElixirLib.Flags[flag], Callback = callback})
 
     return {
@@ -927,6 +920,9 @@ function tabAPI:AddKeybind(opt)
         Flag = flag
     }
 end
+
+-- map AddBind para AddKeybind (compatibilidade)
+tabAPI.AddBind = tabAPI.AddKeybind
 
 
         -- return tabAPI with only public methods mapped

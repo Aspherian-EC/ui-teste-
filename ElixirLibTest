@@ -1,93 +1,62 @@
+-- // ElixirLib Base UI System
 local ElixirLib = {}
-ElixirLib.__index = ElixirLib
 
-function ElixirLib:MakeWindow(info)
-    info = info or {}
-    local Window = {}
+local TweenService = game:GetService("TweenService")
+local UserInputService = game:GetService("UserInputService")
+local CoreGui = game:GetService("CoreGui")
 
-    local CoreGui = game:GetService("CoreGui")
-    local UserInputService = game:GetService("UserInputService")
-    local TweenService = game:GetService("TweenService")
-
-    local ScreenGui = Instance.new("ScreenGui", CoreGui)
-    ScreenGui.Name = info.Name or "Elixir Client"
-
+function ElixirLib:MakeWindow(cfg)
+    cfg = cfg or {}
+    local title = cfg.Name or "Elixir Client"
+    
+    -- Cria a ScreenGui
+    local Gui = Instance.new("ScreenGui")
+    Gui.Name = "ElixirClientUI"
+    Gui.ZIndexBehavior = Enum.ZIndexBehavior.Global
+    Gui.Parent = CoreGui
+    
     -- Janela principal
-    local Main = Instance.new("Frame", ScreenGui)
-    Main.Size = UDim2.new(0, 520, 0, 360)
-    Main.Position = UDim2.new(0.35, 0, 0.3, 0)
-    Main.BackgroundColor3 = Color3.fromRGB(20, 20, 25)
+    local Main = Instance.new("Frame")
+    Main.Name = "Main"
+    Main.Size = UDim2.new(0, 550, 0, 400)
+    Main.Position = UDim2.new(0.3, 0, 0.3, 0)
+    Main.BackgroundColor3 = Color3.fromRGB(25, 25, 30)
     Main.BorderSizePixel = 0
-    Main.Active = true
-    Main.ClipsDescendants = true
-
-    -- Barra superior (Topbar)
-    local Topbar = Instance.new("Frame", Main)
+    Main.Parent = Gui
+    
+    local MainCorner = Instance.new("UICorner", Main)
+    MainCorner.CornerRadius = UDim.new(0, 4)
+    
+    -- Topbar
+    local Topbar = Instance.new("Frame")
+    Topbar.Name = "Topbar"
     Topbar.Size = UDim2.new(1, 0, 0, 34)
-    Topbar.BackgroundColor3 = Color3.fromRGB(35, 35, 45)
+    Topbar.BackgroundColor3 = Color3.fromRGB(30, 30, 35)
     Topbar.BorderSizePixel = 0
-    Topbar.Active = true
-
-    local Title = Instance.new("TextLabel", Topbar)
-    Title.Size = UDim2.new(1, -10, 1, 0)
-    Title.Position = UDim2.new(0, 10, 0, 0)
-    Title.BackgroundTransparency = 1
-    Title.TextColor3 = Color3.new(1, 1, 1)
-    Title.TextXAlignment = Enum.TextXAlignment.Left
+    Topbar.Parent = Main
+    
+    local TopbarCorner = Instance.new("UICorner", Topbar)
+    TopbarCorner.CornerRadius = UDim.new(0, 4)
+    
+    local Title = Instance.new("TextLabel")
+    Title.Name = "Title"
+    Title.Text = title
     Title.Font = Enum.Font.GothamBold
-    Title.Text = info.Name or "Elixir Client"
-
-    -- Container das Tabs (esquerda)
-    local TabList = Instance.new("ScrollingFrame", Main)
-    TabList.Size = UDim2.new(0, 130, 1, -40)
-    TabList.Position = UDim2.new(0, 0, 0, 40)
-    TabList.BackgroundColor3 = Color3.fromRGB(25, 25, 30)
-    TabList.ScrollBarThickness = 3
-    TabList.AutomaticCanvasSize = Enum.AutomaticSize.Y
-    TabList.CanvasSize = UDim2.new()
-    TabList.BorderSizePixel = 0
-    TabList.ScrollingDirection = Enum.ScrollingDirection.Y
-
-    local TabLayout = Instance.new("UIListLayout", TabList)
-    TabLayout.SortOrder = Enum.SortOrder.LayoutOrder
-    TabLayout.Padding = UDim.new(0, 6)
-    TabLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
-
-    local Padding = Instance.new("UIPadding", TabList)
-    Padding.PaddingTop = UDim.new(0, 6)
-    Padding.PaddingLeft = UDim.new(0, 4)
-    Padding.PaddingRight = UDim.new(0, 4)
-
-    -- Painel direito (onde será mostrado o conteúdo da Tab)
-    local ContentFrame = Instance.new("ScrollingFrame", Main)
-    ContentFrame.Size = UDim2.new(1, -140, 1, -40)
-    ContentFrame.Position = UDim2.new(0, 140, 0, 40)
-    ContentFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 35)
-    ContentFrame.ScrollBarThickness = 4
-    ContentFrame.Visible = false
-    ContentFrame.AutomaticCanvasSize = Enum.AutomaticSize.Y
-    ContentFrame.BorderSizePixel = 0
-
-    local ContentLayout = Instance.new("UIListLayout", ContentFrame)
-    ContentLayout.SortOrder = Enum.SortOrder.LayoutOrder
-    ContentLayout.Padding = UDim.new(0, 8)
-
-    ----------------------------------------------------------------
-    -- 🖱️ Sistema de movimentação (Topbar drag)
-    ----------------------------------------------------------------
-    local dragging, dragInput, dragStart, startPos
-
-    local function update(input)
-        local delta = input.Position - dragStart
-        Main.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
-    end
-
+    Title.TextSize = 14
+    Title.TextColor3 = Color3.fromRGB(240, 240, 240)
+    Title.BackgroundTransparency = 1
+    Title.Position = UDim2.new(0, 10, 0, 0)
+    Title.Size = UDim2.new(0, 300, 1, 0)
+    Title.TextXAlignment = Enum.TextXAlignment.Left
+    Title.Parent = Topbar
+    
+    -- Permite arrastar a janela
+    local dragging, dragStart, startPos
     Topbar.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then
             dragging = true
             dragStart = input.Position
             startPos = Main.Position
-
             input.Changed:Connect(function()
                 if input.UserInputState == Enum.UserInputState.End then
                     dragging = false
@@ -95,100 +64,90 @@ function ElixirLib:MakeWindow(info)
             end)
         end
     end)
-
-    Topbar.InputChanged:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
-            dragInput = input
-        end
-    end)
-
     UserInputService.InputChanged:Connect(function(input)
-        if input == dragInput and dragging then
-            update(input)
+        if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
+            local delta = input.Position - dragStart
+            Main.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
         end
     end)
-
-    ----------------------------------------------------------------
-    -- ↘️ Sistema de redimensionamento (Resize)
-    ----------------------------------------------------------------
-    local ResizeButton = Instance.new("ImageButton", Main)
-    ResizeButton.Size = UDim2.new(0, 20, 0, 20)
-    ResizeButton.AnchorPoint = Vector2.new(1, 1)
-    ResizeButton.Position = UDim2.new(1, 0, 1, 0)
-    ResizeButton.Image = "rbxassetid://7072717697"
-    ResizeButton.ImageColor3 = Color3.fromRGB(180, 180, 180)
-    ResizeButton.BackgroundTransparency = 1
-    ResizeButton.Active = true
-
-    local resizing = false
-    local resizeStart, startSize
-
-    ResizeButton.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-            resizing = true
-            resizeStart = input.Position
-            startSize = Main.Size
-
-            input.Changed:Connect(function()
-                if input.UserInputState == Enum.UserInputState.End then
-                    resizing = false
-                end
-            end)
-        end
-    end)
-
-    UserInputService.InputChanged:Connect(function(input)
-        if resizing and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
-            local delta = input.Position - resizeStart
-            local newX = math.clamp(startSize.X.Offset + delta.X, 300, 900)
-            local newY = math.clamp(startSize.Y.Offset + delta.Y, 200, 700)
-            Main.Size = UDim2.new(0, newX, 0, newY)
-        end
-    end)
-
-    ----------------------------------------------------------------
-    -- 🧭 Tabs (sem toggles)
-    ----------------------------------------------------------------
-    function Window:MakeTab(tabInfo)
-        local TabButton = Instance.new("TextButton", TabList)
-        TabButton.Size = UDim2.new(1, -8, 0, 30)
-        TabButton.BackgroundColor3 = Color3.fromRGB(35, 35, 40)
-        TabButton.TextColor3 = Color3.new(1, 1, 1)
+    
+    -- Área esquerda (Tabs)
+    local TabList = Instance.new("ScrollingFrame")
+    TabList.Name = "TabList"
+    TabList.Size = UDim2.new(0, 150, 1, -34)
+    TabList.Position = UDim2.new(0, 0, 0, 34)
+    TabList.BackgroundColor3 = Color3.fromRGB(20, 20, 25)
+    TabList.BorderSizePixel = 0
+    TabList.ScrollBarThickness = 4
+    TabList.Parent = Main
+    
+    local TabListLayout = Instance.new("UIListLayout", TabList)
+    TabListLayout.SortOrder = Enum.SortOrder.LayoutOrder
+    TabListLayout.Padding = UDim.new(0, 5)
+    
+    -- Painel da direita
+    local RightPanel = Instance.new("ScrollingFrame")
+    RightPanel.Name = "RightPanel"
+    RightPanel.Size = UDim2.new(1, -150, 1, -34)
+    RightPanel.Position = UDim2.new(0, 150, 0, 34)
+    RightPanel.BackgroundColor3 = Color3.fromRGB(30, 30, 35)
+    RightPanel.BorderSizePixel = 0
+    RightPanel.ScrollBarThickness = 6
+    RightPanel.Visible = false
+    RightPanel.Parent = Main
+    
+    local Tabs = {}
+    
+    function Tabs:MakeTab(info)
+        info = info or {}
+        local tabName = info.Name or "Tab"
+        
+        local TabButton = Instance.new("TextButton")
+        TabButton.Name = tabName
+        TabButton.Text = tabName
         TabButton.Font = Enum.Font.GothamBold
         TabButton.TextSize = 13
-        TabButton.Text = tabInfo.Name or "Tab"
-        TabButton.AutoButtonColor = false
-        TabButton.LayoutOrder = #TabList:GetChildren()
-
-        local TabFrame = Instance.new("Frame", ContentFrame)
-        TabFrame.Size = UDim2.new(1, 0, 0, 0)
+        TabButton.TextColor3 = Color3.fromRGB(230, 230, 230)
+        TabButton.BackgroundColor3 = Color3.fromRGB(35, 35, 40)
+        TabButton.Size = UDim2.new(1, -10, 0, 28)
+        TabButton.Parent = TabList
+        
+        local TabCorner = Instance.new("UICorner", TabButton)
+        TabCorner.CornerRadius = UDim.new(0, 3)
+        
+        local TabFrame = Instance.new("ScrollingFrame")
+        TabFrame.Name = tabName .. "_Frame"
+        TabFrame.Size = UDim2.new(1, -10, 1, -10)
+        TabFrame.Position = UDim2.new(0, 5, 0, 5)
         TabFrame.BackgroundTransparency = 1
-        TabFrame.AutomaticSize = Enum.AutomaticSize.Y
         TabFrame.Visible = false
-
+        TabFrame.Parent = RightPanel
+        
         local TabLayout = Instance.new("UIListLayout", TabFrame)
-        TabLayout.SortOrder = Enum.SortOrder.LayoutOrder
         TabLayout.Padding = UDim.new(0, 6)
-
+        TabLayout.SortOrder = Enum.SortOrder.LayoutOrder
+        
         TabButton.MouseButton1Click:Connect(function()
-            for _, v in pairs(ContentFrame:GetChildren()) do
-                if v:IsA("Frame") then v.Visible = false end
-            end
-            ContentFrame.Visible = true
-            TabFrame.Visible = true
-
-            for _, btn in pairs(TabList:GetChildren()) do
-                if btn:IsA("TextButton") then
-                    TweenService:Create(btn, TweenInfo.new(0.15), {BackgroundColor3 = Color3.fromRGB(35, 35, 40)}):Play()
+            for _, child in ipairs(RightPanel:GetChildren()) do
+                if child:IsA("ScrollingFrame") then
+                    child.Visible = false
                 end
             end
-            TweenService:Create(TabButton, TweenInfo.new(0.15), {BackgroundColor3 = Color3.fromRGB(80, 201, 206)}):Play()
+            RightPanel.Visible = true
+            TabFrame.Visible = true
+            
+            for _, btn in ipairs(TabList:GetChildren()) do
+                if btn:IsA("TextButton") then
+                    btn.BackgroundColor3 = Color3.fromRGB(35, 35, 40)
+                end
+            end
+            TweenService:Create(TabButton, TweenInfo.new(0.15), {BackgroundColor3 = Color3.fromRGB(70, 70, 75)}):Play()
         end)
-
+        
         return TabFrame
     end
-
-    return Window
+    
+    return Tabs
 end
 
 return ElixirLib

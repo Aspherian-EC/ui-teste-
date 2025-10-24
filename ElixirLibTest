@@ -690,49 +690,53 @@ function ElixirLib:MakeWindow(info)
             }
         end
 
- -- AddSection
+ -- =========================
+-- Section (Separador Visual)
+-- =========================
 function tabAPI:AddSection(opt)
     opt = opt or {}
     local name = opt.Name or "Section"
 
-    -- Linha fina
-    local line = new("Frame", {
+    local section = new("Frame", {
         Parent = tabContent,
-        BackgroundColor3 = Theme.SectionLine,
-        Size = UDim2.new(1, -12, 0, 2),
-        BorderSizePixel = 0
+        BackgroundTransparency = 1,
+        Size = UDim2.new(1,0,0,24)
     })
 
-    -- Label do nome
     local label = new("TextLabel", {
-        Parent = tabContent,
-        Text = name,
+        Parent = section,
+        Text = "-------- "..name.." --------",
         Font = Enum.Font.GothamBold,
-        TextSize = 12,
+        TextSize = 14,
         TextColor3 = Theme.ItemText,
         BackgroundTransparency = 1,
-        Position = UDim2.new(0,8,0,0),
-        Size = UDim2.new(0.6,-8,0,20),
-        TextXAlignment = Enum.TextXAlignment.Left
+        Size = UDim2.new(1,0,1,0),
+        TextXAlignment = Enum.TextXAlignment.Center
     })
 
-    return { Line = line, Label = label }
+    return section
 end
 
--- AddDropdown
+-- =========================
+-- Dropdown Atualizado
+-- =========================
 function tabAPI:AddDropdown(opt)
     opt = opt or {}
     local name = opt.Name or "Dropdown"
     local options = opt.Options or {}
     local default = opt.Default
     local callback = opt.Callback or function() end
-    local changeText = opt.ChangeTextOnPick ~= false
+    local changeText = opt.ChangeTextOnPick or true
     local flag = opt.Flag or HttpService:GenerateGUID(false)
-    if default then ElixirLib.Flags[flag] = default else ElixirLib.Flags[flag] = nil end
 
-    local item = newItemFrame()
-    item.Size = UDim2.new(1,-12,0,30)
-    
+    ElixirLib.Flags[flag] = default or nil
+
+    local item = new("Frame", {
+        Parent = tabContent,
+        BackgroundTransparency = 1,
+        Size = UDim2.new(1,-12,0,30)
+    })
+
     local label = new("TextLabel", {
         Parent = item,
         Text = name,
@@ -744,7 +748,7 @@ function tabAPI:AddDropdown(opt)
         Size = UDim2.new(0.45,-8,1,0),
         TextXAlignment = Enum.TextXAlignment.Left
     })
-    
+
     local dropdownBtn = new("TextButton", {
         Parent = item,
         Text = default or "Select",
@@ -756,34 +760,37 @@ function tabAPI:AddDropdown(opt)
         Position = UDim2.new(1,-(0.5*item.AbsoluteSize.X) - 12,0.5,-12),
         BorderSizePixel = 0
     })
-    makeCorner(dropdownBtn, 4)
 
-    local container = new("Frame", {
-        Parent = screenGui, -- sobreposto
+    -- Icon
+    local chevron = new("ImageLabel", {
+        Parent = dropdownBtn,
+        Size = UDim2.new(0,16,0,16),
+        Position = UDim2.new(1,-22,0.5,-8),
         BackgroundTransparency = 1,
-        Position = UDim2.new(0, item.AbsolutePosition.X,0, item.AbsolutePosition.Y + 30),
-        Size = UDim2.new(0, dropdownBtn.AbsoluteSize.X,0,0),
-        ClipsDescendants = true,
-        ZIndex = 10
+        Image = "rbxassetid://10325147619"
+    })
+
+    local listContainer = new("Frame", {
+        Parent = screenGui, -- deixa sobreposto a tudo
+        BackgroundTransparency = 1,
+        Size = UDim2.new(0, dropdownBtn.AbsoluteSize.X, 0, 0),
+        Position = dropdownBtn.AbsolutePosition + Vector2.new(0, dropdownBtn.AbsoluteSize.Y),
+        ClipsDescendants = true
     })
 
     local list = new("Frame", {
-        Parent = container,
+        Parent = listContainer,
         BackgroundColor3 = Theme.ItemFrame,
         Size = UDim2.new(1,0,0,0),
         BorderSizePixel = 0
     })
     makeCorner(list, 4)
 
-    local listLayout = new("UIListLayout", { Parent = list, SortOrder = Enum.SortOrder.LayoutOrder, Padding = UDim.new(0,2) })
-
-    local opened = false
     local totalY = 0
     local function rebuildOptions()
         list:ClearAllChildren()
-        listLayout.Parent = list
         totalY = 0
-        for _,optVal in ipairs(options) do
+        for _, optVal in ipairs(options) do
             local btn = new("TextButton", {
                 Parent = list,
                 Text = tostring(optVal),
@@ -801,28 +808,20 @@ function tabAPI:AddDropdown(opt)
                 ElixirLib.Flags[flag] = optVal
                 if changeText then dropdownBtn.Text = tostring(optVal) end
                 task.spawn(callback, optVal)
-                opened = false
-                TweenService:Create(list, TweenInfo.new(.12), {Size = UDim2.new(1,0,0,0)}):Play()
-                TweenService:Create(container, TweenInfo.new(.12), {Size = UDim2.new(0, dropdownBtn.AbsoluteSize.X,0,0)}):Play()
+                listContainer.Size = UDim2.new(0, listContainer.Size.X.Offset, 0, 0)
             end)
         end
         list.Size = UDim2.new(1,0,0,totalY)
-        container.Size = UDim2.new(0, dropdownBtn.AbsoluteSize.X,0,totalY)
-        if not opened then
-            list.Size = UDim2.new(1,0,0,0)
-            container.Size = UDim2.new(0, dropdownBtn.AbsoluteSize.X,0,0)
-        end
     end
     rebuildOptions()
 
+    local opened = false
     dropdownBtn.MouseButton1Click:Connect(function()
         opened = not opened
         if opened then
-            TweenService:Create(list, TweenInfo.new(.12), {Size = UDim2.new(1,0,0,totalY)}):Play()
-            TweenService:Create(container, TweenInfo.new(.12), {Size = UDim2.new(0, dropdownBtn.AbsoluteSize.X,0,totalY)}):Play()
+            listContainer.Size = UDim2.new(0, listContainer.Size.X.Offset, 0, totalY)
         else
-            TweenService:Create(list, TweenInfo.new(.12), {Size = UDim2.new(1,0,0,0)}):Play()
-            TweenService:Create(container, TweenInfo.new(.12), {Size = UDim2.new(0, dropdownBtn.AbsoluteSize.X,0,0)}):Play()
+            listContainer.Size = UDim2.new(0, listContainer.Size.X.Offset, 0, 0)
         end
     end)
 
@@ -834,21 +833,9 @@ function tabAPI:AddDropdown(opt)
     }
 end
 
--- AddKeybind / AddBind
-do
-    local activeKeybinds = {}
-    UserInputService.InputBegan:Connect(function(input, gp)
-        if gp then return end
-        if input.KeyCode then
-            for _, kb in pairs(activeKeybinds) do
-                if input.KeyCode.Name == kb.FlagValue then
-                    task.spawn(kb.Callback)
-                end
-            end
-        end
-    end)
-end
-
+-- =========================
+-- Keybind Atualizado
+-- =========================
 function tabAPI:AddKeybind(opt)
     opt = opt or {}
     local name = opt.Name or "Keybind"
@@ -856,7 +843,7 @@ function tabAPI:AddKeybind(opt)
     local callback = opt.Callback or function() end
     local flag = opt.Flag or HttpService:GenerateGUID(false)
 
-    ElixirLib.Flags[flag] = default.Name or "Unknown"
+    ElixirLib.Flags[flag] = default.Name or default
 
     local item = newItemFrame()
     item.Size = UDim2.new(1,-12,0,30)
@@ -908,7 +895,13 @@ function tabAPI:AddKeybind(opt)
         end)
     end)
 
-    table.insert(activeKeybinds, {FlagValue = ElixirLib.Flags[flag], Callback = callback})
+    -- Callback seguro
+    UserInputService.InputBegan:Connect(function(input, gp)
+        if gp then return end
+        if input.KeyCode and input.KeyCode.Name == ElixirLib.Flags[flag] then
+            task.spawn(callback)
+        end
+    end)
 
     return {
         Get = function() return ElixirLib.Flags[flag] end,
@@ -920,9 +913,6 @@ function tabAPI:AddKeybind(opt)
         Flag = flag
     }
 end
-
--- map AddBind para AddKeybind (compatibilidade)
-tabAPI.AddBind = tabAPI.AddKeybind
 
 
         -- return tabAPI with only public methods mapped

@@ -1,228 +1,167 @@
---// ElixirLib.lua
-local ElixirLib = {
-    Theme = "Dark",
-    Flags = {}
-}
+local ElixirLib = {}
 
-local HttpService = game:GetService("HttpService")
+-- Serviços
 local TweenService = game:GetService("TweenService")
-local UserInputService = game:GetService("UserInputService")
 local CoreGui = game:GetService("CoreGui")
+local HttpService = game:GetService("HttpService")
 
---== TEMAS ==--
-local Themes = {
-    ["Dark"] = {
-        Topbar = Color3.fromRGB(30, 30, 35),
-        Main = Color3.fromRGB(20, 20, 25),
-        TabContainer = Color3.fromRGB(25, 25, 30),
-        TabFrame = Color3.fromRGB(35, 35, 40),
-        TabText = Color3.fromRGB(237, 237, 237),
-        HoverTab = Color3.fromRGB(53, 53, 57),
-        Lines = Color3.fromRGB(50, 50, 55),
-        SelectedTab = Color3.fromRGB(65, 65, 70)
-    }
+-- Tema (mantém o estilo MentaLib)
+local Theme = {
+    Topbar = Color3.fromRGB(30, 30, 35),
+    TabContainer = Color3.fromRGB(25, 25, 30),
+    SectionFrame = Color3.fromRGB(30, 30, 35),
+    TabText = Color3.fromRGB(237, 237, 237),
+    ItemFrame = Color3.fromRGB(35, 35, 40),
+    HoverItemFrame = Color3.fromRGB(53, 53, 57),
+    ToggleOuter = Color3.fromRGB(35, 35, 40),
+    ToggleInner = Color3.fromRGB(66, 66, 76),
+    ToggleOuterEnabled = Color3.fromRGB(53, 53, 61),
+    ToggleInnerEnabled = Color3.fromRGB(80, 201, 206),
+    Lines = Color3.fromRGB(50, 50, 55),
 }
 
-local SelectedTheme = Themes["Dark"]
-
---== FUNÇÃO PRINCIPAL: Criar Janela ==--
+-- Cria janela principal
 function ElixirLib:MakeWindow(info)
     info = info or {}
     local window = {}
-    
-    local mainGui = Instance.new("ScreenGui")
-    mainGui.Name = "ElixirUI_" .. HttpService:GenerateGUID(false)
-    mainGui.ZIndexBehavior = Enum.ZIndexBehavior.Global
-    mainGui.Parent = CoreGui
 
-    local mainFrame = Instance.new("Frame")
-    mainFrame.Name = "Main"
-    mainFrame.BackgroundColor3 = SelectedTheme.Main
-    mainFrame.BorderSizePixel = 0
-    mainFrame.Position = UDim2.new(0.35, 0, 0.3, 0)
-    mainFrame.Size = UDim2.new(0, 500, 0, 350)
-    mainFrame.Parent = mainGui
+    local ScreenGui = Instance.new("ScreenGui")
+    ScreenGui.Parent = CoreGui
 
-    Instance.new("UICorner", mainFrame).CornerRadius = UDim.new(0, 4)
+    local Main = Instance.new("Frame")
+    Main.Size = UDim2.new(0, 600, 0, 350)
+    Main.Position = UDim2.new(0.3, 0, 0.3, 0)
+    Main.BackgroundColor3 = Theme.Topbar
+    Main.Parent = ScreenGui
 
-    -- Topbar
-    local topbar = Instance.new("Frame")
-    topbar.Name = "Topbar"
-    topbar.BackgroundColor3 = SelectedTheme.Topbar
-    topbar.Size = UDim2.new(1, 0, 0, 34)
-    topbar.Parent = mainFrame
+    local Topbar = Instance.new("Frame")
+    Topbar.Size = UDim2.new(1, 0, 0, 34)
+    Topbar.BackgroundColor3 = Theme.Topbar
+    Topbar.Parent = Main
 
-    local title = Instance.new("TextLabel")
-    title.Name = "Title"
-    title.Text = info.Name or "Elixir Window"
-    title.Font = Enum.Font.GothamBold
-    title.TextSize = 14
-    title.TextColor3 = Color3.fromRGB(255, 255, 255)
-    title.TextXAlignment = Enum.TextXAlignment.Left
-    title.BackgroundTransparency = 1
-    title.Position = UDim2.new(0, 8, 0, 0)
-    title.Size = UDim2.new(0.8, 0, 1, 0)
-    title.Parent = topbar
+    local Title = Instance.new("TextLabel")
+    Title.Text = info.Name or "Elixir Client"
+    Title.TextColor3 = Color3.fromRGB(255, 255, 255)
+    Title.Font = Enum.Font.GothamBold
+    Title.TextSize = 14
+    Title.BackgroundTransparency = 1
+    Title.Position = UDim2.new(0, 6, 0, 0)
+    Title.Size = UDim2.new(0, 250, 0, 34)
+    Title.Parent = Topbar
 
-    local closeButton = Instance.new("TextButton")
-    closeButton.Text = "×"
-    closeButton.Font = Enum.Font.GothamBold
-    closeButton.TextColor3 = Color3.fromRGB(255, 80, 80)
-    closeButton.BackgroundTransparency = 1
-    closeButton.Size = UDim2.new(0, 34, 0, 34)
-    closeButton.Position = UDim2.new(1, -34, 0, 0)
-    closeButton.Parent = topbar
-    closeButton.MouseButton1Click:Connect(function()
-        mainGui:Destroy()
-    end)
+    local Tabs = Instance.new("ScrollingFrame")
+    Tabs.Name = "Tabs"
+    Tabs.Size = UDim2.new(0, 150, 1, -34)
+    Tabs.Position = UDim2.new(0, 0, 0, 34)
+    Tabs.BackgroundColor3 = Theme.TabContainer
+    Tabs.BorderSizePixel = 0
+    Tabs.CanvasSize = UDim2.new()
+    Tabs.AutomaticCanvasSize = Enum.AutomaticSize.Y
+    Tabs.ScrollBarThickness = 0
+    Tabs.Parent = Main
 
-    -- Arrastar
-    local dragging, dragStart, startPos
-    local function update(input)
-        local delta = input.Position - dragStart
-        mainFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
-    end
-    topbar.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 then
-            dragging = true
-            dragStart = input.Position
-            startPos = mainFrame.Position
-        end
-    end)
-    UserInputService.InputChanged:Connect(function(input)
-        if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
-            update(input)
-        end
-    end)
-    UserInputService.InputEnded:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 then
-            dragging = false
-        end
-    end)
+    local TabLayout = Instance.new("UIListLayout")
+    TabLayout.Padding = UDim.new(0, 6)
+    TabLayout.Parent = Tabs
 
-    --== Área de Tabs ==--
-    local tabContainer = Instance.new("Frame")
-    tabContainer.Name = "TabContainer"
-    tabContainer.BackgroundColor3 = SelectedTheme.TabContainer
-    tabContainer.Size = UDim2.new(0, 130, 0, 316)
-    tabContainer.Position = UDim2.new(0, 5, 0, 36)
-    tabContainer.Parent = mainFrame
+    local RightPanel = Instance.new("ScrollingFrame")
+    RightPanel.Name = "RightPanel"
+    RightPanel.Size = UDim2.new(1, -150, 1, -34)
+    RightPanel.Position = UDim2.new(0, 150, 0, 34)
+    RightPanel.BackgroundColor3 = Theme.SectionFrame
+    RightPanel.BorderSizePixel = 0
+    RightPanel.AutomaticCanvasSize = Enum.AutomaticSize.Y
+    RightPanel.CanvasSize = UDim2.new()
+    RightPanel.ScrollBarThickness = 0
+    RightPanel.Parent = Main
 
-    local UIListLayout = Instance.new("UIListLayout", tabContainer)
-    UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
-    UIListLayout.Padding = UDim.new(0, 4)
+    function window:MakeTab(tabinfo)
+        local tab = Instance.new("TextButton")
+        tab.Size = UDim2.new(1, -10, 0, 30)
+        tab.Text = tabinfo.Name or "Tab"
+        tab.Font = Enum.Font.GothamBold
+        tab.TextSize = 12
+        tab.BackgroundColor3 = Theme.ItemFrame
+        tab.TextColor3 = Theme.TabText
+        tab.AutoButtonColor = false
+        tab.Parent = Tabs
 
-    local tabContent = Instance.new("Frame")
-    tabContent.Name = "TabContent"
-    tabContent.BackgroundTransparency = 1
-    tabContent.Position = UDim2.new(0, 140, 0, 36)
-    tabContent.Size = UDim2.new(1, -145, 1, -40)
-    tabContent.Parent = mainFrame
+        tab.MouseEnter:Connect(function()
+            TweenService:Create(tab, TweenInfo.new(0.15), {BackgroundColor3 = Theme.HoverItemFrame}):Play()
+        end)
 
-    --== Criar Aba ==--
-    function window:MakeTab(info)
-        info = info or {}
-        local tabButton = Instance.new("TextButton")
-        tabButton.Name = "TabButton"
-        tabButton.Text = ""
-        tabButton.Size = UDim2.new(1, -8, 0, 28)
-        tabButton.BackgroundColor3 = SelectedTheme.TabFrame
-        tabButton.Parent = tabContainer
+        tab.MouseLeave:Connect(function()
+            TweenService:Create(tab, TweenInfo.new(0.15), {BackgroundColor3 = Theme.ItemFrame}):Play()
+        end)
 
-        local icon = Instance.new("ImageLabel")
-        icon.Image = info.Icon or "rbxassetid://0"
-        icon.BackgroundTransparency = 1
-        icon.Size = UDim2.new(0, 20, 0, 20)
-        icon.Position = UDim2.new(0, 6, 0.5, -10)
-        icon.Parent = tabButton
+        local section = Instance.new("Frame")
+        section.Size = UDim2.new(1, -10, 0, 10)
+        section.BackgroundTransparency = 1
+        section.Name = tabinfo.Name
+        section.Visible = false
+        section.Parent = RightPanel
 
-        local label = Instance.new("TextLabel")
-        label.Text = info.Name or "Tab"
-        label.Font = Enum.Font.GothamBold
-        label.TextColor3 = SelectedTheme.TabText
-        label.BackgroundTransparency = 1
-        label.Position = UDim2.new(0, 32, 0, 0)
-        label.Size = UDim2.new(1, -32, 1, 0)
-        label.TextXAlignment = Enum.TextXAlignment.Left
-        label.TextSize = 12
-        label.Parent = tabButton
-
-        local page = Instance.new("ScrollingFrame")
-        page.Name = info.Name .. "_Page"
-        page.Visible = false
-        page.BackgroundTransparency = 1
-        page.Size = UDim2.new(1, 0, 1, 0)
-        page.ScrollBarThickness = 6
-        page.Parent = tabContent
-
-        local layout = Instance.new("UIListLayout", page)
+        local layout = Instance.new("UIListLayout")
         layout.Padding = UDim.new(0, 10)
-        layout.SortOrder = Enum.SortOrder.LayoutOrder
+        layout.Parent = section
 
-        layout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
-            page.CanvasSize = UDim2.new(0, 0, 0, layout.AbsoluteContentSize.Y + 10)
+        tab.MouseButton1Click:Connect(function()
+            for _, v in pairs(RightPanel:GetChildren()) do
+                if v:IsA("Frame") then v.Visible = false end
+            end
+            section.Visible = true
         end)
 
-        -- Selecionar aba
-        tabButton.MouseButton1Click:Connect(function()
-            for _, otherPage in ipairs(tabContent:GetChildren()) do
-                if otherPage:IsA("ScrollingFrame") then
-                    otherPage.Visible = false
-                end
-            end
-            for _, otherTab in ipairs(tabContainer:GetChildren()) do
-                if otherTab:IsA("TextButton") then
-                    TweenService:Create(otherTab, TweenInfo.new(0.15), {BackgroundColor3 = SelectedTheme.TabFrame}):Play()
-                end
-            end
-            TweenService:Create(tabButton, TweenInfo.new(0.15), {BackgroundColor3 = SelectedTheme.SelectedTab}):Play()
-            page.Visible = true
-        end)
+        function section:AddToggle(info)
+            local Toggle = Instance.new("Frame")
+            Toggle.Size = UDim2.new(0.95, 0, 0, 30)
+            Toggle.BackgroundColor3 = Theme.ItemFrame
+            Toggle.Parent = section
 
-        --== Sections visuais (apenas separadores) ==--
-        function page:AddSection(info)
-            info = info or {}
-            local section = Instance.new("Frame")
-            section.Size = UDim2.new(1, -10, 0, 25)
-            section.BackgroundColor3 = SelectedTheme.TabFrame
-            section.Parent = page
+            local Label = Instance.new("TextLabel")
+            Label.Text = info.Name or "Toggle"
+            Label.TextColor3 = Theme.TabText
+            Label.Font = Enum.Font.GothamBold
+            Label.TextSize = 12
+            Label.BackgroundTransparency = 1
+            Label.Position = UDim2.new(0, 10, 0, 0)
+            Label.Size = UDim2.new(0.7, 0, 1, 0)
+            Label.Parent = Toggle
 
-            local label = Instance.new("TextLabel")
-            label.Text = info.Name or "Section"
-            label.Font = Enum.Font.GothamBold
-            label.TextSize = 13
-            label.TextColor3 = Color3.fromRGB(255, 255, 255)
-            label.BackgroundTransparency = 1
-            label.Size = UDim2.new(1, -10, 1, 0)
-            label.Position = UDim2.new(0, 5, 0, 0)
-            label.Parent = section
+            local Button = Instance.new("TextButton")
+            Button.Size = UDim2.new(0, 25, 0, 14)
+            Button.Position = UDim2.new(1, -35, 0.5, -7)
+            Button.BackgroundColor3 = Theme.ToggleOuter
+            Button.Text = ""
+            Button.Parent = Toggle
 
-            return section
-        end
+            local Inner = Instance.new("Frame")
+            Inner.Size = UDim2.new(0, 12, 0, 12)
+            Inner.Position = UDim2.new(0, 1, 0.5, -6)
+            Inner.BackgroundColor3 = Theme.ToggleInner
+            Inner.Parent = Button
 
-        --== Toggles direto na aba ==--
-        function page:AddToggle(info)
-            info = info or {}
-            local toggle = Instance.new("TextButton")
-            toggle.Size = UDim2.new(1, -10, 0, 30)
-            toggle.BackgroundColor3 = SelectedTheme.Main
-            toggle.Text = info.Name or "Toggle"
-            toggle.Font = Enum.Font.Gotham
-            toggle.TextColor3 = Color3.fromRGB(255,255,255)
-            toggle.TextSize = 13
-            toggle.Parent = page
+            local UICorner = Instance.new("UICorner", Button)
+            UICorner.CornerRadius = UDim.new(0, 3)
+            Instance.new("UICorner", Inner)
 
-            local value = info.Default or false
-            toggle.MouseButton1Click:Connect(function()
-                value = not value
-                toggle.TextColor3 = value and Color3.fromRGB(100, 255, 100) or Color3.fromRGB(255,255,255)
+            local state = false
+            Button.MouseButton1Click:Connect(function()
+                state = not state
+                TweenService:Create(Button, TweenInfo.new(0.2), {
+                    BackgroundColor3 = state and Theme.ToggleOuterEnabled or Theme.ToggleOuter
+                }):Play()
+                TweenService:Create(Inner, TweenInfo.new(0.2), {
+                    BackgroundColor3 = state and Theme.ToggleInnerEnabled or Theme.ToggleInner,
+                    Position = UDim2.new(state and 1, -13 or 0, 0.5, -6)
+                }):Play()
                 if info.Callback then
-                    info.Callback(value)
+                    task.spawn(info.Callback, state)
                 end
             end)
         end
 
-        return page
+        return section
     end
 
     return window

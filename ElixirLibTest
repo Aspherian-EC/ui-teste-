@@ -713,16 +713,17 @@ function tabAPI:AddSection(opt)
     return item
 end
 
--- AddKeybind ajustado
 function tabAPI:AddKeybind(opt)
     opt = opt or {}
     local name = opt.Name or "Keybind"
-    local default = opt.Default or Enum.KeyCode.E
+    local default = opt.Default or Enum.KeyCode.Unknown
     local callback = opt.Callback or function() end
     local flag = opt.Flag or HttpService:GenerateGUID(false)
-    ElixirLib.Flags[flag] = default.Name
+
+    ElixirLib.Flags[flag] = default.Name or "Set Key"
 
     local item = newItemFrame()
+    item.Size = UDim2.new(1,-12,0,30)
 
     local label = new("TextLabel", {
         Parent = item,
@@ -732,22 +733,24 @@ function tabAPI:AddKeybind(opt)
         TextColor3 = Theme.ItemText,
         BackgroundTransparency = 1,
         Position = UDim2.new(0,8,0,0),
-        Size = UDim2.new(0.5,0,1,0),
+        Size = UDim2.new(0.6,-8,1,0),
         TextXAlignment = Enum.TextXAlignment.Left
     })
 
     local btn = new("TextButton", {
         Parent = item,
-        Text = default.Name,
+        Text = ElixirLib.Flags[flag],
         Font = Enum.Font.GothamBold,
         TextSize = 12,
         TextColor3 = Theme.ItemText,
         BackgroundColor3 = Theme.ToggleOuter,
         Size = UDim2.new(0,90,0,22),
-        Position = UDim2.new(1,-100,0.5,-11),
+        Position = UDim2.new(1,-104,0.5,-11),
         BorderSizePixel = 0
     })
     makeCorner(btn, 4)
+    local stroke = Instance.new("UIStroke", btn)
+    stroke.Color = Theme.ToggleOuterUIStroke
 
     local waiting = false
     local conn
@@ -755,17 +758,20 @@ function tabAPI:AddKeybind(opt)
         if waiting then return end
         waiting = true
         btn.Text = "..."
+        stroke.Color = Theme.ItemUIStrokeSelected
         conn = UserInputService.InputBegan:Connect(function(input, gp)
             if gp then return end
             if input.KeyCode and input.KeyCode ~= Enum.KeyCode.Unknown then
                 ElixirLib.Flags[flag] = input.KeyCode.Name
                 btn.Text = input.KeyCode.Name
                 waiting = false
+                stroke.Color = Theme.ToggleOuterUIStroke
                 conn:Disconnect()
             end
         end)
     end)
 
+    -- Key press listener
     UserInputService.InputBegan:Connect(function(input, gp)
         if gp then return end
         if input.KeyCode.Name == ElixirLib.Flags[flag] then
@@ -774,8 +780,12 @@ function tabAPI:AddKeybind(opt)
     end)
 
     return {
-        Set = function(k) ElixirLib.Flags[flag] = k.Name or k; btn.Text = ElixirLib.Flags[flag] end,
         Get = function() return ElixirLib.Flags[flag] end,
+        Set = function(k)
+            if typeof(k) == "EnumItem" then k = k.Name end
+            ElixirLib.Flags[flag] = tostring(k)
+            btn.Text = tostring(k)
+        end,
         Flag = flag
     }
 end

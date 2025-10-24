@@ -1,90 +1,112 @@
 local ElixirLib = {}
+ElixirLib.__index = ElixirLib
 
+-- Inicializa a UI principal
 function ElixirLib:MakeWindow(info)
-    local ScreenGui = Instance.new("ScreenGui", game.CoreGui)
-    ScreenGui.Name = "ElixirUI"
+    info = info or {}
+    local Window = {}
 
+    local ScreenGui = Instance.new("ScreenGui", game:GetService("CoreGui"))
+    ScreenGui.Name = info.Name or "Elixir Client"
+
+    -- Janela principal
     local Main = Instance.new("Frame", ScreenGui)
-    Main.Size = UDim2.new(0, 600, 0, 350)
-    Main.Position = UDim2.new(0.5, -300, 0.5, -175)
-    Main.BackgroundColor3 = Color3.fromRGB(25, 25, 30)
-    Main.ClipsDescendants = true
-    Main.Active = true
-    Main.Draggable = true
+    Main.Size = UDim2.new(0, 520, 0, 360)
+    Main.Position = UDim2.new(0.35, 0, 0.3, 0)
+    Main.BackgroundColor3 = Color3.fromRGB(20, 20, 25)
+    Main.BorderSizePixel = 0
 
+    -- Tabs scrollável (à esquerda)
     local TabList = Instance.new("ScrollingFrame", Main)
-    TabList.Size = UDim2.new(0, 150, 1, 0)
-    TabList.CanvasSize = UDim2.new()
-    TabList.ScrollBarThickness = 4
-    TabList.BackgroundColor3 = Color3.fromRGB(30, 30, 35)
+    TabList.Size = UDim2.new(0, 130, 1, -40)
+    TabList.Position = UDim2.new(0, 0, 0, 40)
+    TabList.BackgroundColor3 = Color3.fromRGB(25, 25, 30)
+    TabList.ScrollBarThickness = 3
     TabList.AutomaticCanvasSize = Enum.AutomaticSize.Y
-    TabList.Name = "TabList"
 
-    local UIListLayout = Instance.new("UIListLayout", TabList)
-    UIListLayout.Padding = UDim.new(0, 5)
-    UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
+    local TabLayout = Instance.new("UIListLayout", TabList)
+    TabLayout.SortOrder = Enum.SortOrder.LayoutOrder
+    TabLayout.Padding = UDim.new(0, 5)
 
-    local RightPanel = Instance.new("ScrollingFrame", Main)
-    RightPanel.Size = UDim2.new(1, -160, 1, -10)
-    RightPanel.Position = UDim2.new(0, 160, 0, 5)
-    RightPanel.CanvasSize = UDim2.new()
-    RightPanel.ScrollBarThickness = 6
-    RightPanel.BackgroundColor3 = Color3.fromRGB(35, 35, 40)
-    RightPanel.AutomaticCanvasSize = Enum.AutomaticSize.Y
-    RightPanel.Name = "RightPanel"
+    -- Painel direito (onde toggles e sliders aparecerão)
+    local ContentFrame = Instance.new("ScrollingFrame", Main)
+    ContentFrame.Size = UDim2.new(1, -140, 1, -40)
+    ContentFrame.Position = UDim2.new(0, 140, 0, 40)
+    ContentFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 35)
+    ContentFrame.ScrollBarThickness = 4
+    ContentFrame.Visible = false -- só aparece quando uma tab é clicada
+    ContentFrame.AutomaticCanvasSize = Enum.AutomaticSize.Y
 
-    local TabHandler = {}
+    local ContentLayout = Instance.new("UIListLayout", ContentFrame)
+    ContentLayout.SortOrder = Enum.SortOrder.LayoutOrder
+    ContentLayout.Padding = UDim.new(0, 8)
 
-    function TabHandler:MakeTab(tabInfo)
+    -- Barra superior
+    local Topbar = Instance.new("Frame", Main)
+    Topbar.Size = UDim2.new(1, 0, 0, 34)
+    Topbar.BackgroundColor3 = Color3.fromRGB(35, 35, 45)
+
+    local Title = Instance.new("TextLabel", Topbar)
+    Title.Size = UDim2.new(1, -10, 1, 0)
+    Title.Position = UDim2.new(0, 10, 0, 0)
+    Title.BackgroundTransparency = 1
+    Title.TextColor3 = Color3.new(1, 1, 1)
+    Title.TextXAlignment = Enum.TextXAlignment.Left
+    Title.Font = Enum.Font.GothamBold
+    Title.Text = info.Name or "Elixir Client"
+
+    -- Adiciona Tabs
+    function Window:MakeTab(tabInfo)
         local TabButton = Instance.new("TextButton", TabList)
         TabButton.Size = UDim2.new(1, -10, 0, 30)
-        TabButton.Text = tabInfo.Name or "Tab"
-        TabButton.BackgroundColor3 = Color3.fromRGB(45, 45, 50)
-        TabButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+        TabButton.BackgroundColor3 = Color3.fromRGB(35, 35, 40)
+        TabButton.TextColor3 = Color3.new(1, 1, 1)
         TabButton.Font = Enum.Font.GothamBold
-        TabButton.TextSize = 12
+        TabButton.TextSize = 13
+        TabButton.Text = tabInfo.Name or "Tab"
 
-        local TabContent = Instance.new("ScrollingFrame")
-        TabContent.Size = UDim2.new(1, 0, 1, 0)
-        TabContent.BackgroundTransparency = 1
-        TabContent.AutomaticCanvasSize = Enum.AutomaticSize.Y
-        TabContent.Visible = false
-        TabContent.Parent = RightPanel
+        local TabFrame = Instance.new("Frame", ContentFrame)
+        TabFrame.Size = UDim2.new(1, 0, 0, 0)
+        TabFrame.BackgroundTransparency = 1
+        TabFrame.AutomaticSize = Enum.AutomaticSize.Y
+        TabFrame.Visible = false
 
-        local UIList = Instance.new("UIListLayout", TabContent)
-        UIList.Padding = UDim.new(0, 6)
-        UIList.SortOrder = Enum.SortOrder.LayoutOrder
+        local TabLayout = Instance.new("UIListLayout", TabFrame)
+        TabLayout.SortOrder = Enum.SortOrder.LayoutOrder
+        TabLayout.Padding = UDim.new(0, 6)
 
+        -- Clicar na Tab alterna a janela direita
         TabButton.MouseButton1Click:Connect(function()
-            for _, tab in pairs(RightPanel:GetChildren()) do
-                if tab:IsA("ScrollingFrame") then tab.Visible = false end
+            for _, v in pairs(ContentFrame:GetChildren()) do
+                if v:IsA("Frame") then v.Visible = false end
             end
-            TabContent.Visible = true
+            ContentFrame.Visible = true
+            TabFrame.Visible = true
         end)
 
-        local SectionHandler = {}
-
-        function SectionHandler:AddToggle(data)
-            local Toggle = Instance.new("TextButton", TabContent)
+        -- Sistema de toggles, sliders, etc
+        function TabFrame:AddToggle(info)
+            local Toggle = Instance.new("TextButton", TabFrame)
             Toggle.Size = UDim2.new(1, -10, 0, 30)
-            Toggle.BackgroundColor3 = Color3.fromRGB(40, 40, 45)
-            Toggle.Text = data.Name
-            Toggle.TextColor3 = Color3.fromRGB(255, 255, 255)
+            Toggle.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
+            Toggle.TextColor3 = Color3.new(1, 1, 1)
+            Toggle.Text = info.Name or "Toggle"
             Toggle.Font = Enum.Font.GothamBold
             Toggle.TextSize = 12
-            local state = false
+            Toggle.AutoButtonColor = false
 
+            local Enabled = false
             Toggle.MouseButton1Click:Connect(function()
-                state = not state
-                data.Callback(state)
-                Toggle.BackgroundColor3 = state and Color3.fromRGB(80, 201, 206) or Color3.fromRGB(40, 40, 45)
+                Enabled = not Enabled
+                Toggle.BackgroundColor3 = Enabled and Color3.fromRGB(80, 201, 206) or Color3.fromRGB(40, 40, 50)
+                if info.Callback then info.Callback(Enabled) end
             end)
         end
 
-        return SectionHandler
+        return TabFrame
     end
 
-    return TabHandler
+    return Window
 end
 
 return ElixirLib

@@ -1,170 +1,90 @@
 local ElixirLib = {}
 
--- Serviços
-local TweenService = game:GetService("TweenService")
-local CoreGui = game:GetService("CoreGui")
-local HttpService = game:GetService("HttpService")
-
--- Tema (mantém o estilo MentaLib)
-local Theme = {
-    Topbar = Color3.fromRGB(30, 30, 35),
-    TabContainer = Color3.fromRGB(25, 25, 30),
-    SectionFrame = Color3.fromRGB(30, 30, 35),
-    TabText = Color3.fromRGB(237, 237, 237),
-    ItemFrame = Color3.fromRGB(35, 35, 40),
-    HoverItemFrame = Color3.fromRGB(53, 53, 57),
-    ToggleOuter = Color3.fromRGB(35, 35, 40),
-    ToggleInner = Color3.fromRGB(66, 66, 76),
-    ToggleOuterEnabled = Color3.fromRGB(53, 53, 61),
-    ToggleInnerEnabled = Color3.fromRGB(80, 201, 206),
-    Lines = Color3.fromRGB(50, 50, 55),
-}
-
--- Cria janela principal
 function ElixirLib:MakeWindow(info)
-    info = info or {}
-    local window = {}
+    local ScreenGui = Instance.new("ScreenGui", game.CoreGui)
+    ScreenGui.Name = "ElixirUI"
 
-    local ScreenGui = Instance.new("ScreenGui")
-    ScreenGui.Parent = CoreGui
-
-    local Main = Instance.new("Frame")
+    local Main = Instance.new("Frame", ScreenGui)
     Main.Size = UDim2.new(0, 600, 0, 350)
-    Main.Position = UDim2.new(0.3, 0, 0.3, 0)
-    Main.BackgroundColor3 = Theme.Topbar
-    Main.Parent = ScreenGui
+    Main.Position = UDim2.new(0.5, -300, 0.5, -175)
+    Main.BackgroundColor3 = Color3.fromRGB(25, 25, 30)
+    Main.ClipsDescendants = true
+    Main.Active = true
+    Main.Draggable = true
 
-    local Topbar = Instance.new("Frame")
-    Topbar.Size = UDim2.new(1, 0, 0, 34)
-    Topbar.BackgroundColor3 = Theme.Topbar
-    Topbar.Parent = Main
+    local TabList = Instance.new("ScrollingFrame", Main)
+    TabList.Size = UDim2.new(0, 150, 1, 0)
+    TabList.CanvasSize = UDim2.new()
+    TabList.ScrollBarThickness = 4
+    TabList.BackgroundColor3 = Color3.fromRGB(30, 30, 35)
+    TabList.AutomaticCanvasSize = Enum.AutomaticSize.Y
+    TabList.Name = "TabList"
 
-    local Title = Instance.new("TextLabel")
-    Title.Text = info.Name or "Elixir Client"
-    Title.TextColor3 = Color3.fromRGB(255, 255, 255)
-    Title.Font = Enum.Font.GothamBold
-    Title.TextSize = 14
-    Title.BackgroundTransparency = 1
-    Title.Position = UDim2.new(0, 6, 0, 0)
-    Title.Size = UDim2.new(0, 250, 0, 34)
-    Title.Parent = Topbar
+    local UIListLayout = Instance.new("UIListLayout", TabList)
+    UIListLayout.Padding = UDim.new(0, 5)
+    UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
 
-    local Tabs = Instance.new("ScrollingFrame")
-    Tabs.Name = "Tabs"
-    Tabs.Size = UDim2.new(0, 150, 1, -34)
-    Tabs.Position = UDim2.new(0, 0, 0, 34)
-    Tabs.BackgroundColor3 = Theme.TabContainer
-    Tabs.BorderSizePixel = 0
-    Tabs.CanvasSize = UDim2.new()
-    Tabs.AutomaticCanvasSize = Enum.AutomaticSize.Y
-    Tabs.ScrollBarThickness = 0
-    Tabs.Parent = Main
-
-    local TabLayout = Instance.new("UIListLayout")
-    TabLayout.Padding = UDim.new(0, 6)
-    TabLayout.Parent = Tabs
-
-    local RightPanel = Instance.new("ScrollingFrame")
-    RightPanel.Name = "RightPanel"
-    RightPanel.Size = UDim2.new(1, -150, 1, -34)
-    RightPanel.Position = UDim2.new(0, 150, 0, 34)
-    RightPanel.BackgroundColor3 = Theme.SectionFrame
-    RightPanel.BorderSizePixel = 0
-    RightPanel.AutomaticCanvasSize = Enum.AutomaticSize.Y
+    local RightPanel = Instance.new("ScrollingFrame", Main)
+    RightPanel.Size = UDim2.new(1, -160, 1, -10)
+    RightPanel.Position = UDim2.new(0, 160, 0, 5)
     RightPanel.CanvasSize = UDim2.new()
-    RightPanel.ScrollBarThickness = 0
-    RightPanel.Parent = Main
+    RightPanel.ScrollBarThickness = 6
+    RightPanel.BackgroundColor3 = Color3.fromRGB(35, 35, 40)
+    RightPanel.AutomaticCanvasSize = Enum.AutomaticSize.Y
+    RightPanel.Name = "RightPanel"
 
-    function window:MakeTab(tabinfo)
-        local tab = Instance.new("TextButton")
-        tab.Size = UDim2.new(1, -10, 0, 30)
-        tab.Text = tabinfo.Name or "Tab"
-        tab.Font = Enum.Font.GothamBold
-        tab.TextSize = 12
-        tab.BackgroundColor3 = Theme.ItemFrame
-        tab.TextColor3 = Theme.TabText
-        tab.AutoButtonColor = false
-        tab.Parent = Tabs
+    local TabHandler = {}
 
-        tab.MouseEnter:Connect(function()
-            TweenService:Create(tab, TweenInfo.new(0.15), {BackgroundColor3 = Theme.HoverItemFrame}):Play()
-        end)
+    function TabHandler:MakeTab(tabInfo)
+        local TabButton = Instance.new("TextButton", TabList)
+        TabButton.Size = UDim2.new(1, -10, 0, 30)
+        TabButton.Text = tabInfo.Name or "Tab"
+        TabButton.BackgroundColor3 = Color3.fromRGB(45, 45, 50)
+        TabButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+        TabButton.Font = Enum.Font.GothamBold
+        TabButton.TextSize = 12
 
-        tab.MouseLeave:Connect(function()
-            TweenService:Create(tab, TweenInfo.new(0.15), {BackgroundColor3 = Theme.ItemFrame}):Play()
-        end)
+        local TabContent = Instance.new("ScrollingFrame")
+        TabContent.Size = UDim2.new(1, 0, 1, 0)
+        TabContent.BackgroundTransparency = 1
+        TabContent.AutomaticCanvasSize = Enum.AutomaticSize.Y
+        TabContent.Visible = false
+        TabContent.Parent = RightPanel
 
-        local section = Instance.new("Frame")
-        section.Size = UDim2.new(1, -10, 0, 10)
-        section.BackgroundTransparency = 1
-        section.Name = tabinfo.Name
-        section.Visible = false
-        section.Parent = RightPanel
+        local UIList = Instance.new("UIListLayout", TabContent)
+        UIList.Padding = UDim.new(0, 6)
+        UIList.SortOrder = Enum.SortOrder.LayoutOrder
 
-        local layout = Instance.new("UIListLayout")
-        layout.Padding = UDim.new(0, 10)
-        layout.Parent = section
-
-        tab.MouseButton1Click:Connect(function()
-            for _, v in pairs(RightPanel:GetChildren()) do
-                if v:IsA("Frame") then v.Visible = false end
+        TabButton.MouseButton1Click:Connect(function()
+            for _, tab in pairs(RightPanel:GetChildren()) do
+                if tab:IsA("ScrollingFrame") then tab.Visible = false end
             end
-            section.Visible = true
+            TabContent.Visible = true
         end)
 
-        function section:AddToggle(info)
-            local Toggle = Instance.new("Frame")
-            Toggle.Size = UDim2.new(0.95, 0, 0, 30)
-            Toggle.BackgroundColor3 = Theme.ItemFrame
-            Toggle.Parent = section
+        local SectionHandler = {}
 
-            local Label = Instance.new("TextLabel")
-            Label.Text = info.Name or "Toggle"
-            Label.TextColor3 = Theme.TabText
-            Label.Font = Enum.Font.GothamBold
-            Label.TextSize = 12
-            Label.BackgroundTransparency = 1
-            Label.Position = UDim2.new(0, 10, 0, 0)
-            Label.Size = UDim2.new(0.7, 0, 1, 0)
-            Label.Parent = Toggle
-
-            local Button = Instance.new("TextButton")
-            Button.Size = UDim2.new(0, 25, 0, 14)
-            Button.Position = UDim2.new(1, -35, 0.5, -7)
-            Button.BackgroundColor3 = Theme.ToggleOuter
-            Button.Text = ""
-            Button.Parent = Toggle
-
-            local Inner = Instance.new("Frame")
-            Inner.Size = UDim2.new(0, 12, 0, 12)
-            Inner.Position = UDim2.new(0, 1, 0.5, -6)
-            Inner.BackgroundColor3 = Theme.ToggleInner
-            Inner.Parent = Button
-
-            local UICorner = Instance.new("UICorner", Button)
-            UICorner.CornerRadius = UDim.new(0, 3)
-            Instance.new("UICorner", Inner)
-
+        function SectionHandler:AddToggle(data)
+            local Toggle = Instance.new("TextButton", TabContent)
+            Toggle.Size = UDim2.new(1, -10, 0, 30)
+            Toggle.BackgroundColor3 = Color3.fromRGB(40, 40, 45)
+            Toggle.Text = data.Name
+            Toggle.TextColor3 = Color3.fromRGB(255, 255, 255)
+            Toggle.Font = Enum.Font.GothamBold
+            Toggle.TextSize = 12
             local state = false
-            Button.MouseButton1Click:Connect(function()
+
+            Toggle.MouseButton1Click:Connect(function()
                 state = not state
-                TweenService:Create(Button, TweenInfo.new(0.2), {
-                    BackgroundColor3 = state and Theme.ToggleOuterEnabled or Theme.ToggleOuter
-                }):Play()
-                TweenService:Create(Inner, TweenInfo.new(0.2), {
-                    BackgroundColor3 = state and Theme.ToggleInnerEnabled or Theme.ToggleInner,
-                    Position = UDim2.new(state and 1, -13 or 0, 0.5, -6)
-                }):Play()
-                if info.Callback then
-                    task.spawn(info.Callback, state)
-                end
+                data.Callback(state)
+                Toggle.BackgroundColor3 = state and Color3.fromRGB(80, 201, 206) or Color3.fromRGB(40, 40, 45)
             end)
         end
 
-        return section
+        return SectionHandler
     end
 
-    return window
+    return TabHandler
 end
 
 return ElixirLib

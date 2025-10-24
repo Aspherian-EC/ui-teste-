@@ -1,4 +1,4 @@
--- ElixirLib Base UI System
+-- ElixirLib Base UI System (corrigido)
 local ElixirLib = {}
 
 local TweenService = game:GetService("TweenService")
@@ -92,7 +92,7 @@ function ElixirLib:MakeWindow(cfg)
     RightPanel.Position = UDim2.new(0, 150, 0, 34)
     RightPanel.BackgroundColor3 = Color3.fromRGB(30, 30, 35)
     RightPanel.BorderSizePixel = 0
-    RightPanel.Visible = false
+    RightPanel.Visible = true -- já deixamos visível, cada tab controla os frames internos
     RightPanel.Parent = Main
 
     local Tabs = {}
@@ -144,14 +144,13 @@ function ElixirLib:MakeWindow(cfg)
         TabLayout.Padding = UDim.new(0, 6)
         TabLayout.SortOrder = Enum.SortOrder.LayoutOrder
 
-        -- Seleção da Tab
-        TabButton.MouseButton1Click:Connect(function()
+        -- Função para exibir esta tab e esconder as outras
+        local function selectTab()
             for _, child in ipairs(RightPanel:GetChildren()) do
                 if child:IsA("ScrollingFrame") then
                     child.Visible = false
                 end
             end
-            RightPanel.Visible = true
             TabFrame.Visible = true
 
             for _, btn in ipairs(TabList:GetChildren()) do
@@ -160,9 +159,11 @@ function ElixirLib:MakeWindow(cfg)
                 end
             end
             TweenService:Create(TabButton, TweenInfo.new(0.15), {BackgroundColor3 = Color3.fromRGB(70, 70, 75)}):Play()
-        end)
+        end
 
-        -- Função para adicionar Toggle nessa tab
+        TabButton.MouseButton1Click:Connect(selectTab)
+
+        -- Retorna a função de adicionar Toggle
         function TabFrame:AddToggle(info)
             info = info or {}
             local toggleName = info.Name or "Toggle"
@@ -195,7 +196,7 @@ function ElixirLib:MakeWindow(cfg)
             end)
         end
 
-        return TabFrame
+        return TabFrame, selectTab -- retornamos a função de selecionar para poder ativar a primeira tab
     end
 
     return Tabs

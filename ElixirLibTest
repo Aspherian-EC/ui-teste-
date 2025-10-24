@@ -37,18 +37,26 @@ function ElixirLib:MakeWindow(info)
     Title.Font = Enum.Font.GothamBold
     Title.Text = info.Name or "Elixir Client"
 
-    -- Tab scroll (esquerda)
+    -- Container das Tabs (esquerda)
     local TabList = Instance.new("ScrollingFrame", Main)
     TabList.Size = UDim2.new(0, 130, 1, -40)
     TabList.Position = UDim2.new(0, 0, 0, 40)
     TabList.BackgroundColor3 = Color3.fromRGB(25, 25, 30)
     TabList.ScrollBarThickness = 3
     TabList.AutomaticCanvasSize = Enum.AutomaticSize.Y
+    TabList.CanvasSize = UDim2.new()
     TabList.BorderSizePixel = 0
+    TabList.ScrollingDirection = Enum.ScrollingDirection.Y
 
     local TabLayout = Instance.new("UIListLayout", TabList)
     TabLayout.SortOrder = Enum.SortOrder.LayoutOrder
-    TabLayout.Padding = UDim.new(0, 5)
+    TabLayout.Padding = UDim.new(0, 6)
+    TabLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+
+    local Padding = Instance.new("UIPadding", TabList)
+    Padding.PaddingTop = UDim.new(0, 6)
+    Padding.PaddingLeft = UDim.new(0, 4)
+    Padding.PaddingRight = UDim.new(0, 4)
 
     -- Painel direito
     local ContentFrame = Instance.new("ScrollingFrame", Main)
@@ -107,7 +115,7 @@ function ElixirLib:MakeWindow(info)
     ResizeButton.Size = UDim2.new(0, 20, 0, 20)
     ResizeButton.AnchorPoint = Vector2.new(1, 1)
     ResizeButton.Position = UDim2.new(1, 0, 1, 0)
-    ResizeButton.Image = "rbxassetid://7072717697" -- ícone de seta diagonal
+    ResizeButton.Image = "rbxassetid://7072717697"
     ResizeButton.ImageColor3 = Color3.fromRGB(180, 180, 180)
     ResizeButton.BackgroundTransparency = 1
     ResizeButton.Active = true
@@ -139,17 +147,18 @@ function ElixirLib:MakeWindow(info)
     end)
 
     ----------------------------------------------------------------
-    -- 🧭 Tabs (como antes)
+    -- 🧭 Tabs (agora funcionais e empilhadas)
     ----------------------------------------------------------------
     function Window:MakeTab(tabInfo)
         local TabButton = Instance.new("TextButton", TabList)
-        TabButton.Size = UDim2.new(1, -10, 0, 30)
+        TabButton.Size = UDim2.new(1, -8, 0, 30)
         TabButton.BackgroundColor3 = Color3.fromRGB(35, 35, 40)
         TabButton.TextColor3 = Color3.new(1, 1, 1)
         TabButton.Font = Enum.Font.GothamBold
         TabButton.TextSize = 13
         TabButton.Text = tabInfo.Name or "Tab"
         TabButton.AutoButtonColor = false
+        TabButton.LayoutOrder = #TabList:GetChildren()
 
         local TabFrame = Instance.new("Frame", ContentFrame)
         TabFrame.Size = UDim2.new(1, 0, 0, 0)
@@ -168,7 +177,6 @@ function ElixirLib:MakeWindow(info)
             ContentFrame.Visible = true
             TabFrame.Visible = true
 
-            -- feedback visual
             for _, btn in pairs(TabList:GetChildren()) do
                 if btn:IsA("TextButton") then
                     TweenService:Create(btn, TweenInfo.new(0.15), {BackgroundColor3 = Color3.fromRGB(35, 35, 40)}):Play()

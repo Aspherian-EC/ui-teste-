@@ -1,4 +1,4 @@
---// ElixirLib (Tabs + Toggle estilo MentaLib 100% funcional)
+--// ElixirLib UI System (versão estável com Toggle funcional)
 local ElixirLib = {}
 
 local TweenService = game:GetService("TweenService")
@@ -9,6 +9,7 @@ function ElixirLib:MakeWindow(cfg)
     cfg = cfg or {}
     local title = cfg.Name or "Elixir Client"
 
+    -- GUI
     local Gui = Instance.new("ScreenGui")
     Gui.Name = "ElixirClientUI"
     Gui.ZIndexBehavior = Enum.ZIndexBehavior.Global
@@ -17,6 +18,7 @@ function ElixirLib:MakeWindow(cfg)
 
     -- Janela principal
     local Main = Instance.new("Frame")
+    Main.Name = "Main"
     Main.Size = UDim2.new(0, 550, 0, 400)
     Main.Position = UDim2.new(0.3, 0, 0.3, 0)
     Main.BackgroundColor3 = Color3.fromRGB(25, 25, 30)
@@ -43,7 +45,7 @@ function ElixirLib:MakeWindow(cfg)
     Title.TextXAlignment = Enum.TextXAlignment.Left
     Title.Parent = Topbar
 
-    -- Drag da janela
+    -- Drag
     local dragging, dragStart, startPos
     Topbar.InputBegan:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 then
@@ -65,14 +67,13 @@ function ElixirLib:MakeWindow(cfg)
         end
     end)
 
-    -- Lista de abas (esquerda)
+    -- Lista de abas
     local TabList = Instance.new("ScrollingFrame")
     TabList.Size = UDim2.new(0, 150, 1, -34)
     TabList.Position = UDim2.new(0, 0, 0, 34)
     TabList.BackgroundColor3 = Color3.fromRGB(20, 20, 25)
     TabList.BorderSizePixel = 0
     TabList.ScrollBarThickness = 4
-    TabList.CanvasSize = UDim2.new(0, 0, 0, 0)
     TabList.AutomaticCanvasSize = Enum.AutomaticSize.Y
     TabList.Parent = Main
 
@@ -94,17 +95,15 @@ function ElixirLib:MakeWindow(cfg)
     RightPanel.Visible = false
     RightPanel.Parent = Main
 
-    ----------------------------------------------------------------
-    -- Criação de Tabs
-    ----------------------------------------------------------------
+    ---------------------------------------------------------------
+    -- Sistema de Abas
+    ---------------------------------------------------------------
     local Tabs = {}
 
     function Tabs:MakeTab(info)
         info = info or {}
         local tabName = info.Name or "Tab"
-        local tabIcon = info.IconId
 
-        -- Botão lateral
         local TabButton = Instance.new("TextButton")
         TabButton.Text = tabName
         TabButton.Font = Enum.Font.GothamBold
@@ -118,27 +117,25 @@ function ElixirLib:MakeWindow(cfg)
         local padding = Instance.new("UIPadding", TabButton)
         padding.PaddingLeft = UDim.new(0, 25)
 
-        -- Conteúdo da aba
         local TabFrame = Instance.new("ScrollingFrame")
         TabFrame.Name = tabName .. "_Frame"
         TabFrame.Size = UDim2.new(1, -10, 1, -10)
         TabFrame.Position = UDim2.new(0, 5, 0, 5)
         TabFrame.BackgroundTransparency = 1
         TabFrame.ScrollBarThickness = 6
-        TabFrame.Visible = false
         TabFrame.AutomaticCanvasSize = Enum.AutomaticSize.Y
-        TabFrame.CanvasSize = UDim2.new(0, 0, 0, 0)
+        TabFrame.Visible = false
         TabFrame.Parent = RightPanel
 
-        local TabLayout = Instance.new("UIListLayout", TabFrame)
-        TabLayout.Padding = UDim.new(0, 6)
-        TabLayout.SortOrder = Enum.SortOrder.LayoutOrder
+        local Layout = Instance.new("UIListLayout", TabFrame)
+        Layout.Padding = UDim.new(0, 6)
+        Layout.SortOrder = Enum.SortOrder.LayoutOrder
 
-        -- Alternar abas
+        -- Alternar entre abas
         TabButton.MouseButton1Click:Connect(function()
-            for _, f in ipairs(RightPanel:GetChildren()) do
-                if f:IsA("ScrollingFrame") then
-                    f.Visible = false
+            for _, frame in ipairs(RightPanel:GetChildren()) do
+                if frame:IsA("ScrollingFrame") then
+                    frame.Visible = false
                 end
             end
             RightPanel.Visible = true
@@ -146,26 +143,24 @@ function ElixirLib:MakeWindow(cfg)
 
             for _, b in ipairs(TabList:GetChildren()) do
                 if b:IsA("TextButton") then
-                    TweenService:Create(b, TweenInfo.new(0.15), {BackgroundColor3 = Color3.fromRGB(35, 35, 40)}):Play()
+                    b.BackgroundColor3 = Color3.fromRGB(35, 35, 40)
                 end
             end
             TweenService:Create(TabButton, TweenInfo.new(0.15), {BackgroundColor3 = Color3.fromRGB(70, 70, 75)}):Play()
         end)
 
         ----------------------------------------------------------------
-        -- Toggle
+        -- Função de Toggle
         ----------------------------------------------------------------
-        function TabFrame:AddToggle(opts)
-            opts = opts or {}
-            local name = opts.Name or "Toggle"
-            local default = opts.Default or false
-            local callback = opts.Callback or function() end
+        function TabFrame:AddToggle(cfg)
+            cfg = cfg or {}
+            local name = cfg.Name or "Toggle"
+            local default = cfg.Default or false
+            local callback = cfg.Callback or function() end
 
             local toggle = Instance.new("Frame")
-            toggle.Name = name
             toggle.Size = UDim2.new(1, -10, 0, 30)
             toggle.BackgroundColor3 = Color3.fromRGB(35, 35, 40)
-            toggle.BorderSizePixel = 0
             toggle.Parent = TabFrame
             Instance.new("UICorner", toggle).CornerRadius = UDim.new(0, 3)
 
@@ -195,7 +190,6 @@ function ElixirLib:MakeWindow(cfg)
             inner.Size = UDim2.new(0, 16, 0, 16)
             inner.Position = UDim2.new(0, 1, 0.5, -8)
             inner.BackgroundColor3 = Color3.fromRGB(66, 66, 76)
-            inner.BorderSizePixel = 0
             inner.Parent = outer
             Instance.new("UICorner", inner).CornerRadius = UDim.new(1, 0)
 
@@ -206,7 +200,6 @@ function ElixirLib:MakeWindow(cfg)
             button.Parent = toggle
 
             local toggled = default
-
             local function update()
                 if toggled then
                     TweenService:Create(outer, TweenInfo.new(0.15), {BackgroundColor3 = Color3.fromRGB(53, 61, 90)}):Play()

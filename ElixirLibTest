@@ -1,4 +1,4 @@
---// ElixirLib UI System (Base + Toggle estilo MentaLib)
+--// ElixirLib UI System (Fix + Toggle estilo MentaLib)
 local ElixirLib = {}
 
 local TweenService = game:GetService("TweenService")
@@ -8,24 +8,21 @@ local CoreGui = game:GetService("CoreGui")
 function ElixirLib:MakeWindow(cfg)
     cfg = cfg or {}
     local title = cfg.Name or "Elixir Client"
-    
-    -- ScreenGui
+
     local Gui = Instance.new("ScreenGui")
     Gui.Name = "ElixirClientUI"
     Gui.ZIndexBehavior = Enum.ZIndexBehavior.Global
     Gui.Parent = CoreGui
-    
-    -- Janela principal
+
+    -- Main Window
     local Main = Instance.new("Frame")
-    Main.Name = "Main"
     Main.Size = UDim2.new(0, 550, 0, 400)
     Main.Position = UDim2.new(0.3, 0, 0.3, 0)
     Main.BackgroundColor3 = Color3.fromRGB(25, 25, 30)
     Main.BorderSizePixel = 0
     Main.Parent = Gui
-    
     Instance.new("UICorner", Main).CornerRadius = UDim.new(0, 4)
-    
+
     -- Topbar
     local Topbar = Instance.new("Frame")
     Topbar.Size = UDim2.new(1, 0, 0, 34)
@@ -33,7 +30,7 @@ function ElixirLib:MakeWindow(cfg)
     Topbar.BorderSizePixel = 0
     Topbar.Parent = Main
     Instance.new("UICorner", Topbar).CornerRadius = UDim.new(0, 4)
-    
+
     local Title = Instance.new("TextLabel")
     Title.Text = title
     Title.Font = Enum.Font.GothamBold
@@ -44,8 +41,8 @@ function ElixirLib:MakeWindow(cfg)
     Title.Size = UDim2.new(0, 300, 1, 0)
     Title.TextXAlignment = Enum.TextXAlignment.Left
     Title.Parent = Topbar
-    
-    -- Drag da janela
+
+    -- Drag
     local dragging, dragStart, startPos
     Topbar.InputBegan:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 then
@@ -59,27 +56,30 @@ function ElixirLib:MakeWindow(cfg)
             end)
         end
     end)
+
     UserInputService.InputChanged:Connect(function(input)
         if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
             local delta = input.Position - dragStart
             Main.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
         end
     end)
-    
-    -- Lista de Tabs
+
+    -- Tab List
     local TabList = Instance.new("ScrollingFrame")
     TabList.Size = UDim2.new(0, 150, 1, -34)
     TabList.Position = UDim2.new(0, 0, 0, 34)
     TabList.BackgroundColor3 = Color3.fromRGB(20, 20, 25)
     TabList.BorderSizePixel = 0
     TabList.ScrollBarThickness = 4
+    TabList.AutomaticCanvasSize = Enum.AutomaticSize.Y
+    TabList.CanvasSize = UDim2.new(0, 0, 0, 0)
     TabList.Parent = Main
-    
+
     local TabListLayout = Instance.new("UIListLayout", TabList)
     TabListLayout.SortOrder = Enum.SortOrder.LayoutOrder
     TabListLayout.Padding = UDim.new(0, 5)
-    
-    -- Painel da direita
+
+    -- Right Panel
     local RightPanel = Instance.new("Frame")
     RightPanel.Size = UDim2.new(1, -150, 1, -34)
     RightPanel.Position = UDim2.new(0, 150, 0, 34)
@@ -87,15 +87,15 @@ function ElixirLib:MakeWindow(cfg)
     RightPanel.BorderSizePixel = 0
     RightPanel.Visible = false
     RightPanel.Parent = Main
-    
+
     local Tabs = {}
-    
-    -- Função para criar uma nova Tab
+
     function Tabs:MakeTab(info)
         info = info or {}
         local tabName = info.Name or "Tab"
-        local tabIcon = info.Icon or nil
-        
+        local tabIcon = info.IconId or nil
+
+        -- Tab Button
         local TabButton = Instance.new("TextButton")
         TabButton.Text = tabName
         TabButton.Font = Enum.Font.GothamBold
@@ -105,32 +105,34 @@ function ElixirLib:MakeWindow(cfg)
         TabButton.Size = UDim2.new(1, -10, 0, 28)
         TabButton.Parent = TabList
         Instance.new("UICorner", TabButton).CornerRadius = UDim.new(0, 3)
-        
+
         local padding = Instance.new("UIPadding", TabButton)
         padding.PaddingLeft = UDim.new(0, 25)
-        
+
+        -- Scroll Frame da aba
         local TabFrame = Instance.new("ScrollingFrame")
         TabFrame.Size = UDim2.new(1, -10, 1, -10)
         TabFrame.Position = UDim2.new(0, 5, 0, 5)
         TabFrame.BackgroundTransparency = 1
         TabFrame.ScrollBarThickness = 6
+        TabFrame.AutomaticCanvasSize = Enum.AutomaticSize.Y
         TabFrame.Visible = false
         TabFrame.Parent = RightPanel
-        
+
         local TabLayout = Instance.new("UIListLayout", TabFrame)
         TabLayout.Padding = UDim.new(0, 6)
         TabLayout.SortOrder = Enum.SortOrder.LayoutOrder
-        
-        -- Troca de aba
+
+        -- Seleção
         TabButton.MouseButton1Click:Connect(function()
-            for _, child in ipairs(RightPanel:GetChildren()) do
-                if child:IsA("ScrollingFrame") then
-                    child.Visible = false
+            for _, frame in ipairs(RightPanel:GetChildren()) do
+                if frame:IsA("ScrollingFrame") then
+                    frame.Visible = false
                 end
             end
             RightPanel.Visible = true
             TabFrame.Visible = true
-            
+
             for _, btn in ipairs(TabList:GetChildren()) do
                 if btn:IsA("TextButton") then
                     TweenService:Create(btn, TweenInfo.new(0.15), {BackgroundColor3 = Color3.fromRGB(35, 35, 40)}):Play()
@@ -138,23 +140,24 @@ function ElixirLib:MakeWindow(cfg)
             end
             TweenService:Create(TabButton, TweenInfo.new(0.15), {BackgroundColor3 = Color3.fromRGB(70, 70, 75)}):Play()
         end)
-        
-        -- Função para criar toggles dentro da aba
+
+        ------------------------------------------------------------------------
+        -- Adicionar Toggle (MentaLib visual)
+        ------------------------------------------------------------------------
         function TabFrame:AddToggle(opts)
             opts = opts or {}
             local name = opts.Name or "Toggle"
             local default = opts.Default or false
             local callback = opts.Callback or function() end
-            
+
             local toggle = Instance.new("Frame")
             toggle.Name = name
             toggle.Size = UDim2.new(1, -10, 0, 30)
             toggle.BackgroundColor3 = Color3.fromRGB(35, 35, 40)
             toggle.BorderSizePixel = 0
             toggle.Parent = TabFrame
-            
             Instance.new("UICorner", toggle).CornerRadius = UDim.new(0, 3)
-            
+
             local label = Instance.new("TextLabel")
             label.Text = name
             label.Font = Enum.Font.GothamBold
@@ -162,24 +165,21 @@ function ElixirLib:MakeWindow(cfg)
             label.TextColor3 = Color3.fromRGB(230, 230, 230)
             label.BackgroundTransparency = 1
             label.Position = UDim2.new(0, 10, 0, 0)
-            label.Size = UDim2.new(1, -50, 1, 0)
+            label.Size = UDim2.new(1, -60, 1, 0)
             label.TextXAlignment = Enum.TextXAlignment.Left
             label.Parent = toggle
-            
-            -- Caixa externa
+
             local outer = Instance.new("Frame")
             outer.Size = UDim2.new(0, 40, 0, 18)
             outer.Position = UDim2.new(1, -55, 0.5, -9)
-            outer.AnchorPoint = Vector2.new(0, 0)
             outer.BackgroundColor3 = Color3.fromRGB(48, 56, 75)
             outer.BorderSizePixel = 0
             outer.Parent = toggle
             Instance.new("UICorner", outer).CornerRadius = UDim.new(1, 0)
-            
+
             local stroke = Instance.new("UIStroke", outer)
             stroke.Color = Color3.fromRGB(54, 54, 62)
-            
-            -- Botão interno
+
             local inner = Instance.new("Frame")
             inner.Size = UDim2.new(0, 16, 0, 16)
             inner.Position = UDim2.new(0, 1, 0.5, -8)
@@ -187,16 +187,16 @@ function ElixirLib:MakeWindow(cfg)
             inner.BorderSizePixel = 0
             inner.Parent = outer
             Instance.new("UICorner", inner).CornerRadius = UDim.new(1, 0)
-            
+
             local button = Instance.new("TextButton")
             button.Size = UDim2.new(1, 0, 1, 0)
             button.BackgroundTransparency = 1
             button.Text = ""
             button.Parent = toggle
-            
+
             local toggled = default
-            
-            local function updateVisual()
+
+            local function update()
                 if toggled then
                     TweenService:Create(outer, TweenInfo.new(0.15), {BackgroundColor3 = Color3.fromRGB(53, 61, 90)}):Play()
                     TweenService:Create(inner, TweenInfo.new(0.15), {Position = UDim2.new(1, -17, 0.5, -8), BackgroundColor3 = Color3.fromRGB(178, 64, 210)}):Play()
@@ -207,27 +207,29 @@ function ElixirLib:MakeWindow(cfg)
                     TweenService:Create(stroke, TweenInfo.new(0.15), {Color = Color3.fromRGB(54, 54, 62)}):Play()
                 end
             end
-            
-            updateVisual()
-            
+
+            update()
+
             button.MouseButton1Click:Connect(function()
                 toggled = not toggled
-                updateVisual()
+                update()
                 task.spawn(callback, toggled)
             end)
-            
+
             return {
-                Set = function(_, val)
-                    toggled = val
-                    updateVisual()
+                Set = function(_, v)
+                    toggled = v
+                    update()
                 end,
                 Get = function() return toggled end
             }
         end
-        
+
+        ------------------------------------------------------------------------
+
         return TabFrame
     end
-    
+
     return Tabs
 end
 

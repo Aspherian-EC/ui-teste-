@@ -1,105 +1,210 @@
-function Tabs:MakeTab(info)
-    info = info or {}
-    local tabName = info.Name or "Tab"
-    local tabIcon = info.IconId
+-- ElixirLib Base UI System (Atualizado)
+local ElixirLib = {}
 
-    -- Botão da Tab
-    local TabButton = Instance.new("TextButton")
-    TabButton.Name = tabName
-    TabButton.Text = tabName
-    TabButton.Font = Enum.Font.GothamBold
-    TabButton.TextSize = 13
-    TabButton.TextColor3 = Color3.fromRGB(230, 230, 230)
-    TabButton.BackgroundColor3 = Color3.fromRGB(35, 35, 40)
-    TabButton.Size = UDim2.new(1, -10, 0, 28)
-    TabButton.Parent = TabList
+local TweenService = game:GetService("TweenService")
+local UserInputService = game:GetService("UserInputService")
+local CoreGui = game:GetService("CoreGui")
 
-    local TabCorner = Instance.new("UICorner", TabButton)
-    TabCorner.CornerRadius = UDim.new(0, 3)
+function ElixirLib:MakeWindow(cfg)
+    cfg = cfg or {}
+    local title = cfg.Name or "Elixir Client"
 
-    local padding = Instance.new("UIPadding")
-    padding.PaddingLeft = UDim.new(0, 25)
-    padding.Parent = TabButton
+    -- Cria a ScreenGui
+    local Gui = Instance.new("ScreenGui")
+    Gui.Name = "ElixirClientUI"
+    Gui.ZIndexBehavior = Enum.ZIndexBehavior.Global
+    Gui.Parent = CoreGui
 
-    if tabIcon then
-        local Icon = Instance.new("ImageLabel")
-        Icon.Size = UDim2.new(0, 18, 0, 18)
-        Icon.Position = UDim2.new(1, -28, 0.5, -9)
-        Icon.BackgroundTransparency = 1
-        Icon.Image = tabIcon
-        Icon.Parent = TabButton
-        TabButton.TextXAlignment = Enum.TextXAlignment.Left
-    end
+    -- Janela principal
+    local Main = Instance.new("Frame")
+    Main.Name = "Main"
+    Main.Size = UDim2.new(0, 550, 0, 400)
+    Main.Position = UDim2.new(0.3, 0, 0.3, 0)
+    Main.BackgroundColor3 = Color3.fromRGB(25, 25, 30)
+    Main.BorderSizePixel = 0
+    Main.Parent = Gui
 
-    -- Frame da Tab (rolável)
-    local TabFrame = Instance.new("ScrollingFrame")
-    TabFrame.Name = tabName .. "_Frame"
-    TabFrame.Size = UDim2.new(1, -10, 1, -10)
-    TabFrame.Position = UDim2.new(0, 5, 0, 5)
-    TabFrame.BackgroundTransparency = 1
-    TabFrame.ScrollBarThickness = 6
-    TabFrame.Visible = false
-    TabFrame.Parent = RightPanel
+    local MainCorner = Instance.new("UICorner", Main)
+    MainCorner.CornerRadius = UDim.new(0, 4)
 
-    local TabLayout = Instance.new("UIListLayout", TabFrame)
-    TabLayout.Padding = UDim.new(0, 6)
-    TabLayout.SortOrder = Enum.SortOrder.LayoutOrder
+    -- Topbar
+    local Topbar = Instance.new("Frame")
+    Topbar.Name = "Topbar"
+    Topbar.Size = UDim2.new(1, 0, 0, 34)
+    Topbar.BackgroundColor3 = Color3.fromRGB(30, 30, 35)
+    Topbar.BorderSizePixel = 0
+    Topbar.Parent = Main
 
-    -- Função para exibir esta tab e esconder as outras
-    local function selectTab()
-        for _, child in ipairs(RightPanel:GetChildren()) do
-            if child:IsA("ScrollingFrame") then
-                child.Visible = false
-            end
+    local TopbarCorner = Instance.new("UICorner", Topbar)
+    TopbarCorner.CornerRadius = UDim.new(0, 4)
+
+    local Title = Instance.new("TextLabel")
+    Title.Name = "Title"
+    Title.Text = title
+    Title.Font = Enum.Font.GothamBold
+    Title.TextSize = 14
+    Title.TextColor3 = Color3.fromRGB(240, 240, 240)
+    Title.BackgroundTransparency = 1
+    Title.Position = UDim2.new(0, 10, 0, 0)
+    Title.Size = UDim2.new(0, 300, 1, 0)
+    Title.TextXAlignment = Enum.TextXAlignment.Left
+    Title.Parent = Topbar
+
+    -- Permite arrastar a janela
+    local dragging, dragStart, startPos
+    Topbar.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+            dragging = true
+            dragStart = input.Position
+            startPos = Main.Position
+            input.Changed:Connect(function()
+                if input.UserInputState == Enum.UserInputState.End then
+                    dragging = false
+                end
+            end)
         end
-        TabFrame.Visible = true
-
-        for _, btn in ipairs(TabList:GetChildren()) do
-            if btn:IsA("TextButton") then
-                btn.BackgroundColor3 = Color3.fromRGB(35, 35, 40)
-            end
+    end)
+    UserInputService.InputChanged:Connect(function(input)
+        if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
+            local delta = input.Position - dragStart
+            Main.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
         end
-        TweenService:Create(TabButton, TweenInfo.new(0.15), {BackgroundColor3 = Color3.fromRGB(70, 70, 75)}):Play()
-    end
+    end)
 
-    TabButton.MouseButton1Click:Connect(selectTab)
+    -- Área esquerda (Tabs)
+    local TabList = Instance.new("ScrollingFrame")
+    TabList.Name = "TabList"
+    TabList.Size = UDim2.new(0, 150, 1, -34)
+    TabList.Position = UDim2.new(0, 0, 0, 34)
+    TabList.BackgroundColor3 = Color3.fromRGB(20, 20, 25)
+    TabList.BorderSizePixel = 0
+    TabList.ScrollBarThickness = 4
+    TabList.Parent = Main
 
-    -- Criamos um objeto “Tab” que contém o frame e os métodos
-    local TabObject = {}
-    TabObject.Frame = TabFrame
-    TabObject.Select = selectTab
+    local TabListLayout = Instance.new("UIListLayout", TabList)
+    TabListLayout.SortOrder = Enum.SortOrder.LayoutOrder
+    TabListLayout.Padding = UDim.new(0, 5)
 
-    function TabObject:AddToggle(info)
+    -- Painel da direita (container)
+    local RightPanel = Instance.new("Frame")
+    RightPanel.Name = "RightPanel"
+    RightPanel.Size = UDim2.new(1, -150, 1, -34)
+    RightPanel.Position = UDim2.new(0, 150, 0, 34)
+    RightPanel.BackgroundColor3 = Color3.fromRGB(30, 30, 35)
+    RightPanel.BorderSizePixel = 0
+    RightPanel.Visible = true -- já deixamos visível, cada tab controla os frames internos
+    RightPanel.Parent = Main
+
+    local Tabs = {}
+
+    function Tabs:MakeTab(info)
         info = info or {}
-        local toggleName = info.Name or "Toggle"
-        local default = info.Default or false
-        local callback = info.Callback or function() end
+        local tabName = info.Name or "Tab"
+        local tabIcon = info.IconId
 
-        local ToggleFrame = Instance.new("Frame")
-        ToggleFrame.Size = UDim2.new(1, 0, 0, 28)
-        ToggleFrame.BackgroundTransparency = 1
-        ToggleFrame.Parent = self.Frame
+        -- Botão da Tab
+        local TabButton = Instance.new("TextButton")
+        TabButton.Name = tabName
+        TabButton.Text = tabName
+        TabButton.Font = Enum.Font.GothamBold
+        TabButton.TextSize = 13
+        TabButton.TextColor3 = Color3.fromRGB(230, 230, 230)
+        TabButton.BackgroundColor3 = Color3.fromRGB(35, 35, 40)
+        TabButton.Size = UDim2.new(1, -10, 0, 28)
+        TabButton.Parent = TabList
 
-        local ToggleButton = Instance.new("TextButton")
-        ToggleButton.Size = UDim2.new(1, -10, 1, 0)
-        ToggleButton.Position = UDim2.new(0, 5, 0, 0)
-        ToggleButton.BackgroundColor3 = Color3.fromRGB(35, 35, 40)
-        ToggleButton.TextColor3 = Color3.fromRGB(230, 230, 230)
-        ToggleButton.Font = Enum.Font.GothamBold
-        ToggleButton.TextSize = 13
-        ToggleButton.Text = toggleName .. ": " .. (default and "ON" or "OFF")
-        ToggleButton.Parent = ToggleFrame
+        local TabCorner = Instance.new("UICorner", TabButton)
+        TabCorner.CornerRadius = UDim.new(0, 3)
 
-        local ToggleCorner = Instance.new("UICorner", ToggleButton)
-        ToggleCorner.CornerRadius = UDim.new(0, 3)
+        local padding = Instance.new("UIPadding")
+        padding.PaddingLeft = UDim.new(0, 25)
+        padding.Parent = TabButton
 
-        local toggled = default
-        ToggleButton.MouseButton1Click:Connect(function()
-            toggled = not toggled
-            ToggleButton.Text = toggleName .. ": " .. (toggled and "ON" or "OFF")
-            callback(toggled)
-        end)
+        if tabIcon then
+            local Icon = Instance.new("ImageLabel")
+            Icon.Size = UDim2.new(0, 18, 0, 18)
+            Icon.Position = UDim2.new(1, -28, 0.5, -9)
+            Icon.BackgroundTransparency = 1
+            Icon.Image = tabIcon
+            Icon.Parent = TabButton
+            TabButton.TextXAlignment = Enum.TextXAlignment.Left
+        end
+
+        -- Frame da Tab (rolável)
+        local TabFrame = Instance.new("ScrollingFrame")
+        TabFrame.Name = tabName .. "_Frame"
+        TabFrame.Size = UDim2.new(1, -10, 1, -10)
+        TabFrame.Position = UDim2.new(0, 5, 0, 5)
+        TabFrame.BackgroundTransparency = 1
+        TabFrame.ScrollBarThickness = 6
+        TabFrame.Visible = false
+        TabFrame.Parent = RightPanel
+
+        local TabLayout = Instance.new("UIListLayout", TabFrame)
+        TabLayout.Padding = UDim.new(0, 6)
+        TabLayout.SortOrder = Enum.SortOrder.LayoutOrder
+
+        -- Função para exibir esta tab e esconder as outras
+        local function selectTab()
+            for _, child in ipairs(RightPanel:GetChildren()) do
+                if child:IsA("ScrollingFrame") then
+                    child.Visible = false
+                end
+            end
+            TabFrame.Visible = true
+
+            for _, btn in ipairs(TabList:GetChildren()) do
+                if btn:IsA("TextButton") then
+                    btn.BackgroundColor3 = Color3.fromRGB(35, 35, 40)
+                end
+            end
+            TweenService:Create(TabButton, TweenInfo.new(0.15), {BackgroundColor3 = Color3.fromRGB(70, 70, 75)}):Play()
+        end
+
+        TabButton.MouseButton1Click:Connect(selectTab)
+
+        -- Criamos um objeto “Tab” que contém o frame e os métodos
+        local TabObject = {}
+        TabObject.Frame = TabFrame
+        TabObject.Select = selectTab
+
+        -- Método AddToggle
+        function TabObject:AddToggle(info)
+            info = info or {}
+            local toggleName = info.Name or "Toggle"
+            local default = info.Default or false
+            local callback = info.Callback or function() end
+
+            local ToggleFrame = Instance.new("Frame")
+            ToggleFrame.Size = UDim2.new(1, 0, 0, 28)
+            ToggleFrame.BackgroundTransparency = 1
+            ToggleFrame.Parent = self.Frame
+
+            local ToggleButton = Instance.new("TextButton")
+            ToggleButton.Size = UDim2.new(1, -10, 1, 0)
+            ToggleButton.Position = UDim2.new(0, 5, 0, 0)
+            ToggleButton.BackgroundColor3 = Color3.fromRGB(35, 35, 40)
+            ToggleButton.TextColor3 = Color3.fromRGB(230, 230, 230)
+            ToggleButton.Font = Enum.Font.GothamBold
+            ToggleButton.TextSize = 13
+            ToggleButton.Text = toggleName .. ": " .. (default and "ON" or "OFF")
+            ToggleButton.Parent = ToggleFrame
+
+            local ToggleCorner = Instance.new("UICorner", ToggleButton)
+            ToggleCorner.CornerRadius = UDim.new(0, 3)
+
+            local toggled = default
+            ToggleButton.MouseButton1Click:Connect(function()
+                toggled = not toggled
+                ToggleButton.Text = toggleName .. ": " .. (toggled and "ON" or "OFF")
+                callback(toggled)
+            end)
+        end
+
+        return TabObject
     end
 
-    return TabObject
+    return Tabs
 end
+
+return ElixirLib

@@ -58,7 +58,7 @@ function ElixirLib:MakeWindow(info)
     Padding.PaddingLeft = UDim.new(0, 4)
     Padding.PaddingRight = UDim.new(0, 4)
 
-    -- Painel direito
+    -- Painel direito (onde será mostrado o conteúdo da Tab)
     local ContentFrame = Instance.new("ScrollingFrame", Main)
     ContentFrame.Size = UDim2.new(1, -140, 1, -40)
     ContentFrame.Position = UDim2.new(0, 140, 0, 40)
@@ -147,7 +147,7 @@ function ElixirLib:MakeWindow(info)
     end)
 
     ----------------------------------------------------------------
-    -- 🧭 Tabs (agora funcionais e empilhadas)
+    -- 🧭 Tabs (sem toggles)
     ----------------------------------------------------------------
     function Window:MakeTab(tabInfo)
         local TabButton = Instance.new("TextButton", TabList)
@@ -184,24 +184,6 @@ function ElixirLib:MakeWindow(info)
             end
             TweenService:Create(TabButton, TweenInfo.new(0.15), {BackgroundColor3 = Color3.fromRGB(80, 201, 206)}):Play()
         end)
-
-        function TabFrame:AddToggle(info)
-            local Toggle = Instance.new("TextButton", TabFrame)
-            Toggle.Size = UDim2.new(1, -10, 0, 30)
-            Toggle.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
-            Toggle.TextColor3 = Color3.new(1, 1, 1)
-            Toggle.Text = info.Name or "Toggle"
-            Toggle.Font = Enum.Font.GothamBold
-            Toggle.TextSize = 12
-            Toggle.AutoButtonColor = false
-
-            local Enabled = false
-            Toggle.MouseButton1Click:Connect(function()
-                Enabled = not Enabled
-                Toggle.BackgroundColor3 = Enabled and Color3.fromRGB(80, 201, 206) or Color3.fromRGB(40, 40, 50)
-                if info.Callback then info.Callback(Enabled) end
-            end)
-        end
 
         return TabFrame
     end

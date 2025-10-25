@@ -90,10 +90,11 @@ function ElixirLib:MakeWindow(info)
         BackgroundTransparency = 1,
         Size = UDim2.new(0,520,0,370),
         Position = UDim2.new(0.34,0,0.28,0),
-        Image = "rbxassetid://10740267356",
+        Image = "rbxassetid://10740267356", -- small shadow image if available; will be transparent if not
         ImageColor3 = Theme.Shadow,
         ImageTransparency = 0.8
     })
+    -- fallback if image not present - just a frame
     if not shadow.Image or shadow.Image == "" then
         shadow:Destroy()
         shadow = new("Frame", {
@@ -140,7 +141,7 @@ function ElixirLib:MakeWindow(info)
         TextXAlignment = Enum.TextXAlignment.Left
     })
 
-    -- close button (mantido apenas)
+    -- close button
     local closeBtn = new("ImageButton", {
         Parent = topbar,
         Size = UDim2.new(0,17,0,17),
@@ -152,89 +153,31 @@ function ElixirLib:MakeWindow(info)
     closeBtn.MouseLeave:Connect(function() TweenService:Create(closeBtn, TweenInfo.new(.12), {ImageColor3 = Color3.fromRGB(255,255,255)}):Play() end)
     closeBtn.MouseButton1Click:Connect(function() pcall(function() screenGui:Destroy() end) end)
 
-    -----------------------------------------------------------
-    -- BOTÃO ABRIR/FECHAR PEQUENO FORA DO PAINEL
-    -----------------------------------------------------------
-    local isVisible = true
-    local toggleBtn = new("ImageButton", {
-        Parent = rootFolder,
-        Size = UDim2.new(0,36,0,36),
-        Position = UDim2.new(0,50,0,50),
-        BackgroundTransparency = 0.1,
-        BackgroundColor3 = Color3.fromRGB(50,50,55),
-        Image = "rbxassetid://72671288986713",
-        ZIndex = 10
-    })
-    makeCorner(toggleBtn, 6)
-
-    toggleBtn.MouseButton1Click:Connect(function()
-        isVisible = not isVisible
-        main.Visible = isVisible
-        shadow.Visible = isVisible
-    end)
-
-    -- também abre/fecha com RightShift
-    UserInputService.InputBegan:Connect(function(input, gp)
-        if gp then return end
-        if input.KeyCode == Enum.KeyCode.RightShift then
-            isVisible = not isVisible
-            main.Visible = isVisible
-            shadow.Visible = isVisible
-        end
-    end)
-
-    -----------------------------------------------------------
-    -- BOTÃO REDIMENSIONAR (arrastável, canto inferior direito)
-    -----------------------------------------------------------
-    local resizeBtn = new("Frame", {
-        Parent = rootFolder,
-        Size = UDim2.new(0,24,0,24),
-        Position = main.Position + UDim2.new(0, main.Size.X.Offset - 24, 0, main.Size.Y.Offset - 24),
-        BackgroundColor3 = Color3.fromRGB(80,201,206),
-        ZIndex = 10
-    })
-    makeCorner(resizeBtn, 4)
-
-    local resizeIcon = new("ImageLabel", {
-        Parent = resizeBtn,
-        Size = UDim2.new(1,0,1,0),
+    -- minimize
+    local minBtn = new("ImageButton", {
+        Parent = topbar,
+        Size = UDim2.new(0,17,0,17),
+        Position = UDim2.new(0.954,-18,0.235,0),
         BackgroundTransparency = 1,
-        Image = "rbxassetid://72671288986713", -- mesma seta, pode trocar
-        AnchorPoint = Vector2.new(0.5,0.5),
-        Position = UDim2.new(0.5,0,0.5,0)
+        Image = "rbxassetid://10664064072"
     })
+    minBtn.MouseEnter:Connect(function() TweenService:Create(minBtn, TweenInfo.new(.12), {ImageColor3 = Theme.Highlight}):Play() end)
+    minBtn.MouseLeave:Connect(function() TweenService:Create(minBtn, TweenInfo.new(.12), {ImageColor3 = Color3.fromRGB(255,255,255)}):Play() end)
 
-    local draggingResize = false
-    local dragStart, startSize
-
-    resizeBtn.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-            draggingResize = true
-            dragStart = input.Position
-            startSize = main.Size
+    local minimized = false
+    minBtn.MouseButton1Click:Connect(function()
+        minimized = not minimized
+        if minimized then
+            main.Size = UDim2.new(0,500,0,34)
+            shadow.Visible = false
+            for _,c in pairs(main:GetChildren()) do if c ~= topbar then c.Visible = false end end
+        else
+            main.Size = UDim2.new(0,500,0,350)
+            shadow.Visible = true
+            for _,c in pairs(main:GetChildren()) do c.Visible = true end
         end
     end)
 
-    resizeBtn.InputEnded:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-            draggingResize = false
-        end
-    end)
-
-    UserInputService.InputChanged:Connect(function(input)
-        if draggingResize and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
-            local delta = input.Position - dragStart
-            local newX = math.max(200, startSize.X.Offset + delta.X)
-            local newY = math.max(150, startSize.Y.Offset + delta.Y)
-            main.Size = UDim2.new(0,newX,0,newY)
-            shadow.Size = main.Size + UDim2.new(0,20,0,20)
-            resizeBtn.Position = main.Position + UDim2.new(0, main.Size.X.Offset - 24, 0, main.Size.Y.Offset - 24)
-        end
-    end)
-
-    -----------------------------------------------------------
-    -- resto do script original continua (Tabs, Items etc)
-    -----------------------------------------------------------
     -- main stroke
     local mainStroke = Instance.new("UIStroke", main)
     mainStroke.Color = Theme.MainUIStroke
@@ -1215,6 +1158,20 @@ function tabAPI:AddButton(opt)
     }
 end
 
+--Label 
+
+function tabAPI:AddLabel(options)
+    local label = Instance.new("TextLabel")
+    label.Size = UDim2.new(1, -10, 0, 20)
+    label.BackgroundTransparency = 1
+    label.Text = options.Name or options.Text or "Label"
+    label.TextColor3 = Color3.fromRGB(200, 200, 200) -- cinza claro elegante
+    label.TextSize = 14
+    label.Font = Enum.Font.Gotham
+    label.TextXAlignment = Enum.TextXAlignment.Left
+    label.Parent = tabContent
+end
+
 
         -- return tabAPI with only public methods mapped
 local public = {
@@ -1225,7 +1182,8 @@ local public = {
     AddDropdown = tabAPI.AddDropdown,
     AddBind = tabAPI.AddKeybind,
     AddSection = tabAPI.AddSection,
-    AddTextbox = tabAPI.AddTextbox, -- ✅ novo
+    AddTextbox = tabAPI.AddTextbox, 
+    AddLabel = tabAPI.AddLabel,-- ✅ novo
     _internalId = id
 }
 

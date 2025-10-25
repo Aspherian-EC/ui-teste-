@@ -1159,34 +1159,66 @@ function tabAPI:AddButton(opt)
 end
 
 
---label 
--- AddLabel
-function tabAPI:AddLabel(text)
-    -- se o dev não passou texto, usa o padrão
-    text = text or "Resource available only for premium users!"
+-- Criação de Section
+function tabAPI:AddSection(opt)
+    opt = opt or {}
+    local name = opt.Name or "Section"
 
-    local item = Instance.new("Frame")
-    item.BackgroundColor3 = Theme.ItemFrame
-    item.Size = UDim2.new(1, -12, 0, 26)
-    item.BorderSizePixel = 0
-    item.Parent = tabContent
-    makeCorner(item, 4)
+    -- Frame da Section
+    local section = new("Frame", {
+        Parent = tabContent,
+        BackgroundTransparency = 1,
+        Size = UDim2.new(1, -12, 0, 30)
+    })
 
-    local stroke = Instance.new("UIStroke", item)
-    stroke.Color = Theme.ItemUIStroke
+    -- Label do título da Section
+    local label = new("TextLabel", {
+        Parent = section,
+        Text = "-- " .. name .. " --",
+        Font = Enum.Font.GothamBold,
+        TextSize = 12,
+        TextColor3 = Theme.SectionText,
+        BackgroundTransparency = 1,
+        Position = UDim2.new(0, 0, 0, 0),
+        Size = UDim2.new(1, 0, 1, 0),
+        TextXAlignment = Enum.TextXAlignment.Center
+    })
 
-    local label = Instance.new("TextLabel")
-    label.Parent = item
-    label.Text = tostring(text)
-    label.Font = Enum.Font.GothamBold
-    label.TextSize = 12
-    label.TextColor3 = Theme.ItemText
-    label.BackgroundTransparency = 1
-    label.Position = UDim2.new(0, 8, 0, 0)
-    label.Size = UDim2.new(1, -16, 1, 0)
-    label.TextXAlignment = Enum.TextXAlignment.Left
+    -- Container do conteúdo da Section
+    local sectionContent = new("Frame", {
+        Parent = tabContent, -- fica no mesmo nível que os outros elementos
+        BackgroundTransparency = 1,
+        Size = UDim2.new(1, 0, 0, 0)
+    })
 
-    return label
+    -- API da Section
+    local sectionAPI = {}
+
+    -- Adiciona Label dentro da Section (ou tab)
+    function sectionAPI:AddLabel(text)
+        text = text or "Label"
+        local item = new("Frame", {
+            Parent = sectionContent,
+            BackgroundTransparency = 1,
+            Size = UDim2.new(1, -12, 0, 20)
+        })
+        local lbl = new("TextLabel", {
+            Parent = item,
+            Text = text,
+            Font = Enum.Font.GothamBold,
+            TextSize = 12,
+            TextColor3 = Color3.fromRGB(255, 255, 255), -- branco
+            BackgroundTransparency = 1,
+            Position = UDim2.new(0, 8, 0, 0),
+            Size = UDim2.new(1, -16, 1, 0),
+            TextXAlignment = Enum.TextXAlignment.Left
+        })
+        return {
+            SetText = function(newText) lbl.Text = newText end
+        }
+    end
+
+    return sectionAPI
 end
 
 
@@ -1195,20 +1227,20 @@ end
 
 
        -- return tabAPI with only public methods mapped
-local public = {
-    AddToggle = tabAPI.AddToggle,
-    AddButton = tabAPI.AddButton,
-    AddSlider = tabAPI.AddSlider,
-    AddInput = tabAPI.AddInput,
-    AddDropdown = tabAPI.AddDropdown,
-    AddBind = tabAPI.AddKeybind,
-    AddSection = tabAPI.AddSection,
-    AddTextbox = tabAPI.AddTextbox,
-    AddLabel = tabAPI.AddLabel, -- ✅ adiciona isso aqui
-    _internalId = id
-}
-
-return public
+       local public = {
+        AddToggle = tabAPI.AddToggle,
+        AddButton = tabAPI.AddButton,
+        AddSlider = tabAPI.AddSlider,
+        AddInput = tabAPI.AddInput,
+        AddDropdown = tabAPI.AddDropdown,
+        AddBind = tabAPI.AddKeybind,
+        AddSection = tabAPI.AddSection,
+        AddTextbox = tabAPI.AddTextbox,
+        _internalId = id
+    }
+    
+    return public
+    
 
 
 

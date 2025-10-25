@@ -1,66 +1,1195 @@
+-- ElixirLibTest.lua
+-- ElixirLib: MakeWindow, MakeTab (IconId), AddToggle, AddButton, AddSlider, AddInput, AddDropdown, AddKeybind
+-- Theme: Dark (visual inspirado no anexo)
+
+local ElixirLib = {}
+ElixirLib.Flags = {}
+ElixirLib._themeName = "Dark"
+
+local HttpService = game:GetService("HttpService")
+local CoreGui = game:GetService("CoreGui")
+local UserInputService = game:GetService("UserInputService")
+local TweenService = game:GetService("TweenService")
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+local RunService = game:GetService("RunService")
+
+-- Theme (Dark)
+local Theme = {
+    Topbar = Color3.fromRGB(30,30,35),
+    TabContainer = Color3.fromRGB(25,25,30),
+    Lines = Color3.fromRGB(50,50,55),
+    HoverTabFrame = Color3.fromRGB(53,53,57),
+    ItemUIStroke = Color3.fromRGB(41,41,50),
+    TabFrame = Color3.fromRGB(35,35,40),
+    SectionFrame = Color3.fromRGB(30,30,35),
+    TabText = Color3.fromRGB(237,237,237),
+    ItemText = Color3.fromRGB(237,237,237),
+    ItemUIStrokeSelected = Color3.fromRGB(80,201,206),
+    DropdownIcon = Color3.fromRGB(175,175,175),
+    SectionText = Color3.fromRGB(237,237,237),
+    SelectedTabFrame = Color3.fromRGB(65,65,70),
+    ItemFrame = Color3.fromRGB(35,35,40),
+    HoverItemFrame = Color3.fromRGB(53,53,57),
+    SectionUIStroke = Color3.fromRGB(37,37,44),
+    MainUIStroke = Color3.fromRGB(54,54,63),
+    Main = Color3.fromRGB(20,20,25),
+    Shadow = Color3.fromRGB(20,20,25),
+    TabUIStroke = Color3.fromRGB(39,39,47),
+    SliderOuter = Color3.fromRGB(60,60,70),
+    SliderInner = Color3.fromRGB(80,201,206),
+    ToggleOuter = Color3.fromRGB(35,35,40),
+    InputPlaceHolder = Color3.fromRGB(60,60,65),
+    ToggleOuterEnabled = Color3.fromRGB(53,53,61),
+    ToggleOuterUIStroke = Color3.fromRGB(54,54,62),
+    ToggleOuterUIStrokeEnabled = Color3.fromRGB(67,67,77),
+    ToggleInner = Color3.fromRGB(66,66,76),
+    ToggleInnerEnabled = Color3.fromRGB(80,201,206),
+    ContainerHolder = Color3.fromRGB(26,26,31),
+    HighlightUIStroke = Color3.fromRGB(79,79,86),
+    Highlight = Color3.fromRGB(80,201,206)
+}
+
+-- small helper to create instances with properties
+local function new(class, props)
+    local inst = Instance.new(class)
+    for k,v in pairs(props or {}) do
+        if k == "Parent" then
+            inst.Parent = v
+        else
+            pcall(function() inst[k] = v end)
+        end
+    end
+    return inst
+end
+
+local function makeCorner(parent, radius) 
+    local c = Instance.new("UICorner")
+    c.CornerRadius = UDim.new(0, radius or 4)
+    c.Parent = parent
+    return c
+end
+
+-- container to keep generated guis grouped
+local rootFolder = Instance.new("Folder")
+rootFolder.Name = HttpService:GenerateGUID(false)
+rootFolder.Parent = CoreGui
+
+-- core function: MakeWindow
+function ElixirLib:MakeWindow(info)
+    info = info or {}
+    local title = info.Name or "Elixir Window"
+
+    -- ScreenGui
+    local screenGui = new("ScreenGui", { Parent = rootFolder, ResetOnSpawn = false })
+    screenGui.Name = HttpService:GenerateGUID(false)
+
+    -- shadow frame (simple shadow)
+    local shadow = new("ImageLabel", {
+        Parent = screenGui,
+        BackgroundTransparency = 1,
+        Size = UDim2.new(0,520,0,370),
+        Position = UDim2.new(0.34,0,0.28,0),
+        Image = "rbxassetid://10740267356", -- small shadow image if available; will be transparent if not
+        ImageColor3 = Theme.Shadow,
+        ImageTransparency = 0.8
+    })
+    -- fallback if image not present - just a frame
+    if not shadow.Image or shadow.Image == "" then
+        shadow:Destroy()
+        shadow = new("Frame", {
+            Parent = screenGui,
+            BackgroundColor3 = Theme.Shadow,
+            BackgroundTransparency = 0.3,
+            Size = UDim2.new(0,520,0,370),
+            Position = UDim2.new(0.34,0,0.28,0),
+            BorderSizePixel = 0
+        })
+    end
+    makeCorner(shadow, 6)
+
+    -- main
+    local main = new("Frame", {
+        Parent = screenGui,
+        BackgroundColor3 = Theme.Main,
+        Size = UDim2.new(0,500,0,350),
+        Position = UDim2.new(0.345,0,0.291,0),
+        BorderSizePixel = 0,
+        ClipsDescendants = true
+    })
+    makeCorner(main, 6)
+
+    -- topbar
+    local topbar = new("Frame", {
+        Parent = main,
+        BackgroundColor3 = Theme.Topbar,
+        Size = UDim2.new(1,0,0,34),
+        BorderSizePixel = 0
+    })
+    makeCorner(topbar, 6)
+
+    -- window name
+    local titleLabel = new("TextLabel", {
+        Parent = topbar,
+        Text = title,
+        Font = Enum.Font.GothamBold,
+        TextSize = 13,
+        TextColor3 = Theme.TabText,
+        BackgroundTransparency = 1,
+        Position = UDim2.new(0,6,0,0),
+        Size = UDim2.new(0.85,0,1,0),
+        TextXAlignment = Enum.TextXAlignment.Left
+    })
+
+    -- close button
+    local closeBtn = new("ImageButton", {
+        Parent = topbar,
+        Size = UDim2.new(0,17,0,17),
+        Position = UDim2.new(0.954,3,0.235,0),
+        BackgroundTransparency = 1,
+        Image = "rbxassetid://10738425363"
+    })
+    closeBtn.MouseEnter:Connect(function() TweenService:Create(closeBtn, TweenInfo.new(.12), {ImageColor3 = Color3.fromRGB(255,66,66)}):Play() end)
+    closeBtn.MouseLeave:Connect(function() TweenService:Create(closeBtn, TweenInfo.new(.12), {ImageColor3 = Color3.fromRGB(255,255,255)}):Play() end)
+    closeBtn.MouseButton1Click:Connect(function() pcall(function() screenGui:Destroy() end) end)
+
+    -- minimize
+    local minBtn = new("ImageButton", {
+        Parent = topbar,
+        Size = UDim2.new(0,17,0,17),
+        Position = UDim2.new(0.954,-18,0.235,0),
+        BackgroundTransparency = 1,
+        Image = "rbxassetid://10664064072"
+    })
+    minBtn.MouseEnter:Connect(function() TweenService:Create(minBtn, TweenInfo.new(.12), {ImageColor3 = Theme.Highlight}):Play() end)
+    minBtn.MouseLeave:Connect(function() TweenService:Create(minBtn, TweenInfo.new(.12), {ImageColor3 = Color3.fromRGB(255,255,255)}):Play() end)
+
+    local minimized = false
+    minBtn.MouseButton1Click:Connect(function()
+        minimized = not minimized
+        if minimized then
+            main.Size = UDim2.new(0,500,0,34)
+            shadow.Visible = false
+            for _,c in pairs(main:GetChildren()) do if c ~= topbar then c.Visible = false end end
+        else
+            main.Size = UDim2.new(0,500,0,350)
+            shadow.Visible = true
+            for _,c in pairs(main:GetChildren()) do c.Visible = true end
+        end
+    end)
+
+    -- main stroke
+    local mainStroke = Instance.new("UIStroke", main)
+    mainStroke.Color = Theme.MainUIStroke
+
+    -- left tabs container
+    local tabContainer = new("Frame", {
+        Parent = main,
+        BackgroundColor3 = Theme.TabContainer,
+        Size = UDim2.new(0,131,0,316),
+        Position = UDim2.new(-0.012,6,0.0971,0),
+        BorderSizePixel = 0
+    })
+    makeCorner(tabContainer, 4)
+
+    local tabContainerLine = new("Frame", {
+        Parent = tabContainer,
+        BackgroundColor3 = Theme.Lines,
+        Size = UDim2.new(1,0,0,1),
+        Position = UDim2.new(0,0,0,0),
+        BorderSizePixel = 0
+    })
+
+    -- tab scrolling
+    local tabScroll = new("ScrollingFrame", {
+        Parent = tabContainer,
+        BackgroundTransparency = 1,
+        BorderSizePixel = 0,
+        Size = UDim2.new(1,0,1,0),
+        Position = UDim2.new(0,0,0,6),
+        ScrollBarThickness = 0,
+        AutomaticCanvasSize = Enum.AutomaticSize.Y
+    })
+    local tabListLayout = new("UIListLayout", { Parent = tabScroll })
+    tabListLayout.SortOrder = Enum.SortOrder.LayoutOrder
+    tabListLayout.Padding = UDim.new(0,6)
+
+    -- right content area
+    local content = new("Frame", {
+        Parent = main,
+        BackgroundColor3 = Theme.ContainerHolder,
+        Size = UDim2.new(0,368,0,316),
+        Position = UDim2.new(0.262,1,0.097,0),
+        BorderSizePixel = 0
+    })
+    makeCorner(content, 4)
+
+    -- container area where each tab adds its content
+    local containers = new("Frame", {
+        Parent = content,
+        BackgroundTransparency = 1,
+        Size = UDim2.new(1,0,1,0)
+    })
+
+    -- bookkeeping
+    local tabs = {}
+    local selectedTabId
+
+    -- window dragging
+    do
+        local dragging, dragInput, dragStart, startPos
+        topbar.InputBegan:Connect(function(input)
+            if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+                dragging = true
+                dragStart = input.Position
+                startPos = main.Position
+                input.Changed:Connect(function()
+                    if input.UserInputState == Enum.UserInputState.End then dragging = false end
+                end)
+            end
+        end)
+        topbar.InputChanged:Connect(function(input) if input.UserInputType == Enum.UserInputType.MouseMovement then dragInput = input end end)
+        UserInputService.InputChanged:Connect(function(input)
+            if dragging and input == dragInput then
+                local delta = input.Position - dragStart
+                main.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+                shadow.Position = UDim2.new(startPos.X.Scale, (startPos.X.Offset + delta.X) - 10, startPos.Y.Scale, (startPos.Y.Offset + delta.Y) - 10)
+            end
+        end)
+    end
+
+    -- select tab function
+    local function selectTab(id)
+        if selectedTabId and tabs[selectedTabId] then
+            local old = tabs[selectedTabId]
+            old._button.BackgroundColor3 = Theme.TabFrame
+            old._name.TextColor3 = Theme.TabText
+            if old._content then old._content.Visible = false end
+        end
+        selectedTabId = id
+        local cur = tabs[id]
+        cur._button.BackgroundColor3 = Theme.SelectedTabFrame
+        cur._name.TextColor3 = Theme.TabText
+        if cur._content then cur._content.Visible = true end
+    end
+
+    -- returned window object
+    local windowObj = {}
+
+    -- MakeTab implementation
+    function windowObj:MakeTab(tabInfo)
+        tabInfo = tabInfo or {}
+        local name = tabInfo.Name or "Tab"
+        local iconId = tabInfo.IconId or ""
+
+        local id = HttpService:GenerateGUID(false)
+
+        -- tab holder frame (for spacing)
+        local tabHolder = new("Frame", {
+            Parent = tabScroll,
+            BackgroundTransparency = 1,
+            Size = UDim2.new(1,-8,0,29)
+        })
+
+        local tabFrame = new("Frame", {
+            Parent = tabHolder,
+            BackgroundColor3 = Theme.TabFrame,
+            Size = UDim2.new(1,0,1,0),
+            BorderSizePixel = 0
+        })
+        makeCorner(tabFrame, 4)
+
+        local icon = new("ImageLabel", {
+            Parent = tabFrame,
+            Size = UDim2.new(0,20,0,20),
+            Position = UDim2.new(0,16,0.5,-10),
+            BackgroundTransparency = 1,
+            Image = iconId
+        })
+
+        local tabName = new("TextLabel", {
+            Parent = tabFrame,
+            Text = name,
+            Font = Enum.Font.GothamBold,
+            TextSize = 12,
+            TextColor3 = Theme.TabText,
+            BackgroundTransparency = 1,
+            Position = UDim2.new(0,45,0,0),
+            Size = UDim2.new(1,-45,1,0),
+            TextXAlignment = Enum.TextXAlignment.Left
+        })
+
+        local button = new("TextButton", {
+            Parent = tabFrame,
+            BackgroundTransparency = 1,
+            Size = UDim2.new(1,0,1,0),
+            Text = ""
+        })
+
+        -- content scrolling frame for this tab
+        local tabContent = new("ScrollingFrame", {
+            Parent = containers,
+            BackgroundTransparency = 1,
+            BorderSizePixel = 0,
+            Size = UDim2.new(1,0,1,0),
+            CanvasSize = UDim2.new(0,0,0,0),
+            ScrollBarThickness = 0,
+            Visible = false,
+            AutomaticCanvasSize = Enum.AutomaticSize.Y
+        })
+        local contentLayout = new("UIListLayout", { Parent = tabContent })
+        contentLayout.SortOrder = Enum.SortOrder.LayoutOrder
+        contentLayout.Padding = UDim.new(0,8)
+        local uipadding = new("UIPadding", { Parent = tabContent, PaddingLeft = UDim.new(0,6), PaddingTop = UDim.new(0,6) })
+
+        tabs[id] = { _button = tabFrame, _name = tabName, _content = tabContent }
+
+        -- hover effects
+        tabFrame.MouseEnter:Connect(function()
+            if selectedTabId ~= id then
+                TweenService:Create(tabFrame, TweenInfo.new(.12), {BackgroundColor3 = Theme.HoverTabFrame}):Play()
+            end
+        end)
+        tabFrame.MouseLeave:Connect(function()
+            if selectedTabId ~= id then
+                TweenService:Create(tabFrame, TweenInfo.new(.12), {BackgroundColor3 = Theme.TabFrame}):Play()
+            end
+        end)
+
+        button.MouseButton1Click:Connect(function() selectTab(id) end)
+        if not selectedTabId then selectTab(id) end
+
+        -- helper to create item container inside tab
+        local function newItemFrame()
+            local item = new("Frame", {
+                Parent = tabContent,
+                BackgroundColor3 = Theme.ItemFrame,
+                Size = UDim2.new(1,-12,0,30),
+                BorderSizePixel = 0
+            })
+            makeCorner(item, 4)
+            local stroke = Instance.new("UIStroke", item)
+            stroke.Color = Theme.ItemUIStroke
+            item.MouseEnter:Connect(function()
+                TweenService:Create(item, TweenInfo.new(.12), {BackgroundColor3 = Theme.HoverItemFrame}):Play()
+            end)
+            item.MouseLeave:Connect(function()
+                TweenService:Create(item, TweenInfo.new(.12), {BackgroundColor3 = Theme.ItemFrame}):Play()
+            end)
+            return item
+        end
+
+        -- API returned per tab
+        local tabAPI = {}
+
+        -- AddToggle
+        function tabAPI:AddToggle(opt)
+            opt = opt or {}
+            local name = opt.Name or "Toggle"
+            local default = opt.Default or false
+            local callback = opt.Callback or function() end
+            local flag = opt.Flag or HttpService:GenerateGUID(false)
+            ElixirLib.Flags[flag] = default
+
+            local item = newItemFrame()
+            item.Size = UDim2.new(1,-12,0,30)
+            local label = new("TextLabel", {
+                Parent = item,
+                Text = name,
+                Font = Enum.Font.GothamBold,
+                TextSize = 12,
+                TextColor3 = Theme.ItemText,
+                BackgroundTransparency = 1,
+                Position = UDim2.new(0,8,0,0),
+                Size = UDim2.new(0.7, -8, 1, 0),
+                TextXAlignment = Enum.TextXAlignment.Left
+            })
+
+            -- toggle outer and inner
+            local outer = new("Frame", {
+                Parent = item,
+                BackgroundColor3 = Theme.ToggleOuter,
+                Size = UDim2.new(0,38,0,20),
+                Position = UDim2.new(1,-46,0.5,-10),
+                BorderSizePixel = 0
+            })
+            makeCorner(outer, 4)
+            local stroke = Instance.new("UIStroke", outer)
+            stroke.Color = Theme.ToggleOuterUIStroke
+
+            local inner = new("Frame", {
+                Parent = outer,
+                BackgroundColor3 = default and Theme.ToggleInnerEnabled or Theme.ToggleInner,
+                Size = UDim2.new(0,16,0,16),
+                Position = default and UDim2.new(1,-18,0.5,-8) or UDim2.new(0,2,0.5,-8),
+                BorderSizePixel = 0
+            })
+            makeCorner(inner, 100)
+
+            local function setState(state, ncb)
+                ElixirLib.Flags[flag] = state
+                local toPos = state and UDim2.new(1,-18,0.5,-8) or UDim2.new(0,2,0.5,-8)
+                TweenService:Create(inner, TweenInfo.new(.12), {Position = toPos}):Play()
+                TweenService:Create(inner, TweenInfo.new(.12), {BackgroundColor3 = state and Theme.ToggleInnerEnabled or Theme.ToggleInner}):Play()
+                if not ncb then task.spawn(callback, state) end
+            end
+
+            item.InputBegan:Connect(function(input)
+                if input.UserInputType == Enum.UserInputType.MouseButton1 then
+                    setState(not ElixirLib.Flags[flag])
+                end
+            end)
+
+            setState(default, true)
+
+            return {
+                Set = function(v) setState(not not v) end,
+                Get = function() return ElixirLib.Flags[flag] end,
+                Flag = flag
+            }
+        end
+
+        -- AddButton
+        function tabAPI:AddButton(opt)
+            opt = opt or {}
+            local name = opt.Name or "Button"
+            local callback = opt.Callback or function() end
+
+            local item = newItemFrame()
+            item.Size = UDim2.new(1,-12,0,30)
+            local label = new("TextLabel", {
+                Parent = item,
+                Text = name,
+                Font = Enum.Font.GothamBold,
+                TextSize = 12,
+                TextColor3 = Theme.ItemText,
+                BackgroundTransparency = 1,
+                Position = UDim2.new(0,8,0,0),
+                Size = UDim2.new(0.7,-8,1,0),
+                TextXAlignment = Enum.TextXAlignment.Left
+            })
+
+            local button = new("TextButton", {
+                Parent = item,
+                Text = "Execute",
+                Font = Enum.Font.GothamBold,
+                TextSize = 12,
+                TextColor3 = Theme.SectionText,
+                BackgroundColor3 = Theme.SelectedTabFrame,
+                Size = UDim2.new(0,90,0,22),
+                Position = UDim2.new(1,-104,0.5,-11),
+                BorderSizePixel = 0
+            })
+            makeCorner(button, 4)
+            local btnStroke = Instance.new("UIStroke", button)
+            btnStroke.Color = Theme.MainUIStroke
+
+            button.MouseEnter:Connect(function()
+                TweenService:Create(button, TweenInfo.new(.12), {BackgroundColor3 = Theme.Highlight}):Play()
+            end)
+            button.MouseLeave:Connect(function()
+                TweenService:Create(button, TweenInfo.new(.12), {BackgroundColor3 = Theme.SelectedTabFrame}):Play()
+            end)
+
+            button.MouseButton1Click:Connect(function()
+                task.spawn(callback)
+            end)
+
+            return {
+                Press = function() task.spawn(callback) end
+            }
+        end
+
+        -- AddSlider
+        function tabAPI:AddSlider(opt)
+            opt = opt or {}
+            local name = opt.Name or "Slider"
+            local min = opt.Min or 0
+            local max = opt.Max or 100
+            local default = math.clamp(opt.Default or min, min, max)
+            local callback = opt.Callback or function() end
+            local flag = opt.Flag or HttpService:GenerateGUID(false)
+
+            ElixirLib.Flags[flag] = default
+
+            local item = new("Frame", {
+                Parent = tabContent,
+                BackgroundColor3 = Theme.ItemFrame,
+                Size = UDim2.new(1,-12,0,46),
+                BorderSizePixel = 0
+            })
+            makeCorner(item, 4)
+            local stroke = Instance.new("UIStroke", item)
+            stroke.Color = Theme.ItemUIStroke
+
+            local label = new("TextLabel", {
+                Parent = item,
+                Text = name,
+                Font = Enum.Font.GothamBold,
+                TextSize = 12,
+                TextColor3 = Theme.ItemText,
+                BackgroundTransparency = 1,
+                Position = UDim2.new(0,8,0,0),
+                Size = UDim2.new(1,-16,0,20),
+                TextXAlignment = Enum.TextXAlignment.Left
+            })
+
+            local valLabel = new("TextLabel", {
+                Parent = item,
+                Text = tostring(default),
+                Font = Enum.Font.GothamBold,
+                TextSize = 12,
+                TextColor3 = Theme.ItemText,
+                BackgroundTransparency = 1,
+                Position = UDim2.new(0,8,0,20),
+                Size = UDim2.new(1,-16,0,20),
+                TextXAlignment = Enum.TextXAlignment.Right
+            })
+
+            local outer = new("Frame", {
+                Parent = item,
+                BackgroundColor3 = Theme.SliderOuter,
+                Size = UDim2.new(1,-24,0,6),
+                Position = UDim2.new(0,12,0,28),
+                BorderSizePixel = 0
+            })
+            makeCorner(outer, 100)
+
+            local inner = new("Frame", {
+                Parent = outer,
+                BackgroundColor3 = Theme.SliderInner,
+                Size = UDim2.new((default - min)/(max - min),0,0,6),
+                BorderSizePixel = 0
+            })
+            makeCorner(inner, 100)
+
+            local knob = new("ImageLabel", {
+                Parent = outer,
+                Image = "",
+                BackgroundColor3 = Theme.ItemText,
+                Size = UDim2.new(0,12,0,12),
+                Position = UDim2.new((default - min)/(max - min), -6, 0.5, -6),
+                BackgroundTransparency = 0
+            })
+            makeCorner(knob, 100)
+
+            local dragging = false
+            local function updateFromMouse(position)
+                local absPos = outer.AbsolutePosition.X
+                local absSize = outer.AbsoluteSize.X
+                local px = math.clamp((position.X - absPos) / absSize, 0, 1)
+                local value = math.floor(min + (max - min) * px + 0.5)
+                ElixirLib.Flags[flag] = value
+                inner.Size = UDim2.new(px,0,0,6)
+                knob.Position = UDim2.new(px, -6, 0.5, -6)
+                valLabel.Text = tostring(value)
+                task.spawn(callback, value)
+            end
+
+            knob.InputBegan:Connect(function(input)
+                if input.UserInputType == Enum.UserInputType.MouseButton1 then
+                    dragging = true
+                end
+            end)
+            knob.InputEnded:Connect(function(input)
+                if input.UserInputType == Enum.UserInputType.MouseButton1 then
+                    dragging = false
+                end
+            end)
+            outer.InputBegan:Connect(function(input)
+                if input.UserInputType == Enum.UserInputType.MouseButton1 then
+                    updateFromMouse(input.Position)
+                    dragging = true
+                end
+            end)
+            UserInputService.InputChanged:Connect(function(input)
+                if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+                    updateFromMouse(input.Position)
+                end
+            end)
+            -- init
+            do
+                local p = (default - min)/(max - min)
+                inner.Size = UDim2.new(p,0,0,6)
+                knob.Position = UDim2.new(p,-6,0.5,-6)
+            end
+
+            return {
+                Set = function(v) 
+                    v = math.clamp(v, min, max)
+                    ElixirLib.Flags[flag] = v
+                    local p = (v - min)/(max - min)
+                    TweenService:Create(inner, TweenInfo.new(.12), {Size = UDim2.new(p,0,0,6)}):Play()
+                    TweenService:Create(knob, TweenInfo.new(.12), {Position = UDim2.new(p,-6,0.5,-6)}):Play()
+                    valLabel.Text = tostring(v)
+                end,
+                Get = function() return ElixirLib.Flags[flag] end,
+                Flag = flag
+            }
+        end
+
+        -- AddInput
+        function tabAPI:AddInput(opt)
+            opt = opt or {}
+            local name = opt.Name or "Input"
+            local placeholder = opt.Placeholder or ""
+            local callback = opt.Callback or function() end
+            local flag = opt.Flag or HttpService:GenerateGUID(false)
+
+            local item = new("Frame", {
+                Parent = tabContent,
+                BackgroundColor3 = Theme.ItemFrame,
+                Size = UDim2.new(1,-12,0,34),
+                BorderSizePixel = 0
+            })
+            makeCorner(item, 4)
+            local stroke = Instance.new("UIStroke", item)
+            stroke.Color = Theme.ItemUIStroke
+
+            local label = new("TextLabel", {
+                Parent = item,
+                Text = name,
+                Font = Enum.Font.GothamBold,
+                TextSize = 12,
+                TextColor3 = Theme.ItemText,
+                BackgroundTransparency = 1,
+                Position = UDim2.new(0,8,0,0),
+                Size = UDim2.new(0.35, -8,0,18),
+                TextXAlignment = Enum.TextXAlignment.Left
+            })
+
+            local textbox = new("TextBox", {
+                Parent = item,
+                Text = "",
+                PlaceholderText = placeholder,
+                Font = Enum.Font.GothamBold,
+                TextSize = 12,
+                TextColor3 = Theme.ItemText,
+                PlaceholderColor3 = Theme.InputPlaceHolder,
+                BackgroundTransparency = 1,
+                Position = UDim2.new(0.35,2,0,6),
+                Size = UDim2.new(0.63,-10,0,22)
+            })
+
+            textbox.Focused:Connect(function() 
+                stroke.Color = Theme.ItemUIStrokeSelected
+            end)
+            textbox.FocusLost:Connect(function(enter)
+                stroke.Color = Theme.ItemUIStroke
+                ElixirLib.Flags[flag] = textbox.Text
+                task.spawn(callback, textbox.Text)
+            end)
+
+            return {
+                Get = function() return ElixirLib.Flags[flag] end,
+                Set = function(v) 
+                    ElixirLib.Flags[flag] = v
+                    textbox.Text = tostring(v)
+                end,
+                Flag = flag
+            }
+        end
+
+
+        --dropdown 
+        
+        function tabAPI:AddDropdown(opt)
+            opt = opt or {}
+            local name = opt.Name or "Dropdown"
+            local options = opt.Options or {}
+            local default = opt.Default or options[1] or "None"
+            local callback = opt.Callback or function() end
+            local flag = opt.Flag or HttpService:GenerateGUID(false)
+        
+            ElixirLib.Flags[flag] = default
+        
+            local item = newItemFrame()
+            item.AutomaticSize = Enum.AutomaticSize.Y
+        
+            -- Nome do dropdown
+            local label = new("TextLabel", {
+                Parent = item,
+                Text = name,
+                Font = Enum.Font.GothamBold,
+                TextSize = 12,
+                TextColor3 = Theme.ItemText,
+                BackgroundTransparency = 1,
+                Position = UDim2.new(0,8,0,0),
+                Size = UDim2.new(0.45,-8,0,24),
+                TextXAlignment = Enum.TextXAlignment.Left
+            })
+        
+            -- Texto da opção atual
+            local currentText = new("TextLabel", {
+                Parent = item,
+                Text = tostring(default),
+                Font = Enum.Font.GothamBold,
+                TextSize = 12,
+                TextColor3 = Theme.Highlight,
+                BackgroundTransparency = 1,
+                AnchorPoint = Vector2.new(1,0),
+                Position = UDim2.new(1,-12,0,0),
+                Size = UDim2.new(0.45,0,0,24),
+                TextXAlignment = Enum.TextXAlignment.Right
+            })
+        
+            -- Moldura principal do dropdown (lista)
+            local dropdownFrame = new("Frame", {
+                Parent = item,
+                BackgroundColor3 = Theme.ItemFrame,
+                BorderSizePixel = 0,
+                Size = UDim2.new(1,-12,0,0),
+                Position = UDim2.new(0,6,0,24),
+                ClipsDescendants = true
+            })
+            makeCorner(dropdownFrame, 6)
+        
+            -- Área rolável das opções (inicialmente invisível)
+            local scrollFrame = new("ScrollingFrame", {
+                Parent = dropdownFrame,
+                BackgroundTransparency = 1,
+                Size = UDim2.new(1,0,0,0),
+                CanvasSize = UDim2.new(0,0,0,0),
+                ScrollBarThickness = 4,
+                ScrollBarImageColor3 = Theme.Highlight,
+                Visible = false
+            })
+            makeCorner(scrollFrame, 6)
+        
+            local scrollList = new("UIListLayout", {
+                Parent = scrollFrame,
+                SortOrder = Enum.SortOrder.LayoutOrder,
+                Padding = UDim.new(0,2)
+            })
+        
+            local padding = new("UIPadding", {
+                Parent = scrollFrame,
+                PaddingTop = UDim.new(0,4),
+                PaddingBottom = UDim.new(0,4),
+                PaddingLeft = UDim.new(0,6),
+                PaddingRight = UDim.new(0,6)
+            })
+        
+            local opened = false
+        
+            --------------------------------------------------------------------
+            -- Função para reconstruir as opções
+            --------------------------------------------------------------------
+            local function rebuildOptions()
+                for _,v in pairs(scrollFrame:GetChildren()) do
+                    if v:IsA("TextButton") then v:Destroy() end
+                end
+        
+                for _,optVal in ipairs(options) do
+                    local btn = new("TextButton", {
+                        Parent = scrollFrame,
+                        Text = tostring(optVal),
+                        Font = Enum.Font.GothamBold,
+                        TextSize = 12,
+                        TextColor3 = Theme.ItemText,
+                        BackgroundColor3 = Theme.ItemFrame,
+                        BorderSizePixel = 0,
+                        Size = UDim2.new(1,0,0,24),
+                        AutoButtonColor = false
+                    })
+                    makeCorner(btn, 4)
+        
+                    btn.MouseEnter:Connect(function()
+                        TweenService:Create(btn, TweenInfo.new(.08), {
+                            BackgroundColor3 = Theme.Highlight,
+                            TextColor3 = Color3.new(1,1,1)
+                        }):Play()
+                    end)
+        
+                    btn.MouseLeave:Connect(function()
+                        TweenService:Create(btn, TweenInfo.new(.08), {
+                            BackgroundColor3 = Theme.ItemFrame,
+                            TextColor3 = Theme.ItemText
+                        }):Play()
+                    end)
+        
+                    btn.MouseButton1Click:Connect(function()
+                        ElixirLib.Flags[flag] = optVal
+                        currentText.Text = tostring(optVal)
+                        callback(optVal)
+                        closeList()
+                    end)
+                end
+        
+                -- Atualiza o tamanho do Canvas (rolagem)
+                task.wait()
+                local totalHeight = (#options * 26) + 8
+                scrollFrame.CanvasSize = UDim2.new(0, 0, 0, totalHeight)
+            end
+        
+            --------------------------------------------------------------------
+            -- Funções de abrir/fechar lista
+            --------------------------------------------------------------------
+            local function openList()
+                opened = true
+                scrollFrame.Visible = true
+        
+                local totalHeight = (#options * 26) + 8
+                scrollFrame.CanvasSize = UDim2.new(0, 0, 0, totalHeight)
+        
+                local visibleCount = math.min(#options, 5)
+                TweenService:Create(scrollFrame, TweenInfo.new(.15), {
+                    Size = UDim2.new(1,0,0,visibleCount*26)
+                }):Play()
+        
+                -- Empurra os elementos abaixo
+                TweenService:Create(dropdownFrame, TweenInfo.new(.15), {
+                    Size = UDim2.new(1,-12,0,(visibleCount*26)+4)
+                }):Play()
+            end
+        
+            function closeList()
+                opened = false
+                TweenService:Create(scrollFrame, TweenInfo.new(.15), {
+                    Size = UDim2.new(1,0,0,0)
+                }):Play()
+        
+                TweenService:Create(dropdownFrame, TweenInfo.new(.15), {
+                    Size = UDim2.new(1,-12,0,0)
+                }):Play()
+        
+                task.delay(.15, function()
+                    if not opened then
+                        scrollFrame.Visible = false
+                    end
+                end)
+            end
+        
+            --------------------------------------------------------------------
+            -- Inicialização e clique
+            --------------------------------------------------------------------
+            rebuildOptions()
+            scrollFrame.Size = UDim2.new(1,0,0,0)
+            scrollFrame.Visible = false
+        
+            local dropdownClickArea = new("TextButton", {
+                Parent = item,
+                BackgroundTransparency = 1,
+                Size = UDim2.new(1,0,0,24),
+                ZIndex = 2,
+                Text = "",
+                AutoButtonColor = false
+            })
+        
+            dropdownClickArea.MouseButton1Click:Connect(function()
+                if opened then
+                    closeList()
+                else
+                    openList()
+                end
+            end)
+        
+            --------------------------------------------------------------------
+            -- Retorno do Dropdown
+            --------------------------------------------------------------------
+            return {
+                SetOptions = function(newOptions)
+                    options = newOptions or {}
+                    rebuildOptions()
+                end,
+                Set = function(v)
+                    ElixirLib.Flags[flag] = v
+                    currentText.Text = tostring(v)
+                end,
+                Get = function()
+                    return ElixirLib.Flags[flag]
+                end,
+                Flag = flag
+            }
+        end
+        
+        
+        -- AddKeybind
+        function tabAPI:AddKeybind(opt)
+            opt = opt or {}
+            local name = opt.Name or "Keybind"
+            local default = opt.Default or Enum.KeyCode.Unknown
+            local callback = opt.Callback or function() end
+            local flag = opt.Flag or HttpService:GenerateGUID(false)
+
+            ElixirLib.Flags[flag] = default.Name or default
+
+            local item = newItemFrame()
+            item.Size = UDim2.new(1,-12,0,30)
+            local label = new("TextLabel", {
+                Parent = item,
+                Text = name,
+                Font = Enum.Font.GothamBold,
+                TextSize = 12,
+                TextColor3 = Theme.ItemText,
+                BackgroundTransparency = 1,
+                Position = UDim2.new(0,8,0,0),
+                Size = UDim2.new(0.6,-8,1,0),
+                TextXAlignment = Enum.TextXAlignment.Left
+            })
+
+            local btn = new("TextButton", {
+                Parent = item,
+                Text = default.Name or "Unknown",
+                Font = Enum.Font.GothamBold,
+                TextSize = 12,
+                TextColor3 = Theme.ItemText,
+                BackgroundColor3 = Theme.ToggleOuter,
+                Size = UDim2.new(0,90,0,22),
+                Position = UDim2.new(1,-104,0.5,-11),
+                BorderSizePixel = 0
+            })
+            makeCorner(btn, 4)
+            local stroke = Instance.new("UIStroke", btn)
+            stroke.Color = Theme.ToggleOuterUIStroke
+
+            local waiting = false
+            local conn
+            btn.MouseButton1Click:Connect(function()
+                if waiting then return end
+                waiting = true
+                btn.Text = "..."
+                stroke.Color = Theme.ItemUIStrokeSelected
+                conn = UserInputService.InputBegan:Connect(function(input, gp)
+                    if gp then return end
+                    if input.KeyCode and input.KeyCode ~= Enum.KeyCode.Unknown then
+                        ElixirLib.Flags[flag] = input.KeyCode.Name
+                        btn.Text = input.KeyCode.Name
+                        waiting = false
+                        stroke.Color = Theme.ToggleOuterUIStroke
+                        conn:Disconnect()
+                    end
+                end)
+            end)
+
+            -- listen to keypress
+            UserInputService.InputBegan:Connect(function(input, gp)
+                if gp then return end
+                if input.KeyCode and input.KeyCode.Name == ElixirLib.Flags[flag] then
+                    task.spawn(callback)
+                end
+            end)
+
+            return {
+                Get = function() return ElixirLib.Flags[flag] end,
+                Set = function(k)
+                    if typeof(k) == "EnumItem" then k = k.Name end
+                    ElixirLib.Flags[flag] = tostring(k)
+                    btn.Text = tostring(k)
+                end,
+                Flag = flag
+            }
+        end
+
+ 
+        
+        -- AddTextbox
+function tabAPI:AddTextbox(opt)
+    opt = opt or {}
+    local name = opt.Name or "Textbox"
+    local placeholder = opt.Placeholder or ""
+    local callback = opt.Callback or function() end
+    local flag = opt.Flag or HttpService:GenerateGUID(false)
+
+    local item = new("Frame", {
+        Parent = tabContent,
+        BackgroundColor3 = Theme.ItemFrame,
+        Size = UDim2.new(1,-12,0,30), -- altura menor
+        BorderSizePixel = 0
+    })
+    makeCorner(item, 4)
+    local stroke = Instance.new("UIStroke", item)
+    stroke.Color = Theme.ItemUIStroke
+
+    local label = new("TextLabel", {
+        Parent = item,
+        Text = name,
+        Font = Enum.Font.GothamBold,
+        TextSize = 12,
+        TextColor3 = Color3.fromRGB(255,255,255), -- branco
+        BackgroundTransparency = 1,
+        Position = UDim2.new(0,8,0,0),
+        Size = UDim2.new(0.35, -8, 1, 0),
+        TextXAlignment = Enum.TextXAlignment.Left
+    })
+
+    local textbox = new("TextBox", {
+        Parent = item,
+        Text = "",
+        PlaceholderText = placeholder,
+        Font = Enum.Font.GothamBold,
+        TextSize = 12,
+        TextColor3 = Color3.fromRGB(255,255,255), -- branco
+        PlaceholderColor3 = Theme.InputPlaceHolder,
+        BackgroundTransparency = 0.7,
+        BackgroundColor3 = Theme.ToggleOuter, -- fundo levemente visível
+        Position = UDim2.new(0.37,2,0.15,0), -- mesmo nível do label
+        Size = UDim2.new(0.6,-10,0.7,0) -- menor altura
+    })
+    makeCorner(textbox, 4)
+
+    textbox.Focused:Connect(function() 
+        stroke.Color = Theme.ItemUIStrokeSelected
+    end)
+    textbox.FocusLost:Connect(function(enter)
+        stroke.Color = Theme.ItemUIStroke
+        ElixirLib.Flags[flag] = textbox.Text
+        task.spawn(callback, textbox.Text)
+    end)
+
+    return {
+        Get = function() return ElixirLib.Flags[flag] end,
+        Set = function(v) 
+            ElixirLib.Flags[flag] = v
+            textbox.Text = tostring(v)
+        end,
+        Flag = flag
+    }
+end
+
+-- AddButton
+function tabAPI:AddButton(opt)
+    opt = opt or {}
+    local name = opt.Name or "Button"
+    local callback = opt.Callback or function() end
+
+    local item = newItemFrame()
+    item.Size = UDim2.new(1,-12,0,30)
+    local label = new("TextLabel", {
+        Parent = item,
+        Text = name,
+        Font = Enum.Font.GothamBold,
+        TextSize = 12,
+        TextColor3 = Theme.ItemText,
+        BackgroundTransparency = 1,
+        Position = UDim2.new(0,8,0,0),
+        Size = UDim2.new(0.7,-8,1,0),
+        TextXAlignment = Enum.TextXAlignment.Left
+    })
+
+    local button = new("TextButton", {
+        Parent = item,
+        Text = "Execute",
+        Font = Enum.Font.GothamBold,
+        TextSize = 12,
+        TextColor3 = Theme.SectionText,
+        BackgroundColor3 = Theme.SelectedTabFrame, -- cinza padrão
+        Size = UDim2.new(0,90,0,22),
+        Position = UDim2.new(1,-104,0.5,-11),
+        BorderSizePixel = 0
+    })
+    makeCorner(button, 4)
+    local btnStroke = Instance.new("UIStroke", button)
+    btnStroke.Color = Theme.MainUIStroke
+
+    button.MouseEnter:Connect(function()
+        TweenService:Create(button, TweenInfo.new(.12), {BackgroundColor3 = Theme.Highlight}):Play()
+    end)
+    button.MouseLeave:Connect(function()
+        TweenService:Create(button, TweenInfo.new(.12), {BackgroundColor3 = Theme.SelectedTabFrame}):Play()
+    end)
+
+    button.MouseButton1Click:Connect(function()
+        -- muda para ciano momentaneamente
+        local originalColor = button.BackgroundColor3
+        button.BackgroundColor3 = Theme.Highlight
+        task.spawn(callback)
+        task.delay(0.2, function() -- volta para cinza
+            button.BackgroundColor3 = originalColor
+        end)
+    end)
+
+    return {
+        Press = function() task.spawn(callback) end
+    }
+end
+
+
 function tabAPI:AddSection(opt)
     opt = opt or {}
     local name = opt.Name or "Section"
 
-    local item = newItemFrame()
-    item.Size = UDim2.new(1, -12, 0, 18)
-    item.BackgroundTransparency = 1
+    -- Frame da Section
+    local section = new("Frame", {
+        Parent = tabContent,
+        BackgroundTransparency = 1,
+        Size = UDim2.new(1,-12,0,30)
+    })
 
-    -- Linha + nome + linha
-    local text = new("TextLabel", {
-        Parent = item,
-        Text = "────────── " .. tostring(name) .. " ──────────",
+    local label = new("TextLabel", {
+        Parent = section,
+        Text = "-- " .. name .. " --",
         Font = Enum.Font.GothamBold,
         TextSize = 12,
-        TextColor3 = Theme.Highlight,
+        TextColor3 = Theme.SectionText,
         BackgroundTransparency = 1,
-        Size = UDim2.new(1, 0, 0, 18),
+        Position = UDim2.new(0,0,0,0),
+        Size = UDim2.new(1,0,1,0),
         TextXAlignment = Enum.TextXAlignment.Center
     })
 
-    -- Container dos elementos da seção
-    local sectionContent = newItemFrame()
-    sectionContent.Size = UDim2.new(1, -12, 0, 0)
-    sectionContent.Position = UDim2.new(0, 0, 0, 18)
-    sectionContent.BackgroundTransparency = 1
-    sectionContent.Parent = tabContent
+    -- Conteúdo da Section (onde os elementos serão adicionados)
+    local sectionContent = new("UIListLayout", {
+        Parent = tabContent,
+        SortOrder = Enum.SortOrder.LayoutOrder,
+        Padding = UDim.new(0, 4) -- espaçamento entre os elementos
+    })
 
-    -- Controle da altura acumulada do container
-    local totalHeight = 0
-
+    -- API da Section
     local sectionAPI = {}
 
-    -- Função para adicionar Label que empurra elementos abaixo
-    function sectionAPI:AddLabel(textLabel)
-        local lblItem = newItemFrame()
-        lblItem.Size = UDim2.new(1, -12, 0, 20)
-        lblItem.Position = UDim2.new(0, 0, 0, totalHeight)
-        lblItem.BackgroundTransparency = 1
-        lblItem.Parent = sectionContent
-
-        local lbl = new("TextLabel", {
-            Parent = lblItem,
-            Text = textLabel or "Label",
+    -- Adicionar Label dentro da Section
+    function sectionAPI:AddLabel(text)
+        text = text or "Label"
+        local item = new("TextLabel", {
+            Parent = tabContent, -- adiciona na mesma tab, segue o fluxo
+            Text = text,
             Font = Enum.Font.GothamBold,
             TextSize = 12,
-            TextColor3 = Color3.fromRGB(255, 255, 255),
+            TextColor3 = Color3.fromRGB(255,255,255),
             BackgroundTransparency = 1,
-            Position = UDim2.new(0, 8, 0, 0),
-            Size = UDim2.new(1, -16, 1, 0),
+            Size = UDim2.new(1, -12, 0, 20),
             TextXAlignment = Enum.TextXAlignment.Left
         })
-
-        -- Atualiza a altura total do container para empurrar próximos elementos
-        totalHeight = totalHeight + 20
-        sectionContent.Size = UDim2.new(1, -12, 0, totalHeight)
-
         return {
-            SetText = function(newText)
-                lbl.Text = newText
-            end
+            SetText = function(newText) item.Text = newText end
         }
     end
 
-    -- Retorna a API da seção
     return sectionAPI
 end
+
+
+
+
+
+
+       -- return tabAPI with only public methods mapped
+       local public = {
+        AddToggle = tabAPI.AddToggle,
+        AddButton = tabAPI.AddButton,
+        AddSlider = tabAPI.AddSlider,
+        AddInput = tabAPI.AddInput,
+        AddDropdown = tabAPI.AddDropdown,
+        AddBind = tabAPI.AddKeybind,
+        AddSection = tabAPI.AddSection,
+        AddTextbox = tabAPI.AddTextbox,
+        _internalId = id
+    }
+    
+    return public
+    
+
+
+
+    end
+
+    -- return object for user
+    return {
+        MakeTab = windowObj.MakeTab,
+        _gui = screenGui,
+        _main = main
+    }
+end
+
+return ElixirLib

@@ -1160,24 +1160,31 @@ end
 
 --Label 
 
--- Adiciona método AddLabel ao Section
-function tabAPI:AddSectionLabel(text)
-    text = text or "Label"
+function tabAPI:AddLabel(textValue)
+    textValue = textValue or "Label"
+
     local item = newItemFrame()
-    item.Size = UDim2.new(1, -12, 0, 20) -- altura ajustável
-    local label = new("TextLabel", {
+    item.Size = UDim2.new(1, -12, 0, 18)
+    item.BackgroundTransparency = 1
+
+    local text = new("TextLabel", {
         Parent = item,
-        Text = text,
-        Font = Enum.Font.Gotham,
+        Text = tostring(textValue),
+        Font = Enum.Font.GothamBold,
         TextSize = 12,
         TextColor3 = Color3.fromRGB(200, 200, 200), -- cinza claro
         BackgroundTransparency = 1,
-        Position = UDim2.new(0, 8, 0, 0),
-        Size = UDim2.new(1, -16, 1, 0),
+        Size = UDim2.new(1, 0, 0, 18),
         TextXAlignment = Enum.TextXAlignment.Left
     })
-    return label
+
+    return {
+        Set = function(v)
+            text.Text = tostring(v)
+        end
+    }
 end
+
 
 
 

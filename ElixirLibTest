@@ -981,61 +981,7 @@ function ElixirLib:MakeWindow(info)
             }
         end
 
-        --Section 
-
-        function tabAPI:AddSection(opt)
-            opt = opt or {}
-            local name = opt.Name or "Section"
-        
-            local item = newItemFrame()
-            item.Size = UDim2.new(1, -12, 0, 18)
-            item.BackgroundTransparency = 1
-        
-            -- Linha + nome + linha
-            local text = new("TextLabel", {
-                Parent = item,
-                Text = "────────── " .. tostring(name) .. " ──────────",
-                Font = Enum.Font.GothamBold,
-                TextSize = 12,
-                TextColor3 = Theme.Highlight,
-                BackgroundTransparency = 1,
-                Size = UDim2.new(1, 0, 0, 18),
-                TextXAlignment = Enum.TextXAlignment.Center
-            })
-        
-            return {
-                Set = function(v)
-                    text.Text = "────────── " .. tostring(v) .. " ──────────"
-                end
-            }
-        end
-        function tabAPI:AddSection(opt)
-            opt = opt or {}
-            local name = opt.Name or "Section"
-        
-            local item = newItemFrame()
-            item.Size = UDim2.new(1, -12, 0, 18)
-            item.BackgroundTransparency = 1
-        
-            -- Linha + nome + linha
-            local text = new("TextLabel", {
-                Parent = item,
-                Text = "────────── " .. tostring(name) .. " ──────────",
-                Font = Enum.Font.GothamBold,
-                TextSize = 12,
-                TextColor3 = Theme.Highlight,
-                BackgroundTransparency = 1,
-                Size = UDim2.new(1, 0, 0, 18),
-                TextXAlignment = Enum.TextXAlignment.Center
-            })
-        
-            return {
-                Set = function(v)
-                    text.Text = "────────── " .. tostring(v) .. " ──────────"
-                end
-            }
-        end
-                
+ 
         
         -- AddTextbox
 function tabAPI:AddTextbox(opt)
@@ -1159,68 +1105,62 @@ function tabAPI:AddButton(opt)
 end
 
 
--- Criação de Section
+-- Section
 function tabAPI:AddSection(opt)
     opt = opt or {}
     local name = opt.Name or "Section"
 
-    -- Frame da Section
-    local section = new("Frame", {
-        Parent = tabContent,
-        BackgroundTransparency = 1,
-        Size = UDim2.new(1, -12, 0, 30)
-    })
+    local item = newItemFrame()
+    item.Size = UDim2.new(1, -12, 0, 18)
+    item.BackgroundTransparency = 1
 
-    -- Label do título da Section
-    local label = new("TextLabel", {
-        Parent = section,
-        Text = "-- " .. name .. " --",
+    -- Linha + nome + linha
+    local text = new("TextLabel", {
+        Parent = item,
+        Text = "────────── " .. tostring(name) .. " ──────────",
         Font = Enum.Font.GothamBold,
         TextSize = 12,
-        TextColor3 = Theme.SectionText,
+        TextColor3 = Theme.Highlight,
         BackgroundTransparency = 1,
-        Position = UDim2.new(0, 0, 0, 0),
-        Size = UDim2.new(1, 0, 1, 0),
+        Size = UDim2.new(1, 0, 0, 18),
         TextXAlignment = Enum.TextXAlignment.Center
     })
 
-    -- Container do conteúdo da Section
-    local sectionContent = new("Frame", {
-        Parent = tabContent, -- fica no mesmo nível que os outros elementos
-        BackgroundTransparency = 1,
-        Size = UDim2.new(1, 0, 0, 0)
-    })
+    -- Conteúdo da seção (para labels, buttons etc.)
+    local sectionContent = newItemFrame()
+    sectionContent.Size = UDim2.new(1, -12, 0, 0)
+    sectionContent.BackgroundTransparency = 1
 
-    -- API da Section
     local sectionAPI = {}
 
-    -- Adiciona Label dentro da Section (ou tab)
-    function sectionAPI:AddLabel(text)
-        text = text or "Label"
-        local item = new("Frame", {
-            Parent = sectionContent,
-            BackgroundTransparency = 1,
-            Size = UDim2.new(1, -12, 0, 20)
-        })
+    -- Função para adicionar Label dentro da seção
+    function sectionAPI:AddLabel(textLabel)
+        local lblItem = newItemFrame()
+        lblItem.Size = UDim2.new(1, -12, 0, 20)
+        lblItem.BackgroundTransparency = 1
+        lblItem.Parent = sectionContent
+
         local lbl = new("TextLabel", {
-            Parent = item,
-            Text = text,
+            Parent = lblItem,
+            Text = textLabel or "Label",
             Font = Enum.Font.GothamBold,
             TextSize = 12,
-            TextColor3 = Color3.fromRGB(255, 255, 255), -- branco
+            TextColor3 = Color3.fromRGB(255, 255, 255),
             BackgroundTransparency = 1,
             Position = UDim2.new(0, 8, 0, 0),
             Size = UDim2.new(1, -16, 1, 0),
             TextXAlignment = Enum.TextXAlignment.Left
         })
+
         return {
-            SetText = function(newText) lbl.Text = newText end
+            SetText = function(newText)
+                lbl.Text = newText
+            end
         }
     end
 
     return sectionAPI
 end
-
 
 
 

@@ -1179,11 +1179,6 @@ function tabAPI:AddSectionLabel(text)
     return label
 end
 
--- Para que você possa chamar assim:
--- Section:AddLabel("Resource available only for premium users!")
-Section.AddLabel = tabAPI.AddSectionLabel
-
-
 
 
         -- return tabAPI with only public methods mapped
@@ -1201,7 +1196,6 @@ Section.AddLabel = tabAPI.AddSectionLabel
         }
         
         return public
-        
 
     end
 

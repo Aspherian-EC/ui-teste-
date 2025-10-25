@@ -1160,55 +1160,56 @@ end
 
 
 --label 
-
+-- AddLabel
 function tabAPI:AddLabel(text)
-    text = text or "Label"
+    -- se o dev não passou texto, usa o padrão
+    text = text or "Resource available only for premium users!"
 
-    -- garante que mesmo se 'self' não for o tabAPI, ele pega o ambiente correto
-    local self = self or tabAPI
+    local item = Instance.new("Frame")
+    item.BackgroundColor3 = Theme.ItemFrame
+    item.Size = UDim2.new(1, -12, 0, 26)
+    item.BorderSizePixel = 0
+    item.Parent = tabContent
+    makeCorner(item, 4)
 
-    -- cria o frame normalmente
-    local item = newItemFrame()
-    item.Size = UDim2.new(1, -12, 0, 20)
+    local stroke = Instance.new("UIStroke", item)
+    stroke.Color = Theme.ItemUIStroke
 
-    local label = new("TextLabel", {
-        Parent = item,
-        Text = text,
-        Font = Enum.Font.GothamBold,
-        TextSize = 12,
-        TextColor3 = Theme.ItemText,
-        BackgroundTransparency = 1,
-        Position = UDim2.new(0, 8, 0, 0),
-        Size = UDim2.new(1, -8, 1, 0),
-        TextXAlignment = Enum.TextXAlignment.Left
-    })
+    local label = Instance.new("TextLabel")
+    label.Parent = item
+    label.Text = tostring(text)
+    label.Font = Enum.Font.GothamBold
+    label.TextSize = 12
+    label.TextColor3 = Theme.ItemText
+    label.BackgroundTransparency = 1
+    label.Position = UDim2.new(0, 8, 0, 0)
+    label.Size = UDim2.new(1, -16, 1, 0)
+    label.TextXAlignment = Enum.TextXAlignment.Left
 
-    return {
-        SetText = function(newText)
-            label.Text = newText
-        end
-    }
+    return label
 end
 
 
 
 
 
+
+       -- return tabAPI with only public methods mapped
 local public = {
-    AddToggle = function(...) return tabAPI.AddToggle(tabAPI, ...) end,
-    AddButton = function(...) return tabAPI.AddButton(tabAPI, ...) end,
-    AddSlider = function(...) return tabAPI.AddSlider(tabAPI, ...) end,
-    AddInput = function(...) return tabAPI.AddInput(tabAPI, ...) end,
-    AddDropdown = function(...) return tabAPI.AddDropdown(tabAPI, ...) end,
-    AddBind = function(...) return tabAPI.AddKeybind(tabAPI, ...) end,
-    AddSection = function(...) return tabAPI.AddSection(tabAPI, ...) end,
-    AddTextbox = function(...) return tabAPI.AddTextbox(tabAPI, ...) end,
-    AddLabel = function(...) return tabAPI.AddLabel(tabAPI, ...) end,
+    AddToggle = tabAPI.AddToggle,
+    AddButton = tabAPI.AddButton,
+    AddSlider = tabAPI.AddSlider,
+    AddInput = tabAPI.AddInput,
+    AddDropdown = tabAPI.AddDropdown,
+    AddBind = tabAPI.AddKeybind,
+    AddSection = tabAPI.AddSection,
+    AddTextbox = tabAPI.AddTextbox,
+    AddLabel = tabAPI.AddLabel, -- ✅ adiciona isso aqui
     _internalId = id
 }
+
 return public
 
-        
 
 
     end

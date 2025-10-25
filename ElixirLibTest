@@ -981,18 +981,170 @@ function ElixirLib:MakeWindow(info)
             }
         end
 
-        -- return tabAPI with only public methods mapped
-        local public = {
-            AddToggle = tabAPI.AddToggle,
-            AddButton = tabAPI.AddButton,
-            AddSlider = tabAPI.AddSlider,
-            AddInput = tabAPI.AddInput,
-            AddDropdown = tabAPI.AddDropdown,
-            AddBind = tabAPI.AddKeybind,
-            _internalId = id
-        }
+        --Textbox 
 
-        return public
+        function tabAPI:AddTextbox(opt)
+            opt = opt or {}
+            local name = opt.Name or "Textbox"
+            local placeholder = opt.Placeholder or "Enter text..."
+            local default = opt.Default or ""
+            local callback = opt.Callback or function() end
+        
+            local item = newItemFrame()
+        
+            -- Label com o nome do textbox
+            local label = new("TextLabel", {
+                Parent = item,
+                Text = name,
+                Font = Enum.Font.GothamBold,
+                TextSize = 12,
+                TextColor3 = Theme.TextColor,
+                BackgroundTransparency = 1,
+                Size = UDim2.new(1, -12, 0, 18),
+                Position = UDim2.new(0, 6, 0, 0),
+                TextXAlignment = Enum.TextXAlignment.Left
+            })
+        
+            -- TextBox de entrada
+            local box = new("TextBox", {
+                Parent = item,
+                PlaceholderText = placeholder,
+                Text = default,
+                Font = Enum.Font.Gotham,
+                TextSize = 12,
+                TextColor3 = Theme.TextColor,
+                BackgroundColor3 = Theme.ItemFrame,
+                BorderSizePixel = 0,
+                Size = UDim2.new(1, -12, 0, 24),
+                Position = UDim2.new(0, 6, 0, 20),
+                ClearTextOnFocus = false
+            })
+            makeCorner(box, 6)
+        
+            -- Efeito de foco
+            box.Focused:Connect(function()
+                TweenService:Create(box, TweenInfo.new(0.15), {
+                    BackgroundColor3 = Theme.Highlight
+                }):Play()
+            end)
+            box.FocusLost:Connect(function(enterPressed)
+                TweenService:Create(box, TweenInfo.new(0.15), {
+                    BackgroundColor3 = Theme.ItemFrame
+                }):Play()
+                if enterPressed then
+                    callback(box.Text)
+                end
+            end)
+        
+            -- Retorna API pública
+            return {
+                SetText = function(t)
+                    box.Text = t
+                end,
+                GetText = function()
+                    return box.Text
+                end,
+                SetPlaceholder = function(t)
+                    box.PlaceholderText = t
+                end
+            }
+        end
+
+        --section
+        function tabAPI:AddSection(opt)
+            opt = opt or {}
+            local name = opt.Name or "Section"
+        
+            local item = newItemFrame()
+            item.Size = UDim2.new(1, -12, 0, 18)
+            item.BackgroundTransparency = 1
+        
+            -- Linha + nome + linha
+            local text = new("TextLabel", {
+                Parent = item,
+                Text = "────────── " .. tostring(name) .. " ──────────",
+                Font = Enum.Font.GothamBold,
+                TextSize = 12,
+                TextColor3 = Theme.Highlight,
+                BackgroundTransparency = 1,
+                Size = UDim2.new(1, 0, 0, 18),
+                TextXAlignment = Enum.TextXAlignment.Center
+            })
+        
+            return {
+                Set = function(v)
+                    text.Text = "────────── " .. tostring(v) .. " ──────────"
+                end
+            }
+        end
+
+        --button 
+        function tabAPI:AddButton(opt)
+            opt = opt or {}
+            local name = opt.Name or "Button"
+            local callback = opt.Callback or function() end
+        
+            local item = newItemFrame()
+        
+            local button = new("TextButton", {
+                Parent = item,
+                Text = name,
+                Font = Enum.Font.GothamBold,
+                TextSize = 12,
+                TextColor3 = Color3.new(1,1,1),
+                BackgroundColor3 = Theme.Highlight,
+                BorderSizePixel = 0,
+                Size = UDim2.new(1, -12, 0, 24),
+                Position = UDim2.new(0, 6, 0, 0),
+                AutoButtonColor = false
+            })
+            makeCorner(button, 6)
+        
+            -- Efeito visual ao passar o mouse
+            button.MouseEnter:Connect(function()
+                TweenService:Create(button, TweenInfo.new(.1), {
+                    BackgroundColor3 = Theme.ItemFrame
+                }):Play()
+            end)
+            button.MouseLeave:Connect(function()
+                TweenService:Create(button, TweenInfo.new(.1), {
+                    BackgroundColor3 = Theme.Highlight
+                }):Play()
+            end)
+        
+            -- Clique executa o callback
+            button.MouseButton1Click:Connect(function()
+                callback()
+            end)
+        
+            return {
+                Click = function()
+                    callback()
+                end,
+                SetText = function(txt)
+                    button.Text = txt
+                end
+            }
+        end
+        
+        
+
+
+       -- return tabAPI with only public methods mapped
+local public = {
+    AddToggle = tabAPI.AddToggle,
+    AddButton = tabAPI.AddButton,
+    AddSlider = tabAPI.AddSlider,
+    AddInput = tabAPI.AddInput,
+    AddDropdown = tabAPI.AddDropdown,
+    AddBind = tabAPI.AddKeybind,
+    AddSection = tabAPI.AddSection,
+    AddTextbox = tabAPI.AddTextbox, -- ✅ novo
+    _internalId = id
+}
+
+return public
+
     end
 
     -- return object for user

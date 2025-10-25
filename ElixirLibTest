@@ -690,189 +690,190 @@ function ElixirLib:MakeWindow(info)
             }
         end
 
-    -- AddDropdown
-function tabAPI:AddDropdown(opt)
-    opt = opt or {}
-    local name = opt.Name or "Dropdown"
-    local options = opt.Options or {}
-    local default = opt.Default or options[1] or "None"
-    local callback = opt.Callback or function() end
-    local flag = opt.Flag or HttpService:GenerateGUID(false)
-
-    ElixirLib.Flags[flag] = default
-
-    local item = newItemFrame()
-    item.AutomaticSize = Enum.AutomaticSize.Y
-
-    -- Nome do dropdown
-    local label = new("TextLabel", {
-        Parent = item,
-        Text = name,
-        Font = Enum.Font.GothamBold,
-        TextSize = 12,
-        TextColor3 = Theme.ItemText,
-        BackgroundTransparency = 1,
-        Position = UDim2.new(0,8,0,0),
-        Size = UDim2.new(0.45,-8,0,24),
-        TextXAlignment = Enum.TextXAlignment.Left
-    })
-
-    -- Texto que mostra a opção atual
-    local currentText = new("TextLabel", {
-        Parent = item,
-        Text = tostring(default),
-        Font = Enum.Font.GothamBold,
-        TextSize = 12,
-        TextColor3 = Theme.Highlight,
-        BackgroundTransparency = 1,
-        AnchorPoint = Vector2.new(1,0),
-        Position = UDim2.new(1,-12,0,0),
-        Size = UDim2.new(0.45,0,0,24),
-        TextXAlignment = Enum.TextXAlignment.Right
-    })
-
-    -- Moldura do dropdown (onde aparecerá a lista)
-    local dropdownFrame = new("Frame", {
-        Parent = item,
-        BackgroundColor3 = Theme.ItemFrame,
-        BorderSizePixel = 0,
-        Size = UDim2.new(1,-12,0,0),
-        Position = UDim2.new(0,6,0,24),
-        ClipsDescendants = true,
-        AutomaticSize = Enum.AutomaticSize.Y
-    })
-    makeCorner(dropdownFrame, 6)
-
-    local listLayout = new("UIListLayout", { Parent = dropdownFrame })
-    listLayout.SortOrder = Enum.SortOrder.LayoutOrder
-    listLayout.Padding = UDim.new(0,4)
-
-    local padding = new("UIPadding", {
-        Parent = dropdownFrame,
-        PaddingTop = UDim.new(0,4),
-        PaddingBottom = UDim.new(0,4),
-        PaddingLeft = UDim.new(0,6),
-        PaddingRight = UDim.new(0,6)
-    })
-
-    -- Área rolável da lista
-    local scrollFrame = new("ScrollingFrame", {
-        Parent = dropdownFrame,
-        BackgroundTransparency = 1,
-        Size = UDim2.new(1,0,0,0),
-        AutomaticSize = Enum.AutomaticSize.Y,
-        CanvasSize = UDim2.new(0,0,0,0),
-        ScrollBarThickness = 4,
-        ScrollBarImageColor3 = Theme.Highlight
-    })
-    makeCorner(scrollFrame, 6)
-
-    local scrollList = new("UIListLayout", {
-        Parent = scrollFrame,
-        SortOrder = Enum.SortOrder.LayoutOrder,
-        Padding = UDim.new(0,2)
-    })
-
-    local opened = false
-
-    -- Cria as opções
-    local function rebuildOptions()
-        for _,v in pairs(scrollFrame:GetChildren()) do
-            if v:IsA("TextButton") then v:Destroy() end
-        end
-
-        for _,optVal in ipairs(options) do
-            local btn = new("TextButton", {
-                Parent = scrollFrame,
-                Text = tostring(optVal),
+        function tabAPI:AddDropdown(opt)
+            opt = opt or {}
+            local name = opt.Name or "Dropdown"
+            local options = opt.Options or {}
+            local default = opt.Default or options[1] or "None"
+            local callback = opt.Callback or function() end
+            local flag = opt.Flag or HttpService:GenerateGUID(false)
+        
+            ElixirLib.Flags[flag] = default
+        
+            local item = newItemFrame()
+            item.AutomaticSize = Enum.AutomaticSize.Y
+        
+            -- Nome do dropdown
+            local label = new("TextLabel", {
+                Parent = item,
+                Text = name,
                 Font = Enum.Font.GothamBold,
                 TextSize = 12,
                 TextColor3 = Theme.ItemText,
+                BackgroundTransparency = 1,
+                Position = UDim2.new(0,8,0,0),
+                Size = UDim2.new(0.45,-8,0,24),
+                TextXAlignment = Enum.TextXAlignment.Left
+            })
+        
+            -- Texto que mostra a opção atual
+            local currentText = new("TextLabel", {
+                Parent = item,
+                Text = tostring(default),
+                Font = Enum.Font.GothamBold,
+                TextSize = 12,
+                TextColor3 = Theme.Highlight,
+                BackgroundTransparency = 1,
+                AnchorPoint = Vector2.new(1,0),
+                Position = UDim2.new(1,-12,0,0),
+                Size = UDim2.new(0.45,0,0,24),
+                TextXAlignment = Enum.TextXAlignment.Right
+            })
+        
+            -- Moldura principal do dropdown (fechada por padrão)
+            local dropdownFrame = new("Frame", {
+                Parent = item,
                 BackgroundColor3 = Theme.ItemFrame,
                 BorderSizePixel = 0,
+                Size = UDim2.new(1,-12,0,0),
+                Position = UDim2.new(0,6,0,24),
+                ClipsDescendants = true
+            })
+            makeCorner(dropdownFrame, 6)
+        
+            -- Frame rolável que conterá as opções
+            local scrollFrame = new("ScrollingFrame", {
+                Parent = dropdownFrame,
+                BackgroundTransparency = 1,
+                Size = UDim2.new(1,0,0,0),
+                CanvasSize = UDim2.new(0,0,0,0),
+                ScrollBarThickness = 4,
+                ScrollBarImageColor3 = Theme.Highlight,
+                Visible = false
+            })
+            makeCorner(scrollFrame, 6)
+        
+            local scrollList = new("UIListLayout", {
+                Parent = scrollFrame,
+                SortOrder = Enum.SortOrder.LayoutOrder,
+                Padding = UDim.new(0,2)
+            })
+        
+            local padding = new("UIPadding", {
+                Parent = scrollFrame,
+                PaddingTop = UDim.new(0,4),
+                PaddingBottom = UDim.new(0,4),
+                PaddingLeft = UDim.new(0,6),
+                PaddingRight = UDim.new(0,6)
+            })
+        
+            local opened = false
+        
+            -- Cria as opções
+            local function rebuildOptions()
+                for _,v in pairs(scrollFrame:GetChildren()) do
+                    if v:IsA("TextButton") then v:Destroy() end
+                end
+        
+                for _,optVal in ipairs(options) do
+                    local btn = new("TextButton", {
+                        Parent = scrollFrame,
+                        Text = tostring(optVal),
+                        Font = Enum.Font.GothamBold,
+                        TextSize = 12,
+                        TextColor3 = Theme.ItemText,
+                        BackgroundColor3 = Theme.ItemFrame,
+                        BorderSizePixel = 0,
+                        Size = UDim2.new(1,0,0,24),
+                        AutoButtonColor = false
+                    })
+                    makeCorner(btn, 4)
+        
+                    btn.MouseEnter:Connect(function()
+                        TweenService:Create(btn, TweenInfo.new(.08), {
+                            BackgroundColor3 = Theme.Highlight,
+                            TextColor3 = Color3.new(1,1,1)
+                        }):Play()
+                    end)
+        
+                    btn.MouseLeave:Connect(function()
+                        TweenService:Create(btn, TweenInfo.new(.08), {
+                            BackgroundColor3 = Theme.ItemFrame,
+                            TextColor3 = Theme.ItemText
+                        }):Play()
+                    end)
+        
+                    btn.MouseButton1Click:Connect(function()
+                        ElixirLib.Flags[flag] = optVal
+                        currentText.Text = tostring(optVal)
+                        callback(optVal)
+                        closeList()
+                    end)
+                end
+            end
+        
+            -- Função para abrir a lista
+            local function openList()
+                opened = true
+                scrollFrame.Visible = true
+                local count = #options
+                local visibleCount = math.min(count, 5) -- até 5 opções antes de rolar
+                TweenService:Create(scrollFrame, TweenInfo.new(.15), {
+                    Size = UDim2.new(1,0,0,visibleCount*26)
+                }):Play()
+            end
+        
+            -- Função para fechar a lista
+            function closeList()
+                opened = false
+                TweenService:Create(scrollFrame, TweenInfo.new(.15), {
+                    Size = UDim2.new(1,0,0,0)
+                }):Play()
+                task.delay(.15, function()
+                    if not opened then
+                        scrollFrame.Visible = false
+                    end
+                end)
+            end
+        
+            rebuildOptions()
+            scrollFrame.Size = UDim2.new(1,0,0,0)
+            scrollFrame.Visible = false
+        
+            -- Área clicável para abrir/fechar
+            local dropdownClickArea = new("TextButton", {
+                Parent = item,
+                BackgroundTransparency = 1,
                 Size = UDim2.new(1,0,0,24),
+                ZIndex = 2,
+                Text = "",
                 AutoButtonColor = false
             })
-            makeCorner(btn, 4)
-
-            btn.MouseEnter:Connect(function()
-                TweenService:Create(btn, TweenInfo.new(.08), {
-                    BackgroundColor3 = Theme.Highlight,
-                    TextColor3 = Color3.new(1,1,1)
-                }):Play()
+        
+            dropdownClickArea.MouseButton1Click:Connect(function()
+                if opened then
+                    closeList()
+                else
+                    openList()
+                end
             end)
-
-            btn.MouseLeave:Connect(function()
-                TweenService:Create(btn, TweenInfo.new(.08), {
-                    BackgroundColor3 = Theme.ItemFrame,
-                    TextColor3 = Theme.ItemText
-                }):Play()
-            end)
-
-            btn.MouseButton1Click:Connect(function()
-                ElixirLib.Flags[flag] = optVal
-                currentText.Text = tostring(optVal)
-                callback(optVal)
-                closeList()
-            end)
+        
+            return {
+                SetOptions = function(newOptions)
+                    options = newOptions or {}
+                    rebuildOptions()
+                end,
+                Set = function(v)
+                    ElixirLib.Flags[flag] = v
+                    currentText.Text = tostring(v)
+                end,
+                Get = function()
+                    return ElixirLib.Flags[flag]
+                end,
+                Flag = flag
+            }
         end
-    end
-
-    local function openList()
-        opened = true
-        local count = #options
-        local visibleCount = math.min(count, 5) -- mostra até 5 antes de rolar
-        TweenService:Create(scrollFrame, TweenInfo.new(.15), {
-            Size = UDim2.new(1,0,0,visibleCount*26)
-        }):Play()
-    end
-
-    function closeList()
-        opened = false
-        TweenService:Create(scrollFrame, TweenInfo.new(.15), {
-            Size = UDim2.new(1,0,0,0)
-        }):Play()
-    end
-
-    rebuildOptions()
-    scrollFrame.Size = UDim2.new(1,0,0,0)
-
-    -- Área clicável (apenas o campo do dropdown)
-    local dropdownClickArea = new("TextButton", {
-        Parent = item,
-        BackgroundTransparency = 1,
-        Size = UDim2.new(1,0,0,24),
-        ZIndex = 2,
-        Text = "",
-        AutoButtonColor = false
-    })
-
-    dropdownClickArea.MouseButton1Click:Connect(function()
-        if opened then
-            closeList()
-        else
-            openList()
-        end
-    end)
-
-    return {
-        SetOptions = function(newOptions)
-            options = newOptions or {}
-            rebuildOptions()
-        end,
-        Set = function(v)
-            ElixirLib.Flags[flag] = v
-            currentText.Text = tostring(v)
-        end,
-        Get = function()
-            return ElixirLib.Flags[flag]
-        end,
-        Flag = flag
-    }
-end
-
-
-
+        
         -- AddKeybind
         function tabAPI:AddKeybind(opt)
             opt = opt or {}

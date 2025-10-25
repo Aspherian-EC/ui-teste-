@@ -1170,11 +1170,11 @@ function tabAPI:AddLabel(options)
     label.Font = Enum.Font.Gotham
     label.TextXAlignment = Enum.TextXAlignment.Left
 
-    -- Detecta se está sendo chamado por uma Section ou Tab
+    -- Verifica se é section ou tab
     if self.Container then
-        label.Parent = self.Container
+        label.Parent = self.Container -- usado pelas sections
     elseif tabContent then
-        label.Parent = tabContent
+        label.Parent = tabContent -- usado pelas tabs
     else
         warn("[ElixirLib] Não foi possível determinar onde colocar o Label.")
         label:Destroy()
@@ -1187,20 +1187,20 @@ end
 
 
         -- return tabAPI with only public methods mapped
-local public = {
-    AddToggle = tabAPI.AddToggle,
-    AddButton = tabAPI.AddButton,
-    AddSlider = tabAPI.AddSlider,
-    AddInput = tabAPI.AddInput,
-    AddDropdown = tabAPI.AddDropdown,
-    AddBind = tabAPI.AddKeybind,
-    AddSection = tabAPI.AddSection,
-    AddTextbox = tabAPI.AddTextbox, 
-    AddLabel = tabAPI.AddLabel, -- ✅ novo
-    _internalId = id
-}
-
-return public
+        local public = {
+            AddToggle = tabAPI.AddToggle,
+            AddButton = tabAPI.AddButton,
+            AddSlider = tabAPI.AddSlider,
+            AddInput = tabAPI.AddInput,
+            AddDropdown = tabAPI.AddDropdown,
+            AddBind = tabAPI.AddKeybind,
+            AddSection = tabAPI.AddSection,
+            AddTextbox = tabAPI.AddTextbox,
+            AddLabel = tabAPI.AddLabel, -- ✅ ADICIONE ISSO
+            _internalId = id
+        }
+        
+        return public
 
     end
 

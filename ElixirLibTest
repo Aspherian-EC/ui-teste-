@@ -90,11 +90,10 @@ function ElixirLib:MakeWindow(info)
         BackgroundTransparency = 1,
         Size = UDim2.new(0,520,0,370),
         Position = UDim2.new(0.34,0,0.28,0),
-        Image = "rbxassetid://10740267356", -- small shadow image if available; will be transparent if not
+        Image = "rbxassetid://10740267356",
         ImageColor3 = Theme.Shadow,
         ImageTransparency = 0.8
     })
-    -- fallback if image not present - just a frame
     if not shadow.Image or shadow.Image == "" then
         shadow:Destroy()
         shadow = new("Frame", {
@@ -141,7 +140,7 @@ function ElixirLib:MakeWindow(info)
         TextXAlignment = Enum.TextXAlignment.Left
     })
 
-    -- close button
+    -- close button (mantido apenas)
     local closeBtn = new("ImageButton", {
         Parent = topbar,
         Size = UDim2.new(0,17,0,17),
@@ -153,166 +152,89 @@ function ElixirLib:MakeWindow(info)
     closeBtn.MouseLeave:Connect(function() TweenService:Create(closeBtn, TweenInfo.new(.12), {ImageColor3 = Color3.fromRGB(255,255,255)}):Play() end)
     closeBtn.MouseButton1Click:Connect(function() pcall(function() screenGui:Destroy() end) end)
 
-    -- main stroke
-    local mainStroke = Instance.new("UIStroke", main)
-    mainStroke.Color = Theme.MainUIStroke
-
-    -- left tabs container
-    local tabContainer = new("Frame", {
-        Parent = main,
-        BackgroundColor3 = Theme.TabContainer,
-        Size = UDim2.new(0,131,0,316),
-        Position = UDim2.new(-0.012,6,0.0971,0),
-        BorderSizePixel = 0
-    })
-    makeCorner(tabContainer, 4)
-
-    local tabContainerLine = new("Frame", {
-        Parent = tabContainer,
-        BackgroundColor3 = Theme.Lines,
-        Size = UDim2.new(1,0,0,1),
-        Position = UDim2.new(0,0,0,0),
-        BorderSizePixel = 0
-    })
-
-    -- tab scrolling
-    local tabScroll = new("ScrollingFrame", {
-        Parent = tabContainer,
-        BackgroundTransparency = 1,
-        BorderSizePixel = 0,
-        Size = UDim2.new(1,0,1,0),
-        Position = UDim2.new(0,0,0,6),
-        ScrollBarThickness = 0,
-        AutomaticCanvasSize = Enum.AutomaticSize.Y
-    })
-    local tabListLayout = new("UIListLayout", { Parent = tabScroll })
-    tabListLayout.SortOrder = Enum.SortOrder.LayoutOrder
-    tabListLayout.Padding = UDim.new(0,6)
-
-    -- right content area
-    local content = new("Frame", {
-        Parent = main,
-        BackgroundColor3 = Theme.ContainerHolder,
-        Size = UDim2.new(0,368,0,316),
-        Position = UDim2.new(0.262,1,0.097,0),
-        BorderSizePixel = 0
-    })
-    makeCorner(content, 4)
-
-    -- container area where each tab adds its content
-    local containers = new("Frame", {
-        Parent = content,
-        BackgroundTransparency = 1,
-        Size = UDim2.new(1,0,1,0)
-    })
-
-    -- Toggle do painel com botão externo
-    local panelVisible = true
-    local function togglePanel()
-        panelVisible = not panelVisible
-        main.Visible = panelVisible
-        shadow.Visible = panelVisible
-    end
-
+    -----------------------------------------------------------
+    -- BOTÃO ABRIR/FECHAR PEQUENO FORA DO PAINEL
+    -----------------------------------------------------------
+    local isVisible = true
     local toggleBtn = new("ImageButton", {
-        Parent = screenGui,
-        Size = UDim2.new(0,40,0,40),
-        Position = UDim2.new(0.5,0,0.5,0),
-        BackgroundTransparency = 0,
-        BackgroundColor3 = Theme.Main,
+        Parent = rootFolder,
+        Size = UDim2.new(0,36,0,36),
+        Position = UDim2.new(0,50,0,50),
+        BackgroundTransparency = 0.1,
+        BackgroundColor3 = Color3.fromRGB(50,50,55),
         Image = "rbxassetid://72671288986713",
         ZIndex = 10
     })
     makeCorner(toggleBtn, 6)
 
-    -- Arrastar botão externo
-    local dragging, dragInput, dragStart, startPos
-    toggleBtn.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 then
-            dragging = true
-            dragStart = input.Position
-            startPos = toggleBtn.Position
-            input.Changed:Connect(function()
-                if input.UserInputState == Enum.UserInputState.End then
-                    dragging = false
-                end
-            end)
-        end
-    end)
-    toggleBtn.InputChanged:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseMovement then
-            dragInput = input
-        end
-    end)
-    UserInputService.InputChanged:Connect(function(input)
-        if input == dragInput and dragging then
-            local delta = input.Position - dragStart
-            toggleBtn.Position = UDim2.new(
-                startPos.X.Scale,
-                startPos.X.Offset + delta.X,
-                startPos.Y.Scale,
-                startPos.Y.Offset + delta.Y
-            )
-        end
+    toggleBtn.MouseButton1Click:Connect(function()
+        isVisible = not isVisible
+        main.Visible = isVisible
+        shadow.Visible = isVisible
     end)
 
-    toggleBtn.MouseButton1Click:Connect(togglePanel)
-
-    -- Toggle com RightShift
-    UserInputService.InputBegan:Connect(function(input)
+    -- também abre/fecha com RightShift
+    UserInputService.InputBegan:Connect(function(input, gp)
+        if gp then return end
         if input.KeyCode == Enum.KeyCode.RightShift then
-            togglePanel()
+            isVisible = not isVisible
+            main.Visible = isVisible
+            shadow.Visible = isVisible
         end
     end)
 
-    -- Redimensionamento do painel
-    local resizeGrip = new("Frame", {
-        Parent = main,
-        Size = UDim2.new(0,20,0,20),
-        Position = UDim2.new(1,-20,1,-20),
-        BackgroundColor3 = Theme.TabContainer,
-        ZIndex = 5
+    -----------------------------------------------------------
+    -- BOTÃO REDIMENSIONAR (arrastável, canto inferior direito)
+    -----------------------------------------------------------
+    local resizeBtn = new("Frame", {
+        Parent = rootFolder,
+        Size = UDim2.new(0,24,0,24),
+        Position = main.Position + UDim2.new(0, main.Size.X.Offset - 24, 0, main.Size.Y.Offset - 24),
+        BackgroundColor3 = Color3.fromRGB(80,201,206),
+        ZIndex = 10
     })
-    makeCorner(resizeGrip, 4)
-    resizeGrip.Active = true
-    resizeGrip.Draggable = true
+    makeCorner(resizeBtn, 4)
 
-    resizeGrip.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 then
-            local startMouse = input.Position
-            local startSize = main.Size
-            local conn
-            conn = UserInputService.InputChanged:Connect(function(move)
-                if move.UserInputType == Enum.UserInputType.MouseMovement then
-                    local delta = move.Position - startMouse
-                    main.Size = UDim2.new(
-                        0, math.clamp(startSize.X.Offset + delta.X, 200, 1000),
-                        0, math.clamp(startSize.Y.Offset + delta.Y, 200, 800)
-                    )
-                    shadow.Size = main.Size
-                end
-            end)
-            input.Changed:Connect(function()
-                if input.UserInputState == Enum.UserInputState.End then
-                    conn:Disconnect()
-                end
-            end)
+    local resizeIcon = new("ImageLabel", {
+        Parent = resizeBtn,
+        Size = UDim2.new(1,0,1,0),
+        BackgroundTransparency = 1,
+        Image = "rbxassetid://72671288986713", -- mesma seta, pode trocar
+        AnchorPoint = Vector2.new(0.5,0.5),
+        Position = UDim2.new(0.5,0,0.5,0)
+    })
+
+    local draggingResize = false
+    local dragStart, startSize
+
+    resizeBtn.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            draggingResize = true
+            dragStart = input.Position
+            startSize = main.Size
         end
     end)
 
-    return {
-        Main = main,
-        Shadow = shadow,
-        ToggleButton = toggleBtn,
-        Content = content,
-        Containers = containers,
-        TabContainer = tabContainer
-    }
-end
+    resizeBtn.InputEnded:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            draggingResize = false
+        end
+    end)
 
+    UserInputService.InputChanged:Connect(function(input)
+        if draggingResize and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+            local delta = input.Position - dragStart
+            local newX = math.max(200, startSize.X.Offset + delta.X)
+            local newY = math.max(150, startSize.Y.Offset + delta.Y)
+            main.Size = UDim2.new(0,newX,0,newY)
+            shadow.Size = main.Size + UDim2.new(0,20,0,20)
+            resizeBtn.Position = main.Position + UDim2.new(0, main.Size.X.Offset - 24, 0, main.Size.Y.Offset - 24)
+        end
+    end)
 
-
-
+    -----------------------------------------------------------
+    -- resto do script original continua (Tabs, Items etc)
+    -----------------------------------------------------------
     -- main stroke
     local mainStroke = Instance.new("UIStroke", main)
     mainStroke.Color = Theme.MainUIStroke
@@ -357,6 +279,7 @@ end
         Position = UDim2.new(0.262,1,0.097,0),
         BorderSizePixel = 0
     })
+    
     makeCorner(content, 4)
 
     -- container area where each tab adds its content

@@ -1164,13 +1164,26 @@ function tabAPI:AddLabel(options)
     local label = Instance.new("TextLabel")
     label.Size = UDim2.new(1, -10, 0, 20)
     label.BackgroundTransparency = 1
-    label.Text = options.Name or options.Text or "Label"
-    label.TextColor3 = Color3.fromRGB(200, 200, 200) -- cinza claro elegante
+    label.Text = (type(options) == "table" and (options.Name or options.Text)) or tostring(options)
+    label.TextColor3 = Color3.fromRGB(200, 200, 200) -- cinza claro
     label.TextSize = 14
     label.Font = Enum.Font.Gotham
     label.TextXAlignment = Enum.TextXAlignment.Left
-    label.Parent = tabContent
+
+    -- Detecta se está sendo chamado por uma Section ou Tab
+    if self.Container then
+        label.Parent = self.Container
+    elseif tabContent then
+        label.Parent = tabContent
+    else
+        warn("[ElixirLib] Não foi possível determinar onde colocar o Label.")
+        label:Destroy()
+        return
+    end
+
+    return label
 end
+
 
 
         -- return tabAPI with only public methods mapped
@@ -1183,7 +1196,7 @@ local public = {
     AddBind = tabAPI.AddKeybind,
     AddSection = tabAPI.AddSection,
     AddTextbox = tabAPI.AddTextbox, 
-    AddLabel = tabAPI.AddLabel,-- ✅ novo
+    AddLabel = tabAPI.AddLabel, -- ✅ novo
     _internalId = id
 }
 

@@ -1160,29 +1160,29 @@ end
 
 --Label 
 
-function tabAPI:AddLabel(options)
-    local label = Instance.new("TextLabel")
-    label.Size = UDim2.new(1, -10, 0, 20)
-    label.BackgroundTransparency = 1
-    label.Text = (type(options) == "table" and (options.Name or options.Text)) or tostring(options)
-    label.TextColor3 = Color3.fromRGB(200, 200, 200) -- cinza claro
-    label.TextSize = 14
-    label.Font = Enum.Font.Gotham
-    label.TextXAlignment = Enum.TextXAlignment.Left
-
-    -- Verifica se é section ou tab
-    if self.Container then
-        label.Parent = self.Container -- usado pelas sections
-    elseif tabContent then
-        label.Parent = tabContent -- usado pelas tabs
-    else
-        warn("[ElixirLib] Não foi possível determinar onde colocar o Label.")
-        label:Destroy()
-        return
-    end
-
+-- Adiciona método AddLabel ao Section
+function tabAPI:AddSectionLabel(text)
+    text = text or "Label"
+    local item = newItemFrame()
+    item.Size = UDim2.new(1, -12, 0, 20) -- altura ajustável
+    local label = new("TextLabel", {
+        Parent = item,
+        Text = text,
+        Font = Enum.Font.Gotham,
+        TextSize = 12,
+        TextColor3 = Color3.fromRGB(200, 200, 200), -- cinza claro
+        BackgroundTransparency = 1,
+        Position = UDim2.new(0, 8, 0, 0),
+        Size = UDim2.new(1, -16, 1, 0),
+        TextXAlignment = Enum.TextXAlignment.Left
+    })
     return label
 end
+
+-- Para que você possa chamar assim:
+-- Section:AddLabel("Resource available only for premium users!")
+Section.AddLabel = tabAPI.AddSectionLabel
+
 
 
 
@@ -1201,6 +1201,7 @@ end
         }
         
         return public
+        
 
     end
 

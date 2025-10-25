@@ -690,6 +690,9 @@ function ElixirLib:MakeWindow(info)
             }
         end
 
+
+        --dropdown 
+        
         function tabAPI:AddDropdown(opt)
             opt = opt or {}
             local name = opt.Name or "Dropdown"
@@ -716,7 +719,7 @@ function ElixirLib:MakeWindow(info)
                 TextXAlignment = Enum.TextXAlignment.Left
             })
         
-            -- Texto que mostra a opção atual
+            -- Texto da opção atual
             local currentText = new("TextLabel", {
                 Parent = item,
                 Text = tostring(default),
@@ -730,7 +733,7 @@ function ElixirLib:MakeWindow(info)
                 TextXAlignment = Enum.TextXAlignment.Right
             })
         
-            -- Moldura principal do dropdown (fechada por padrão)
+            -- Moldura principal do dropdown (lista)
             local dropdownFrame = new("Frame", {
                 Parent = item,
                 BackgroundColor3 = Theme.ItemFrame,
@@ -741,7 +744,7 @@ function ElixirLib:MakeWindow(info)
             })
             makeCorner(dropdownFrame, 6)
         
-            -- Frame rolável que conterá as opções
+            -- Área rolável das opções (inicialmente invisível)
             local scrollFrame = new("ScrollingFrame", {
                 Parent = dropdownFrame,
                 BackgroundTransparency = 1,
@@ -769,7 +772,9 @@ function ElixirLib:MakeWindow(info)
         
             local opened = false
         
-            -- Cria as opções
+            --------------------------------------------------------------------
+            -- Função para reconstruir as opções
+            --------------------------------------------------------------------
             local function rebuildOptions()
                 for _,v in pairs(scrollFrame:GetChildren()) do
                     if v:IsA("TextButton") then v:Destroy() end
@@ -810,25 +815,44 @@ function ElixirLib:MakeWindow(info)
                         closeList()
                     end)
                 end
+        
+                -- Atualiza o tamanho do Canvas (rolagem)
+                task.wait()
+                local totalHeight = (#options * 26) + 8
+                scrollFrame.CanvasSize = UDim2.new(0, 0, 0, totalHeight)
             end
         
-            -- Função para abrir a lista
+            --------------------------------------------------------------------
+            -- Funções de abrir/fechar lista
+            --------------------------------------------------------------------
             local function openList()
                 opened = true
                 scrollFrame.Visible = true
-                local count = #options
-                local visibleCount = math.min(count, 5) -- até 5 opções antes de rolar
+        
+                local totalHeight = (#options * 26) + 8
+                scrollFrame.CanvasSize = UDim2.new(0, 0, 0, totalHeight)
+        
+                local visibleCount = math.min(#options, 5)
                 TweenService:Create(scrollFrame, TweenInfo.new(.15), {
                     Size = UDim2.new(1,0,0,visibleCount*26)
                 }):Play()
+        
+                -- Empurra os elementos abaixo
+                TweenService:Create(dropdownFrame, TweenInfo.new(.15), {
+                    Size = UDim2.new(1,-12,0,(visibleCount*26)+4)
+                }):Play()
             end
         
-            -- Função para fechar a lista
             function closeList()
                 opened = false
                 TweenService:Create(scrollFrame, TweenInfo.new(.15), {
                     Size = UDim2.new(1,0,0,0)
                 }):Play()
+        
+                TweenService:Create(dropdownFrame, TweenInfo.new(.15), {
+                    Size = UDim2.new(1,-12,0,0)
+                }):Play()
+        
                 task.delay(.15, function()
                     if not opened then
                         scrollFrame.Visible = false
@@ -836,11 +860,13 @@ function ElixirLib:MakeWindow(info)
                 end)
             end
         
+            --------------------------------------------------------------------
+            -- Inicialização e clique
+            --------------------------------------------------------------------
             rebuildOptions()
             scrollFrame.Size = UDim2.new(1,0,0,0)
             scrollFrame.Visible = false
         
-            -- Área clicável para abrir/fechar
             local dropdownClickArea = new("TextButton", {
                 Parent = item,
                 BackgroundTransparency = 1,
@@ -858,6 +884,9 @@ function ElixirLib:MakeWindow(info)
                 end
             end)
         
+            --------------------------------------------------------------------
+            -- Retorno do Dropdown
+            --------------------------------------------------------------------
             return {
                 SetOptions = function(newOptions)
                     options = newOptions or {}
@@ -873,6 +902,7 @@ function ElixirLib:MakeWindow(info)
                 Flag = flag
             }
         end
+        
         
         -- AddKeybind
         function tabAPI:AddKeybind(opt)

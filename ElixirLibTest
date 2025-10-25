@@ -1158,51 +1158,50 @@ function tabAPI:AddButton(opt)
     }
 end
 
---Label 
+-- AddLabel
+function tabAPI:AddLabel(text)
+    local item = new("Frame", {
+        Parent = tabContent,
+        BackgroundTransparency = 1,
+        Size = UDim2.new(1, -12, 0, 20),
+    })
 
-function tabAPI:AddLabel(textValue)
-    textValue = textValue or "Label"
-
-    local item = newItemFrame()
-    item.Size = UDim2.new(1, -12, 0, 18)
-    item.BackgroundTransparency = 1
-
-    local text = new("TextLabel", {
+    local label = new("TextLabel", {
         Parent = item,
-        Text = tostring(textValue),
+        Text = text or "Label",
         Font = Enum.Font.GothamBold,
         TextSize = 12,
-        TextColor3 = Color3.fromRGB(200, 200, 200), -- cinza claro
+        TextColor3 = Color3.fromRGB(255,255,255), -- branco
         BackgroundTransparency = 1,
-        Size = UDim2.new(1, 0, 0, 18),
+        Position = UDim2.new(0, 8, 0, 0),
+        Size = UDim2.new(1, -16, 1, 0),
         TextXAlignment = Enum.TextXAlignment.Left
     })
 
     return {
-        Set = function(v)
-            text.Text = tostring(v)
-        end
+        Set = function(newText) label.Text = newText end,
+        Get = function() return label.Text end
     }
 end
 
 
 
-
         -- return tabAPI with only public methods mapped
-        local public = {
-            AddToggle = tabAPI.AddToggle,
-            AddButton = tabAPI.AddButton,
-            AddSlider = tabAPI.AddSlider,
-            AddInput = tabAPI.AddInput,
-            AddDropdown = tabAPI.AddDropdown,
-            AddBind = tabAPI.AddKeybind,
-            AddSection = tabAPI.AddSection,
-            AddTextbox = tabAPI.AddTextbox,
-            AddLabel = tabAPI.AddLabel, -- ✅ ADICIONE ISSO
-            _internalId = id
-        }
-        
-        return public
+local public = {
+    AddToggle = tabAPI.AddToggle,
+    AddButton = tabAPI.AddButton,
+    AddSlider = tabAPI.AddSlider,
+    AddInput = tabAPI.AddInput,
+    AddDropdown = tabAPI.AddDropdown,
+    AddBind = tabAPI.AddKeybind,
+    AddSection = tabAPI.AddSection,
+    AddTextbox = tabAPI.AddTextbox,
+    AddLabel = tabAPI.AddLabel, -- ✅ adicionado
+    _internalId = id
+}
+
+return public
+
 
     end
 

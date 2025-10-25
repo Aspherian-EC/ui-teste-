@@ -90,10 +90,11 @@ function ElixirLib:MakeWindow(info)
         BackgroundTransparency = 1,
         Size = UDim2.new(0,520,0,370),
         Position = UDim2.new(0.34,0,0.28,0),
-        Image = "rbxassetid://10740267356",
+        Image = "rbxassetid://10740267356", -- small shadow image if available; will be transparent if not
         ImageColor3 = Theme.Shadow,
         ImageTransparency = 0.8
     })
+    -- fallback if image not present - just a frame
     if not shadow.Image or shadow.Image == "" then
         shadow:Destroy()
         shadow = new("Frame", {
@@ -205,9 +206,7 @@ function ElixirLib:MakeWindow(info)
         Size = UDim2.new(1,0,1,0)
     })
 
-    -- =========================
-    -- NOVO: botão externo para abrir/fechar painel
-    -- =========================
+    -- Toggle do painel com botão externo
     local panelVisible = true
     local function togglePanel()
         panelVisible = not panelVisible
@@ -215,37 +214,24 @@ function ElixirLib:MakeWindow(info)
         shadow.Visible = panelVisible
     end
 
-    -- RightShift também abre/fecha painel
-    UserInputService.InputBegan:Connect(function(input, gameProcessed)
-        if gameProcessed then return end
-        if input.KeyCode == Enum.KeyCode.RightShift then
-            togglePanel()
-        end
-    end)
-
-    -- botão externo arrastável
-    local toggleButton = new("ImageButton", {
-        Parent = CoreGui,
+    local toggleBtn = new("ImageButton", {
+        Parent = screenGui,
         Size = UDim2.new(0,40,0,40),
-        Position = UDim2.new(0,10,0,10),
-        BackgroundColor3 = Color3.fromRGB(40,40,45),
-        BorderSizePixel = 0,
+        Position = UDim2.new(0.5,0,0.5,0),
+        BackgroundTransparency = 0,
+        BackgroundColor3 = Theme.Main,
         Image = "rbxassetid://72671288986713",
         ZIndex = 10
     })
-    makeCorner(toggleButton, 6)
+    makeCorner(toggleBtn, 6)
 
-    toggleButton.MouseButton1Click:Connect(togglePanel)
-
-    -- arrastar botão externo
-    local dragging = false
-    local dragInput, dragStart, startPos
-
-    toggleButton.InputBegan:Connect(function(input)
+    -- Arrastar botão externo
+    local dragging, dragInput, dragStart, startPos
+    toggleBtn.InputBegan:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 then
             dragging = true
             dragStart = input.Position
-            startPos = toggleButton.Position
+            startPos = toggleBtn.Position
             input.Changed:Connect(function()
                 if input.UserInputState == Enum.UserInputState.End then
                     dragging = false
@@ -253,69 +239,132 @@ function ElixirLib:MakeWindow(info)
             end)
         end
     end)
-
-    toggleButton.InputChanged:Connect(function(input)
+    toggleBtn.InputChanged:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseMovement then
             dragInput = input
         end
     end)
-
-    RunService.RenderStepped:Connect(function()
-        if dragging and dragInput then
-            local delta = dragInput.Position - dragStart
-            toggleButton.Position = UDim2.new(
-                startPos.X.Scale, startPos.X.Offset + delta.X,
-                startPos.Y.Scale, startPos.Y.Offset + delta.Y
+    UserInputService.InputChanged:Connect(function(input)
+        if input == dragInput and dragging then
+            local delta = input.Position - dragStart
+            toggleBtn.Position = UDim2.new(
+                startPos.X.Scale,
+                startPos.X.Offset + delta.X,
+                startPos.Y.Scale,
+                startPos.Y.Offset + delta.Y
             )
         end
     end)
 
-    -- =========================
-    -- NOVO: alça de redimensionamento
-    -- =========================
-    local resizeHandle = new("Frame", {
+    toggleBtn.MouseButton1Click:Connect(togglePanel)
+
+    -- Toggle com RightShift
+    UserInputService.InputBegan:Connect(function(input)
+        if input.KeyCode == Enum.KeyCode.RightShift then
+            togglePanel()
+        end
+    end)
+
+    -- Redimensionamento do painel
+    local resizeGrip = new("Frame", {
         Parent = main,
         Size = UDim2.new(0,20,0,20),
         Position = UDim2.new(1,-20,1,-20),
-        BackgroundColor3 = Color3.fromRGB(80,201,206),
+        BackgroundColor3 = Theme.TabContainer,
         ZIndex = 5
     })
-    makeCorner(resizeHandle, 4)
+    makeCorner(resizeGrip, 4)
+    resizeGrip.Active = true
+    resizeGrip.Draggable = true
 
-    local resizing = false
-    local resizeStart, mainStartSize
-
-    resizeHandle.InputBegan:Connect(function(input)
+    resizeGrip.InputBegan:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 then
-            resizing = true
-            resizeStart = input.Position
-            mainStartSize = main.Size
+            local startMouse = input.Position
+            local startSize = main.Size
+            local conn
+            conn = UserInputService.InputChanged:Connect(function(move)
+                if move.UserInputType == Enum.UserInputType.MouseMovement then
+                    local delta = move.Position - startMouse
+                    main.Size = UDim2.new(
+                        0, math.clamp(startSize.X.Offset + delta.X, 200, 1000),
+                        0, math.clamp(startSize.Y.Offset + delta.Y, 200, 800)
+                    )
+                    shadow.Size = main.Size
+                end
+            end)
             input.Changed:Connect(function()
                 if input.UserInputState == Enum.UserInputState.End then
-                    resizing = false
+                    conn:Disconnect()
                 end
             end)
         end
     end)
 
-    resizeHandle.InputChanged:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseMovement then
-            dragInput = input
-        end
-    end)
-
-    RunService.RenderStepped:Connect(function()
-        if resizing and dragInput then
-            local delta = dragInput.Position - resizeStart
-            local newWidth = math.clamp(mainStartSize.X.Offset + delta.X, 200, 1000)
-            local newHeight = math.clamp(mainStartSize.Y.Offset + delta.Y, 150, 800)
-            main.Size = UDim2.new(0,newWidth,0,newHeight)
-            shadow.Size = UDim2.new(0,newWidth,0,newHeight)
-            resizeHandle.Position = UDim2.new(1,-20,1,-20)
-        end
-    end)
+    return {
+        Main = main,
+        Shadow = shadow,
+        ToggleButton = toggleBtn,
+        Content = content,
+        Containers = containers,
+        TabContainer = tabContainer
+    }
+end
 
 
+
+
+    -- main stroke
+    local mainStroke = Instance.new("UIStroke", main)
+    mainStroke.Color = Theme.MainUIStroke
+
+    -- left tabs container
+    local tabContainer = new("Frame", {
+        Parent = main,
+        BackgroundColor3 = Theme.TabContainer,
+        Size = UDim2.new(0,131,0,316),
+        Position = UDim2.new(-0.012,6,0.0971,0),
+        BorderSizePixel = 0
+    })
+    makeCorner(tabContainer, 4)
+
+    local tabContainerLine = new("Frame", {
+        Parent = tabContainer,
+        BackgroundColor3 = Theme.Lines,
+        Size = UDim2.new(1,0,0,1),
+        Position = UDim2.new(0,0,0,0),
+        BorderSizePixel = 0
+    })
+
+    -- tab scrolling
+    local tabScroll = new("ScrollingFrame", {
+        Parent = tabContainer,
+        BackgroundTransparency = 1,
+        BorderSizePixel = 0,
+        Size = UDim2.new(1,0,1,0),
+        Position = UDim2.new(0,0,0,6),
+        ScrollBarThickness = 0,
+        AutomaticCanvasSize = Enum.AutomaticSize.Y
+    })
+    local tabListLayout = new("UIListLayout", { Parent = tabScroll })
+    tabListLayout.SortOrder = Enum.SortOrder.LayoutOrder
+    tabListLayout.Padding = UDim.new(0,6)
+
+    -- right content area
+    local content = new("Frame", {
+        Parent = main,
+        BackgroundColor3 = Theme.ContainerHolder,
+        Size = UDim2.new(0,368,0,316),
+        Position = UDim2.new(0.262,1,0.097,0),
+        BorderSizePixel = 0
+    })
+    makeCorner(content, 4)
+
+    -- container area where each tab adds its content
+    local containers = new("Frame", {
+        Parent = content,
+        BackgroundTransparency = 1,
+        Size = UDim2.new(1,0,1,0)
+    })
 
     -- bookkeeping
     local tabs = {}

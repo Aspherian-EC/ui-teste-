@@ -1105,54 +1105,54 @@ function tabAPI:AddButton(opt)
 end
 
 
+-- Section
 function tabAPI:AddSection(opt)
     opt = opt or {}
     local name = opt.Name or "Section"
 
-    -- Frame da Section
-    local section = new("Frame", {
-        Parent = tabContent,
-        BackgroundTransparency = 1,
-        Size = UDim2.new(1,-12,0,30)
-    })
+    local item = newItemFrame()
+    item.Size = UDim2.new(1, -12, 0, 18)
+    item.BackgroundTransparency = 1
 
-    local label = new("TextLabel", {
-        Parent = section,
-        Text = "-- " .. name .. " --",
+    -- Linha + nome + linha
+    local text = new("TextLabel", {
+        Parent = item,
+        Text = "────────── " .. tostring(name) .. " ──────────",
         Font = Enum.Font.GothamBold,
-        TextSize = 12,
-        TextColor3 = Theme.SectionText,
+        TextSize = 12, -- tamanho do texto da Section
+        TextColor3 = Theme.Highlight,
         BackgroundTransparency = 1,
-        Position = UDim2.new(0,0,0,0),
-        Size = UDim2.new(1,0,1,0),
+        Size = UDim2.new(1, 0, 0, 18),
         TextXAlignment = Enum.TextXAlignment.Center
     })
 
-    -- Conteúdo da Section (onde os elementos serão adicionados)
+    -- Conteúdo da Section (elementos adicionados abaixo)
     local sectionContent = new("UIListLayout", {
         Parent = tabContent,
         SortOrder = Enum.SortOrder.LayoutOrder,
-        Padding = UDim.new(0, 4) -- espaçamento entre os elementos
+        Padding = UDim.new(0, 4)
     })
 
     -- API da Section
     local sectionAPI = {}
 
-    -- Adicionar Label dentro da Section
-    function sectionAPI:AddLabel(text)
-        text = text or "Label"
-        local item = new("TextLabel", {
-            Parent = tabContent, -- adiciona na mesma tab, segue o fluxo
-            Text = text,
-            Font = Enum.Font.GothamBold,
-            TextSize = 12,
+    -- Adicionar Label
+    function sectionAPI:AddLabel(textLabel)
+        textLabel = textLabel or "Label"
+        local label = new("TextLabel", {
+            Parent = tabContent, -- adiciona na mesma tab, empurrando outros elementos
+            Text = textLabel,
+            Font = Enum.Font.Gotham,
+            TextSize = 11, -- menor que a Section
             TextColor3 = Color3.fromRGB(255,255,255),
             BackgroundTransparency = 1,
-            Size = UDim2.new(1, -12, 0, 20),
+            Size = UDim2.new(1, -12, 0, 16),
             TextXAlignment = Enum.TextXAlignment.Left
         })
         return {
-            SetText = function(newText) item.Text = newText end
+            SetText = function(newText)
+                label.Text = newText
+            end
         }
     end
 
